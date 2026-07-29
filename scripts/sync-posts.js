@@ -6,6 +6,20 @@ const root = path.resolve(__dirname, '..');
 const postsDirectory = path.join(root, 'posts');
 const outputFile = path.join(postsDirectory, 'posts-data.js');
 
+function loadExistingDates() {
+    if (!fs.existsSync(outputFile)) return new Map();
+    try {
+        const source = fs.readFileSync(outputFile, 'utf8');
+        const match = source.match(/Object\.freeze\(([\s\S]*?)\);\s*$/);
+        const posts = match ? JSON.parse(match[1]) : [];
+        return new Map(posts.map(post => [post.filename, post.date]));
+    } catch (error) {
+        return new Map();
+    }
+}
+
+const existingDates = loadExistingDates();
+
 function stripHtml(value) {
     return String(value || '')
         .replace(/<script[\s\S]*?<\/script>/gi, ' ')
@@ -48,6 +62,7 @@ function metadataFromFilename(filename) {
 }
 
 function getPostDate(filename, fallbackDate) {
+    if (existingDates.has(filename)) return existingDates.get(filename);
     try {
         const relativePath = path.posix.join('posts', filename);
         const committedDate = execFileSync(

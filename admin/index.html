@@ -1102,7 +1102,7 @@
                 </div>
                 <p style="font-size: 8.5pt; color: var(--text-muted); margin: 0 0 14px 0;">این دستور ابتدا فهرست نوشته‌ها را همگام می‌کند و سپس تغییرات را منتشر می‌کند:</p>
                 <div class="share-link-box">
-                    <input type="text" class="share-link-input" value="node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git commit -m &quot;بروزرسانی وبلاگ&quot;; if ($LASTEXITCODE -eq 0) { git push origin main } } }" id="gitCmdInput" readonly>
+                    <input type="text" class="share-link-input" value="node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git diff --cached --quiet; if ($LASTEXITCODE -ne 0) { git commit -m &quot;بروزرسانی وبلاگ&quot; }; if ($LASTEXITCODE -eq 0) { git push origin main } } }" id="gitCmdInput" readonly>
                     <button type="button" class="share-copy-btn" onclick="copyGitCmd()">کپی دستور Git</button>
                 </div>
             </div>
@@ -1510,7 +1510,7 @@
             }
 
             commitTitle = commitTitle.replace(/["\r\n]/g, '').slice(0, 80);
-            commandInput.value = 'node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git commit -m "انتشار ' + commitTitle + '"; if ($LASTEXITCODE -eq 0) { git push origin main } } }';
+            commandInput.value = 'node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git diff --cached --quiet; if ($LASTEXITCODE -ne 0) { git commit -m "انتشار ' + commitTitle + '" }; if ($LASTEXITCODE -eq 0) { git push origin main } } }';
         }
 
         function changeListFormat(type) {
