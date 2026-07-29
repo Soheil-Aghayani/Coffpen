@@ -1105,6 +1105,144 @@
             line-height: 2;
         }
 
+        .admin-post-controls {
+            display: grid;
+            grid-template-columns: minmax(220px, 1.6fr) repeat(3, minmax(130px, 0.7fr));
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .admin-post-controls[hidden],
+        .admin-post-pagination[hidden] {
+            display: none;
+        }
+
+        .admin-post-search {
+            position: relative;
+        }
+
+        .admin-post-search svg {
+            position: absolute;
+            top: 50%;
+            right: 12px;
+            width: 16px;
+            height: 16px;
+            color: var(--text-muted);
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+
+        .admin-post-search input,
+        .admin-post-filter {
+            width: 100%;
+            min-height: 40px;
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            background: var(--bg-card);
+            color: var(--text-main);
+            font: inherit;
+            font-size: 8.5pt;
+            outline: none;
+        }
+
+        .admin-post-search input {
+            padding: 9px 38px 9px 12px;
+        }
+
+        .admin-post-filter {
+            padding: 8px 11px;
+            cursor: pointer;
+        }
+
+        .admin-post-search input:focus,
+        .admin-post-filter:focus {
+            border-color: var(--text-accent);
+        }
+
+        .admin-table-scroll {
+            overflow-x: auto;
+        }
+
+        .admin-post-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            margin-top: 16px;
+            padding-top: 14px;
+            border-top: 1px solid var(--border-subtle);
+        }
+
+        .admin-post-page-summary {
+            color: var(--text-muted);
+            font-size: 8pt;
+        }
+
+        .admin-post-page-buttons {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            direction: rtl;
+        }
+
+        .admin-page-btn {
+            min-width: 34px;
+            height: 34px;
+            display: inline-grid;
+            place-items: center;
+            padding: 0 9px;
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            font: inherit;
+            font-size: 8pt;
+            cursor: pointer;
+        }
+
+        .admin-page-btn:hover:not(:disabled),
+        .admin-page-btn.active {
+            border-color: var(--text-accent);
+            color: var(--text-accent);
+            background: var(--bg-tag);
+        }
+
+        .admin-page-btn:disabled {
+            opacity: 0.38;
+            cursor: not-allowed;
+        }
+
+        .admin-page-ellipsis {
+            min-width: 22px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        @media screen and (max-width: 760px) {
+            .admin-post-controls {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .admin-post-search {
+                grid-column: 1 / -1;
+            }
+        }
+
+        @media screen and (max-width: 500px) {
+            .admin-post-controls {
+                grid-template-columns: 1fr;
+            }
+
+            .admin-post-search {
+                grid-column: auto;
+            }
+
+            .admin-post-pagination {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+
         /* Code Output Box */
         .generated-code-box {
             display: none;
@@ -1212,21 +1350,48 @@
                 </div>
 
                 <p class="empty-admin-posts" id="adminPostsEmpty">هنوز فایل نوشته‌ای در پوشهٔ <code>posts/</code> پیدا نشده است.</p>
-                <table class="admin-table" aria-label="نوشته‌های فعال">
-                    <thead>
-                        <tr>
-                            <th>عنوان نوشته</th>
-                            <th>نویسنده</th>
-                            <th>تاریخ</th>
-                            <th>تنظیمات</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminPostsBody">
-                        <tr>
-                            <td colspan="4" class="admin-empty-row">هنوز نوشته‌ای منتشر نشده است.</td>
-                        </tr>
-                    </tbody>
-                </table>
+                <div class="admin-post-controls" id="adminPostControls">
+                    <label class="admin-post-search" aria-label="جست‌وجوی نوشته‌ها">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+                        <input type="search" id="adminPostSearch" placeholder="جست‌وجو در عنوان، فایل یا برچسب…" oninput="handleAdminPostFilterChange()">
+                    </label>
+                    <select id="adminPostKindFilter" class="admin-post-filter" onchange="handleAdminPostFilterChange()" aria-label="نوع نوشته">
+                        <option value="all">همه نوع‌ها</option>
+                        <option value="series">فقط مجموعه‌ها</option>
+                        <option value="standalone">فقط مستقل‌ها</option>
+                        <option value="empty">بدون محتوا</option>
+                    </select>
+                    <select id="adminPostSeriesFilter" class="admin-post-filter" onchange="handleAdminPostFilterChange()" aria-label="مجموعه">
+                        <option value="all">همه مجموعه‌ها</option>
+                    </select>
+                    <select id="adminPostSort" class="admin-post-filter" onchange="handleAdminPostFilterChange()" aria-label="مرتب‌سازی">
+                        <option value="recent">جدیدترین</option>
+                        <option value="oldest">قدیمی‌ترین</option>
+                        <option value="title">عنوان الفبایی</option>
+                        <option value="episode">شماره قسمت</option>
+                    </select>
+                </div>
+                <div class="admin-table-scroll">
+                    <table class="admin-table" aria-label="نوشته‌های فعال">
+                        <thead>
+                            <tr>
+                                <th>عنوان نوشته</th>
+                                <th>نویسنده</th>
+                                <th>تاریخ</th>
+                                <th>تنظیمات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminPostsBody">
+                            <tr>
+                                <td colspan="4" class="admin-empty-row">هنوز نوشته‌ای منتشر نشده است.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div id="adminPostPagination" class="admin-post-pagination" hidden>
+                    <span id="adminPostPageSummary" class="admin-post-page-summary"></span>
+                    <nav id="adminPostPageButtons" class="admin-post-page-buttons" aria-label="صفحه‌بندی نوشته‌ها"></nav>
+                </div>
             </div>
 
             <!-- Post Creator & Generator -->
@@ -1523,6 +1688,9 @@
         var editingPostHandle = null;
         var repoImageItems = [];
         var repoImageAction = 'insert';
+        var adminPostPage = 1;
+        var adminPostsPerPage = 6;
+        var adminDeletedPostIndexes = {};
 
         // Initialize Theme & Authentication Check
         window.addEventListener('DOMContentLoaded', function () {
@@ -1543,17 +1711,90 @@
             var count = document.getElementById('adminPostCount');
             var empty = document.getElementById('adminPostsEmpty');
             var body = document.getElementById('adminPostsBody');
+            var controls = document.getElementById('adminPostControls');
+            var pagination = document.getElementById('adminPostPagination');
+            var pageSummary = document.getElementById('adminPostPageSummary');
+            var pageButtons = document.getElementById('adminPostPageButtons');
             if (!count || !empty || !body) return;
 
-            count.textContent = toPersianDigits(posts.length) + ' نوشته';
-            empty.hidden = posts.length > 0;
+            var indexedPosts = posts.map(function (post, index) {
+                return { post: post, index: index };
+            }).filter(function (entry) {
+                return !adminDeletedPostIndexes[entry.index];
+            });
+            var totalPosts = indexedPosts.length;
 
-            if (!posts.length) {
+            populateAdminSeriesFilter(indexedPosts.map(function (entry) { return entry.post; }));
+            var searchInput = document.getElementById('adminPostSearch');
+            var kindInput = document.getElementById('adminPostKindFilter');
+            var seriesInput = document.getElementById('adminPostSeriesFilter');
+            var sortInput = document.getElementById('adminPostSort');
+            var query = normalizeAdminPostSearch(searchInput ? searchInput.value : '');
+            var kind = kindInput ? kindInput.value : 'all';
+            var series = seriesInput ? seriesInput.value : 'all';
+            var sort = sortInput ? sortInput.value : 'recent';
+
+            var filtered = indexedPosts.filter(function (entry) {
+                var post = entry.post;
+                if (kind === 'series' && !post.series) return false;
+                if (kind === 'standalone' && post.series) return false;
+                if (kind === 'empty' && !post.empty) return false;
+                if (series !== 'all' && post.series !== series) return false;
+                if (!query) return true;
+
+                var searchable = [
+                    post.title,
+                    post.filename,
+                    post.author,
+                    post.series,
+                    Array.isArray(post.tags) ? post.tags.join(' ') : post.tags,
+                    post.episode ? 'قسمت ' + post.episode : ''
+                ].join(' ');
+                return normalizeAdminPostSearch(searchable).indexOf(query) !== -1;
+            });
+
+            filtered.sort(function (a, b) {
+                if (sort === 'oldest') {
+                    return new Date(a.post.date || 0) - new Date(b.post.date || 0);
+                }
+                if (sort === 'title') {
+                    return String(a.post.title || '').localeCompare(String(b.post.title || ''), 'fa');
+                }
+                if (sort === 'episode') {
+                    var seriesCompare = String(a.post.series || '').localeCompare(String(b.post.series || ''), 'fa');
+                    if (seriesCompare) return seriesCompare;
+                    return Number(a.post.episode || 0) - Number(b.post.episode || 0);
+                }
+                return new Date(b.post.date || 0) - new Date(a.post.date || 0);
+            });
+
+            var filteredCount = filtered.length;
+            var totalPages = Math.max(1, Math.ceil(filteredCount / adminPostsPerPage));
+            adminPostPage = Math.max(1, Math.min(adminPostPage, totalPages));
+            var start = (adminPostPage - 1) * adminPostsPerPage;
+            var visiblePosts = filtered.slice(start, start + adminPostsPerPage);
+
+            count.textContent = filteredCount === totalPosts
+                ? toPersianDigits(totalPosts) + ' نوشته'
+                : toPersianDigits(filteredCount) + ' از ' + toPersianDigits(totalPosts);
+            empty.hidden = totalPosts > 0;
+            if (controls) controls.hidden = totalPosts === 0;
+
+            if (!totalPosts) {
                 body.innerHTML = '<tr><td colspan="4" class="admin-empty-row">هنوز نوشته‌ای منتشر نشده است.</td></tr>';
+                if (pagination) pagination.hidden = true;
                 return;
             }
 
-            body.innerHTML = posts.map(function (post, index) {
+            if (!filteredCount) {
+                body.innerHTML = '<tr><td colspan="4" class="admin-empty-row">نوشته‌ای مطابق این فیلتر پیدا نشد.</td></tr>';
+                if (pagination) pagination.hidden = true;
+                return;
+            }
+
+            body.innerHTML = visiblePosts.map(function (entry) {
+                var post = entry.post;
+                var index = entry.index;
                 var episode = post.episode ? 'قسمت ' + toPersianDigits(post.episode) : '';
                 var status = post.empty ? 'بدون محتوا' : episode;
                 var date = post.date ? new Date(post.date).toLocaleDateString('fa-IR') : '—';
@@ -1577,6 +1818,76 @@
                         '</button>' +
                     '</div></td></tr>';
             }).join('');
+
+            if (pagination && pageSummary && pageButtons) {
+                pagination.hidden = false;
+                var end = Math.min(start + visiblePosts.length, filteredCount);
+                pageSummary.textContent =
+                    'نمایش ' + toPersianDigits(start + 1) + ' تا ' + toPersianDigits(end) +
+                    ' از ' + toPersianDigits(filteredCount) + ' نتیجه';
+                pageButtons.innerHTML = buildAdminPostPagination(totalPages);
+            }
+        }
+
+        function normalizeAdminPostSearch(value) {
+            return String(value || '')
+                .normalize('NFKC')
+                .toLowerCase()
+                .replace(/ي/g, 'ی')
+                .replace(/ك/g, 'ک')
+                .replace(/[\u200c\u200d]/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        function populateAdminSeriesFilter(posts) {
+            var select = document.getElementById('adminPostSeriesFilter');
+            if (!select) return;
+            var selected = select.value || 'all';
+            var seriesNames = Array.from(new Set(posts.map(function (post) {
+                return post.series || '';
+            }).filter(Boolean))).sort(function (a, b) {
+                return a.localeCompare(b, 'fa');
+            });
+
+            select.innerHTML = '<option value="all">همه مجموعه‌ها</option>' +
+                seriesNames.map(function (name) {
+                    return '<option value="' + escapeAdminText(name) + '">' + escapeAdminText(name) + '</option>';
+                }).join('');
+            select.value = seriesNames.indexOf(selected) !== -1 ? selected : 'all';
+            select.disabled = seriesNames.length === 0;
+        }
+
+        function buildAdminPostPagination(totalPages) {
+            var buttons = '<button type="button" class="admin-page-btn" onclick="goToAdminPostPage(' + (adminPostPage - 1) + ')"' +
+                (adminPostPage === 1 ? ' disabled' : '') + ' aria-label="صفحه قبل">→</button>';
+            var lastRenderedPage = 0;
+            for (var page = 1; page <= totalPages; page += 1) {
+                var shouldRender = page === 1 || page === totalPages || Math.abs(page - adminPostPage) <= 1;
+                if (!shouldRender) continue;
+                if (lastRenderedPage && page - lastRenderedPage > 1) {
+                    buttons += '<span class="admin-page-ellipsis" aria-hidden="true">…</span>';
+                }
+                buttons += '<button type="button" class="admin-page-btn' + (page === adminPostPage ? ' active' : '') +
+                    '" onclick="goToAdminPostPage(' + page + ')"' +
+                    (page === adminPostPage ? ' aria-current="page"' : '') + '>' + toPersianDigits(page) + '</button>';
+                lastRenderedPage = page;
+            }
+            buttons += '<button type="button" class="admin-page-btn" onclick="goToAdminPostPage(' + (adminPostPage + 1) + ')"' +
+                (adminPostPage === totalPages ? ' disabled' : '') + ' aria-label="صفحه بعد">←</button>';
+            return buttons;
+        }
+
+        function goToAdminPostPage(page) {
+            adminPostPage = Math.max(1, Number(page) || 1);
+            renderAdminPosts();
+            var table = document.querySelector('.admin-table');
+            if (table) table.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function handleAdminPostFilterChange() {
+            adminPostPage = 1;
+            renderAdminPosts();
         }
 
         function checkAuthSession() {
@@ -2745,14 +3056,8 @@
                         ? selectedDirectory
                         : await selectedDirectory.getDirectoryHandle('posts');
                     await postsDirectory.removeEntry(post.filename);
-                    var row = document.querySelector('[data-admin-post-index="' + index + '"]');
-                    if (row) row.remove();
-                    var remaining = document.querySelectorAll('#adminPostsBody tr[data-admin-post-index]').length;
-                    document.getElementById('adminPostCount').textContent = toPersianDigits(remaining) + ' نوشته';
-                    if (!remaining) {
-                        document.getElementById('adminPostsEmpty').hidden = false;
-                        document.getElementById('adminPostsBody').innerHTML = '<tr><td colspan="4" class="admin-empty-row">هنوز نوشته‌ای منتشر نشده است.</td></tr>';
-                    }
+                    adminDeletedPostIndexes[index] = true;
+                    renderAdminPosts();
                     showToast('فایل حذف شد؛ همگام‌ساز فهرست را به‌روزرسانی می‌کند.');
                     return;
                 } catch (error) {
