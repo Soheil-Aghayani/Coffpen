@@ -656,9 +656,174 @@
             outline: none;
         }
 
+        .repo-image-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            background: rgba(4, 8, 10, 0.72);
+            backdrop-filter: blur(8px);
+        }
+
+        .repo-image-modal[hidden] {
+            display: none;
+        }
+
+        .repo-image-dialog {
+            width: min(900px, 100%);
+            max-height: min(760px, calc(100vh - 40px));
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            background: var(--bg-card);
+            box-shadow: 0 24px 80px rgba(0, 0, 0, 0.34);
+        }
+
+        .repo-image-header,
+        .repo-image-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .repo-image-header {
+            justify-content: space-between;
+        }
+
+        .repo-image-header h3 {
+            margin: 0 0 3px;
+            color: var(--text-main);
+            font-size: 11pt;
+        }
+
+        .repo-image-header p,
+        .repo-image-note {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 7.5pt;
+        }
+
+        .repo-image-toolbar {
+            flex-wrap: wrap;
+        }
+
+        .repo-image-search {
+            min-width: 220px;
+            flex: 1;
+            padding: 9px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-input);
+            color: var(--text-main);
+            font: inherit;
+            outline: none;
+        }
+
+        .repo-image-search:focus {
+            border-color: var(--text-accent);
+        }
+
+        .repo-image-action {
+            min-height: 36px;
+            padding: 7px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            background: var(--bg-tag);
+            color: var(--text-main);
+            font: inherit;
+            font-size: 8pt;
+            cursor: pointer;
+        }
+
+        .repo-image-action:hover {
+            border-color: var(--text-accent);
+            color: var(--text-accent);
+        }
+
+        .repo-image-body {
+            min-height: 260px;
+            overflow: auto;
+            padding: 18px;
+        }
+
+        .repo-image-status {
+            min-height: 220px;
+            display: grid;
+            place-items: center;
+            color: var(--text-muted);
+            text-align: center;
+            line-height: 2;
+        }
+
+        .repo-image-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(145px, 1fr));
+            gap: 12px;
+        }
+
+        .repo-image-card {
+            min-width: 0;
+            padding: 7px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-tag);
+            color: var(--text-main);
+            text-align: right;
+            cursor: pointer;
+            transition: transform 160ms ease, border-color 160ms ease;
+        }
+
+        .repo-image-card:hover,
+        .repo-image-card:focus-visible {
+            border-color: var(--text-accent);
+            transform: translateY(-2px);
+            outline: none;
+        }
+
+        .repo-image-card img {
+            width: 100%;
+            aspect-ratio: 4 / 3;
+            display: block;
+            object-fit: cover;
+            border-radius: 8px;
+            background: var(--bg-body);
+        }
+
+        .repo-image-card span {
+            display: block;
+            overflow: hidden;
+            margin-top: 7px;
+            font-size: 7.5pt;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .repo-image-footer {
+            padding: 11px 18px;
+            border-top: 1px solid var(--border-color);
+        }
+
         @media (max-width: 760px) {
             .image-tools {
                 grid-template-columns: 1fr;
+            }
+
+            .repo-image-modal {
+                padding: 8px;
+            }
+
+            .repo-image-dialog {
+                max-height: calc(100vh - 16px);
+            }
+
+            .repo-image-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
 
@@ -1309,6 +1474,32 @@
         </div>
     </div>
 
+    <div id="repoImageModal" class="repo-image-modal" hidden role="dialog" aria-modal="true" aria-labelledby="repoImageModalTitle" onclick="handleRepoImageBackdrop(event)">
+        <div class="repo-image-dialog">
+            <div class="repo-image-header">
+                <div>
+                    <h3 id="repoImageModalTitle">انتخاب تصویر از رپو</h3>
+                    <p><code>assets/images</code></p>
+                </div>
+                <button type="button" class="image-tool-btn" onclick="closeRepoImageBrowser()" aria-label="بستن">
+                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="repo-image-toolbar">
+                <input type="search" id="repoImageSearch" class="repo-image-search" placeholder="جست‌وجو در نام تصاویر…" oninput="filterRepoImages(this.value)">
+                <button type="button" class="repo-image-action" onclick="loadRepoImages(true)" title="دریافت دوباره فهرست">تازه‌سازی</button>
+                <button type="button" class="repo-image-action" onclick="insertImageFromManualUrl()">URL دستی</button>
+            </div>
+            <div class="repo-image-body">
+                <div id="repoImageStatus" class="repo-image-status">در حال دریافت تصاویر…</div>
+                <div id="repoImageGrid" class="repo-image-grid" hidden></div>
+            </div>
+            <div class="repo-image-footer">
+                <p class="repo-image-note">فقط تصاویری نمایش داده می‌شوند که در پوشه‌ی <code>assets/images</code> روی GitHub پوش شده باشند.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast-notification" class="toast-notification">
         <span id="toastMessage">عملیات انجام شد</span>
@@ -1323,9 +1514,12 @@
     <script>
         var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
         var GITHUB_REPOSITORY_URL = 'https://github.com/Soheil-Aghayani/Coffpen';
+        var GITHUB_IMAGES_API = 'https://api.github.com/repos/Soheil-Aghayani/Coffpen/contents/assets/images?ref=main';
         var ADMIN_DRAFT_KEY = 'coffpen_admin_story_draft';
         var editingPostFilename = '';
         var editingPostHandle = null;
+        var repoImageItems = [];
+        var repoImageAction = 'insert';
 
         // Initialize Theme & Authentication Check
         window.addEventListener('DOMContentLoaded', function () {
@@ -2034,23 +2228,204 @@
         }
 
         function promptImage() {
-            var imgUrl = prompt('نشانی تصویر (URL) را وارد کنید:', '../assets/images/author-avatar.jpg');
-            if (imgUrl) {
-                var existingImages = Array.from(document.querySelectorAll('#postContent img'));
-                execCmd('insertImage', imgUrl);
-                window.setTimeout(function () {
-                    var images = document.querySelectorAll('#postContent img');
-                    var image = Array.from(images).find(function (candidate) {
-                        return existingImages.indexOf(candidate) === -1;
-                    }) || (images.length ? images[images.length - 1] : null);
-                    if (image) {
-                        image.style.width = '100%';
-                        image.style.height = 'auto';
-                        image.setAttribute('data-image-align', 'center');
-                        selectEditorImage(image);
-                    }
-                }, 0);
+            openRepoImageBrowser('insert');
+        }
+
+        function openRepoImageBrowser(action) {
+            repoImageAction = action === 'replace' ? 'replace' : 'insert';
+            var modal = document.getElementById('repoImageModal');
+            var title = document.getElementById('repoImageModalTitle');
+            var search = document.getElementById('repoImageSearch');
+            if (!modal) return;
+
+            title.textContent = repoImageAction === 'replace'
+                ? 'جایگزینی تصویر از رپو'
+                : 'انتخاب تصویر از رپو';
+            search.value = '';
+            modal.hidden = false;
+            document.body.style.overflow = 'hidden';
+
+            if (repoImageItems.length) {
+                renderRepoImages(repoImageItems);
+            } else {
+                loadRepoImages(false);
             }
+            window.setTimeout(function () { search.focus(); }, 0);
+        }
+
+        function closeRepoImageBrowser() {
+            var modal = document.getElementById('repoImageModal');
+            if (!modal) return;
+            modal.hidden = true;
+            document.body.style.overflow = '';
+        }
+
+        function handleRepoImageBackdrop(event) {
+            if (event.target && event.target.id === 'repoImageModal') {
+                closeRepoImageBrowser();
+            }
+        }
+
+        function loadRepoImages(force) {
+            var status = document.getElementById('repoImageStatus');
+            var grid = document.getElementById('repoImageGrid');
+            if (!force && repoImageItems.length) {
+                renderRepoImages(repoImageItems);
+                return;
+            }
+
+            status.hidden = false;
+            status.textContent = 'در حال دریافت تصاویر از رپو…';
+            grid.hidden = true;
+            grid.replaceChildren();
+
+            fetch(GITHUB_IMAGES_API, {
+                cache: 'no-store',
+                headers: { Accept: 'application/vnd.github+json' }
+            })
+                .then(function (response) {
+                    if (!response.ok) throw new Error('GitHub API ' + response.status);
+                    return response.json();
+                })
+                .then(function (items) {
+                    repoImageItems = (Array.isArray(items) ? items : [])
+                        .filter(function (item) {
+                            return item.type === 'file' && /\.(avif|gif|jpe?g|png|svg|webp)$/i.test(item.name);
+                        })
+                        .sort(function (a, b) {
+                            return a.name.localeCompare(b.name, 'fa');
+                        });
+                    renderRepoImages(repoImageItems);
+                })
+                .catch(function () {
+                    grid.hidden = true;
+                    status.hidden = false;
+                    status.innerHTML = 'فهرست تصاویر دریافت نشد.<br>اتصال اینترنت و push شدن فایل‌ها را بررسی کن یا از «URL دستی» استفاده کن.';
+                });
+        }
+
+        function renderRepoImages(items) {
+            var status = document.getElementById('repoImageStatus');
+            var grid = document.getElementById('repoImageGrid');
+            grid.replaceChildren();
+
+            if (!items.length) {
+                grid.hidden = true;
+                status.hidden = false;
+                status.textContent = 'تصویری با این نام پیدا نشد.';
+                return;
+            }
+
+            items.forEach(function (item) {
+                var button = document.createElement('button');
+                var image = document.createElement('img');
+                var label = document.createElement('span');
+                button.type = 'button';
+                button.className = 'repo-image-card';
+                button.title = item.name;
+                button.addEventListener('click', function () {
+                    chooseRepoImage(item.name);
+                });
+
+                image.src = item.download_url;
+                image.alt = '';
+                image.loading = 'lazy';
+                label.textContent = item.name;
+                button.appendChild(image);
+                button.appendChild(label);
+                grid.appendChild(button);
+            });
+
+            status.hidden = true;
+            grid.hidden = false;
+        }
+
+        function filterRepoImages(query) {
+            var normalized = String(query || '').trim().toLocaleLowerCase('fa');
+            var filtered = !normalized
+                ? repoImageItems
+                : repoImageItems.filter(function (item) {
+                    return item.name.toLocaleLowerCase('fa').indexOf(normalized) !== -1;
+                });
+            renderRepoImages(filtered);
+        }
+
+        function repoImagePath(filename) {
+            return '../assets/images/' + encodeURIComponent(filename);
+        }
+
+        function imageAltFromFilename(filename) {
+            return String(filename || '')
+                .replace(/\.[^.]+$/, '')
+                .replace(/[-_]+/g, ' ')
+                .trim();
+        }
+
+        function chooseRepoImage(filename) {
+            var imageUrl = repoImagePath(filename);
+            var altText = imageAltFromFilename(filename);
+            if (repoImageAction === 'replace' && selectedEditorImage) {
+                selectedEditorImage.setAttribute('src', imageUrl);
+                if (!selectedEditorImage.getAttribute('alt')) {
+                    selectedEditorImage.setAttribute('alt', altText);
+                    document.getElementById('imageAltInput').value = altText;
+                }
+                handleContentInput();
+                closeRepoImageBrowser();
+                selectEditorImage(selectedEditorImage);
+                showToast('تصویر جایگزین شد.');
+                return;
+            }
+
+            closeRepoImageBrowser();
+            insertEditorImage(imageUrl, altText);
+        }
+
+        function insertImageFromManualUrl() {
+            var currentUrl = repoImageAction === 'replace' && selectedEditorImage
+                ? selectedEditorImage.getAttribute('src') || ''
+                : '../assets/images/';
+            var imgUrl = prompt('نشانی تصویر (URL) را وارد کنید:', currentUrl);
+            if (!imgUrl) return;
+
+            if (repoImageAction === 'replace' && selectedEditorImage) {
+                selectedEditorImage.setAttribute('src', imgUrl.trim());
+                handleContentInput();
+                closeRepoImageBrowser();
+                selectEditorImage(selectedEditorImage);
+                showToast('تصویر جایگزین شد.');
+                return;
+            }
+
+            closeRepoImageBrowser();
+            insertEditorImage(imgUrl.trim(), '');
+        }
+
+        function insertEditorImage(imgUrl, altText) {
+            var existingImages = Array.from(document.querySelectorAll('#postContent img'));
+            execCmd('insertImage', imgUrl);
+            window.setTimeout(function () {
+                var editor = document.getElementById('postContent');
+                var images = document.querySelectorAll('#postContent img');
+                var image = Array.from(images).find(function (candidate) {
+                    return existingImages.indexOf(candidate) === -1;
+                }) || (images.length ? images[images.length - 1] : null);
+
+                if (!image && editor) {
+                    image = document.createElement('img');
+                    image.src = imgUrl;
+                    editor.appendChild(image);
+                }
+                if (image) {
+                    image.style.width = '100%';
+                    image.style.maxWidth = '100%';
+                    image.style.height = 'auto';
+                    image.setAttribute('data-image-align', 'center');
+                    image.setAttribute('alt', altText || '');
+                    selectEditorImage(image);
+                    handleContentInput();
+                }
+            }, 0);
         }
 
         function selectEditorImage(image) {
@@ -2164,12 +2539,7 @@
 
         function replaceSelectedImage() {
             if (!selectedEditorImage) return;
-            var newUrl = prompt('نشانی تصویر جایگزین را وارد کنید:', selectedEditorImage.getAttribute('src') || '');
-            if (newUrl && newUrl.trim()) {
-                selectedEditorImage.setAttribute('src', newUrl.trim());
-                handleContentInput();
-                showToast('تصویر جایگزین شد.');
-            }
+            openRepoImageBrowser('replace');
         }
 
         function removeSelectedImage() {
@@ -2518,6 +2888,13 @@
             document.execCommand('copy');
             showToast('کد HTML کپی شد!');
         }
+
+        document.addEventListener('keydown', function (event) {
+            if (event.key === 'Escape') {
+                var modal = document.getElementById('repoImageModal');
+                if (modal && !modal.hidden) closeRepoImageBrowser();
+            }
+        });
     </script>
 </body>
 
