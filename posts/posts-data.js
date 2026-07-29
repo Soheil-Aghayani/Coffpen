@@ -9,7 +9,7 @@ window.COFFPEN_POSTS = Object.freeze([
     "tags": [],
     "series": "افسانه نروث",
     "episode": "2",
-    "wordCount": 574,
+    "wordCount": 2618,
     "date": "2026-07-29T23:52:48.368Z",
     "empty": false
   },
