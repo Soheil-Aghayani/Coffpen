@@ -1625,6 +1625,26 @@ footer {
     text-decoration: none;
 }
 
+.story-body img,
+.reader-book-page img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 10px;
+}
+
+.story-body figure,
+.reader-book-page figure {
+    margin: 24px 0;
+}
+
+.story-body figcaption,
+.reader-book-page figcaption {
+    margin-top: 8px;
+    color: var(--text-muted);
+    font-size: 8pt;
+    text-align: center;
+}
+
 .reader-source[hidden] {
     display: none;
 }
