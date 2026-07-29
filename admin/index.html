@@ -273,15 +273,26 @@
 
         .form-reset-select {
             min-width: 170px;
-            padding: 9px 13px;
+            padding: 9px 14px 9px 42px;
             border: 1px solid rgba(239, 68, 68, 0.35);
             border-radius: 20px;
-            background: var(--bg-card);
+            background-color: var(--bg-card);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23967882' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 16px center;
+            background-size: 12px 12px;
             color: var(--text-muted);
             font: inherit;
             font-size: 8.5pt;
+            line-height: 1.4;
+            appearance: none;
+            -webkit-appearance: none;
             cursor: pointer;
             outline: none;
+        }
+
+        .form-reset-select::-ms-expand {
+            display: none;
         }
 
         .form-reset-select:hover,
