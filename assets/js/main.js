@@ -292,6 +292,51 @@ function initLiveHero() {
     window.setInterval(updateHeroTime, 30000);
 }
 
+function initSeriesFilter() {
+    const params = new URLSearchParams(window.location.search);
+    const requestedSeries = params.get('series');
+    if (!requestedSeries) return;
+
+    const heading = document.getElementById('latest-posts-heading');
+    const intro = document.querySelector('.home-intro');
+    const posts = Array.from(document.querySelectorAll('.post-preview'));
+    const emptyState = document.querySelector('.empty-posts');
+    let visibleCount = 0;
+
+    posts.forEach(function (post) {
+        const belongsToSeries = post.getAttribute('data-series') === requestedSeries;
+        post.hidden = !belongsToSeries;
+        if (belongsToSeries) visibleCount += 1;
+    });
+
+    if (heading) heading.textContent = 'مجموعه «' + requestedSeries + '»';
+
+    if (intro) {
+        let backLink = intro.querySelector('.series-filter-back');
+        if (!backLink) {
+            backLink = document.createElement('a');
+            backLink.className = 'series-filter-back';
+            backLink.href = 'index.html#latest-posts-heading';
+            backLink.textContent = 'نمایش همه نوشته‌ها ←';
+            intro.appendChild(backLink);
+        }
+    }
+
+    if (emptyState && visibleCount === 0) {
+        const emptyTitle = emptyState.querySelector('h2');
+        const emptyText = emptyState.querySelector('p');
+        const emptyLink = emptyState.querySelector('a');
+        if (emptyTitle) emptyTitle.textContent = 'هنوز قسمتی از این مجموعه منتشر نشده است';
+        if (emptyText) emptyText.textContent = 'قسمت‌های مجموعه «' + requestedSeries + '» پس از انتشار اینجا نمایش داده می‌شوند.';
+        if (emptyLink) {
+            emptyLink.href = 'index.html#latest-posts-heading';
+            emptyLink.textContent = 'بازگشت به همه نوشته‌ها';
+        }
+    } else if (emptyState && posts.length > 0) {
+        emptyState.hidden = true;
+    }
+}
+
 // Initialize Everything on Load
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
@@ -299,10 +344,12 @@ if (document.readyState === 'loading') {
         initSidebar();
         initContextMenu();
         initLiveHero();
+        initSeriesFilter();
     });
 } else {
     initTheme();
     initSidebar();
     initContextMenu();
     initLiveHero();
+    initSeriesFilter();
 }

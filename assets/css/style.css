@@ -495,6 +495,14 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     color: var(--text-muted);
 }
 
+.series-filter-back {
+    display: inline-flex;
+    margin-top: 14px;
+    color: var(--text-accent);
+    font-size: 8.5pt;
+    font-weight: 700;
+}
+
 .post-preview { animation: fadeInUp 0.45s ease both; }
 
 .empty-posts {
@@ -587,6 +595,8 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     display: flex;
     flex-direction: row;
     align-items: center;
+    flex: 1;
+    min-width: 0;
 }
 
 .blackthemePostInfoImg {
@@ -606,6 +616,8 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     display: flex;
     flex-direction: column;
     flex-wrap: wrap;
+    flex: 1;
+    min-width: 0;
 }
 
 .blackthemePostBoxTitle {

@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/style.css?v=20260729-3">
 
     <style>
         body {
@@ -696,6 +696,50 @@
             font-weight: 700;
         }
 
+        .preview-post-heading-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+
+        .story-live-preview-box .blackthemePostInfoMain,
+        .story-live-preview-box .blackthemePostInfoContent {
+            width: 100%;
+            min-width: 0;
+            flex: 1;
+        }
+
+        .preview-post-heading-row h2 {
+            margin: 0;
+        }
+
+        .preview-episode-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            flex: 0 0 auto;
+            padding: 5px 13px;
+            border: 1px solid var(--border-color);
+            border-radius: 999px;
+            background: var(--bg-tag);
+            color: var(--text-accent);
+            font-size: 8pt;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .preview-episode-link:hover {
+            border-color: var(--text-accent);
+            transform: translateY(-1px);
+        }
+
+        .preview-episode-link[hidden] {
+            display: none;
+        }
+
         @media screen and (max-width: 620px) {
             .slug-input-row {
                 grid-template-columns: 1fr;
@@ -993,7 +1037,7 @@
                                     <div class="series-fields-grid">
                                         <div class="series-mini-field">
                                             <label for="postSeries">نام مجموعه</label>
-                                            <input type="text" id="postSeries" class="form-control" placeholder="مثلاً: درون باطل" list="seriesOptions" oninput="updateSeriesSummary()" disabled>
+                                            <input type="text" id="postSeries" class="form-control" placeholder="مثلاً: درون باطل" list="seriesOptions" oninput="handleSeriesInput()" disabled>
                                             <datalist id="seriesOptions">
                                                 <option value="درون باطل"></option>
                                                 <option value="دفتر یادداشت‌های شبانه"></option>
@@ -1002,11 +1046,11 @@
                                         </div>
                                         <div class="series-mini-field">
                                             <label for="postEpisode">شماره این قسمت</label>
-                                            <input type="number" id="postEpisode" class="form-control" min="1" step="1" placeholder="مثلاً ۳" oninput="updateSeriesSummary()" disabled>
+                                            <input type="text" id="postEpisode" class="form-control" inputmode="numeric" pattern="[۰-۹0-9]*" maxlength="4" placeholder="مثلاً ۳" oninput="handleEpisodeInput(this)" disabled>
                                         </div>
                                         <div class="series-mini-field">
                                             <label for="postEpisodeTotal">تعداد کل <span style="font-weight: 400;">(اختیاری)</span></label>
-                                            <input type="number" id="postEpisodeTotal" class="form-control" min="1" step="1" placeholder="مثلاً ۱۰" oninput="updateSeriesSummary()" disabled>
+                                            <input type="text" id="postEpisodeTotal" class="form-control" inputmode="numeric" pattern="[۰-۹0-9]*" maxlength="4" placeholder="مثلاً ۱۰" oninput="handleEpisodeInput(this)" disabled>
                                         </div>
                                     </div>
                                     <p id="seriesSummary" class="series-summary">نمونه نمایش: نام مجموعه • قسمت ۱</p>
@@ -1104,7 +1148,10 @@
                                 <div class="blackthemePostInfoMain">
                                     <img src="../assets/images/author-avatar.jpg" alt="سهیل آقایانی" class="author-avatar-img">
                                     <div class="blackthemePostInfoContent">
-                                        <h2 id="previewPostTitle">عنوان نوشته پیش‌نمایش</h2>
+                                        <div class="preview-post-heading-row">
+                                            <h2 id="previewPostTitle">عنوان نوشته پیش‌نمایش</h2>
+                                            <a id="previewEpisodeLink" class="preview-episode-link" href="#" hidden>قسمت ۱</a>
+                                        </div>
                                         <span class="blackthemeDate"><b>سهیل آقایانی</b> &bull; ۱۴۰۵/۰۵/۰۷ (پیش‌نمایش زنده)</span>
                                     </div>
                                 </div>
@@ -1168,7 +1215,7 @@
     </div>
 
     <!-- Main JS Engine for Theme Sync -->
-    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/main.js?v=20260729-3"></script>
 
     <script>
         var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
@@ -1182,6 +1229,7 @@
                 document.documentElement.setAttribute('data-theme', savedTheme);
             }
             checkAuthSession();
+            updateGitCommand();
         });
 
         function checkAuthSession() {
@@ -1281,9 +1329,21 @@
 
         function toPersianDigits(n) {
             var persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
-            return String(n).replace(/[0-9]/g, function (w) {
+            return String(n).replace(/[٠-٩]/g, function (w) {
+                return String('٠١٢٣٤٥٦٧٨٩'.indexOf(w));
+            }).replace(/[0-9]/g, function (w) {
                 return persian[+w];
             });
+        }
+
+        function toEnglishDigits(value) {
+            return String(value || '')
+                .replace(/[۰-۹]/g, function (digit) {
+                    return String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit));
+                })
+                .replace(/[٠-٩]/g, function (digit) {
+                    return String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit));
+                });
         }
 
         var savedEditorRange = null;
@@ -1330,11 +1390,13 @@
         function handleTitleInput() {
             updateLiveStats();
             suggestPostSlug(false);
+            updateGitCommand();
         }
 
         function handleSlugManualInput() {
             slugWasManuallyEdited = Boolean(document.getElementById('postSlug').value.trim());
             updateSlugHint(document.getElementById('postSlug').value.trim());
+            updateGitCommand();
         }
 
         function updateSlugHint(slug) {
@@ -1384,8 +1446,8 @@
             return {
                 enabled: Boolean(enabledInput && enabledInput.checked),
                 name: nameInput ? nameInput.value.trim() : '',
-                episode: episodeInput ? episodeInput.value.trim() : '',
-                total: totalInput ? totalInput.value.trim() : ''
+                episode: episodeInput ? toEnglishDigits(episodeInput.value).replace(/\D/g, '') : '',
+                total: totalInput ? toEnglishDigits(totalInput.value).replace(/\D/g, '') : ''
             };
         }
 
@@ -1408,6 +1470,9 @@
             if (meta.enabled && nameInput) {
                 window.setTimeout(function () { nameInput.focus(); }, 80);
             }
+
+            suggestPostSlug(false);
+            updateGitCommand();
         }
 
         function buildSeriesLabel(meta) {
@@ -1423,6 +1488,20 @@
             var summary = document.getElementById('seriesSummary');
             if (!summary) return;
             summary.textContent = 'نحوه نمایش: ' + buildSeriesLabel(getSeriesMeta());
+        }
+
+        function handleSeriesInput() {
+            updateSeriesSummary();
+            suggestPostSlug(false);
+            updateGitCommand();
+        }
+
+        function handleEpisodeInput(input) {
+            var englishDigits = toEnglishDigits(input.value).replace(/\D/g, '').slice(0, 4);
+            input.value = toPersianDigits(englishDigits);
+            updateSeriesSummary();
+            suggestPostSlug(false);
+            updateGitCommand();
         }
 
         function escapeAdminText(value) {
@@ -1443,13 +1522,36 @@
                 return;
             }
 
-            var suggestion = createSlugFromTitle(title);
+            var seriesMeta = getSeriesMeta();
+            var slugTitle = title;
+            if (seriesMeta.enabled && seriesMeta.episode) {
+                slugTitle += '-قسمت-' + toPersianDigits(seriesMeta.episode);
+            }
+            var suggestion = createSlugFromTitle(slugTitle);
             updateSlugHint(suggestion);
 
             if (force || !slugWasManuallyEdited || !slugInput.value.trim()) {
                 slugInput.value = suggestion;
                 slugWasManuallyEdited = false;
             }
+            updateGitCommand();
+        }
+
+        function updateGitCommand() {
+            var commandInput = document.getElementById('gitCmdInput');
+            if (!commandInput) return;
+
+            var titleInput = document.getElementById('postTitle');
+            var title = titleInput && titleInput.value.trim() ? titleInput.value.trim() : 'نوشته جدید';
+            var seriesMeta = getSeriesMeta();
+            var commitTitle = title;
+
+            if (seriesMeta.enabled && seriesMeta.episode) {
+                commitTitle += ' - قسمت ' + toPersianDigits(seriesMeta.episode);
+            }
+
+            commitTitle = commitTitle.replace(/["\r\n]/g, '').slice(0, 80);
+            commandInput.value = 'git add . && git commit -m "انتشار ' + commitTitle + '" && git push origin main';
         }
 
         function changeListFormat(type) {
@@ -1658,10 +1760,18 @@
             var innerHtml = editor ? editor.innerHTML.trim() : '';
 
             var titleElem = document.getElementById('previewPostTitle');
+            var episodeLink = document.getElementById('previewEpisodeLink');
+            titleElem.innerText = title;
+
             if (seriesMeta.enabled && seriesMeta.name && seriesMeta.episode) {
-                titleElem.innerHTML = '<div style="display: inline-flex; align-items: center; gap: 6px; background-color: var(--bg-tag); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 20px; font-size: 8.5pt; color: var(--text-accent); margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg><span>' + escapeAdminText(buildSeriesLabel(seriesMeta)) + '</span></div><br>' + escapeAdminText(title);
+                episodeLink.textContent = 'قسمت ' + toPersianDigits(seriesMeta.episode);
+                episodeLink.href = '../index.html?series=' + encodeURIComponent(seriesMeta.name) + '#latest-posts-heading';
+                episodeLink.title = 'مشاهده قسمت‌های مجموعه «' + seriesMeta.name + '»';
+                episodeLink.hidden = false;
             } else {
-                titleElem.innerText = title;
+                episodeLink.hidden = true;
+                episodeLink.removeAttribute('href');
+                episodeLink.removeAttribute('title');
             }
 
             if (!innerHtml || innerHtml === '<br>') {
@@ -1748,13 +1858,17 @@
                 return;
             }
 
-            if (seriesMeta.enabled) {
-                storyHtml = '<div style="display:inline-flex;align-items:center;padding:5px 14px;margin-bottom:18px;border:1px solid var(--border-color);border-radius:20px;background:var(--bg-tag);color:var(--text-accent);font-size:8.5pt;font-weight:700;">' +
-                    escapeAdminText(buildSeriesLabel(seriesMeta)) +
-                    '</div>\n' + storyHtml;
-            }
-
             var template = '<!DOCTYPE html>\n<html lang="fa" dir="rtl" data-theme="dark">\n<head>\n    <meta charset="utf-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <title>' + title + ' | سیاه و قلم</title>\n    <link rel="preconnect" href="https://fonts.googleapis.com">\n    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">\n    <link rel="stylesheet" href="../assets/css/style.css">\n</head>\n<body>\n    <div class="blackthemeBox">\n        <header>\n            <nav>\n                <ul>\n                    <li><a href="../index.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 10.5L12 3l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10.5z"/><path d="M9 22V12h6v10"/></svg></a></li>\n                    <li><a href="../about.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></a></li>\n                    <li><button class="theme-toggle-btn" onclick="cycleTheme()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor"/><circle cx="12" cy="7.5" r="1" fill="currentColor"/><circle cx="16.5" cy="10.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/></svg></button></li>\n                </ul>\n            </nav>\n            <div class="blackthemeInfo">\n                <h1><a href="../index.html">سیاه و قلم</a></h1>\n                <h2>یادداشت‌ها، داستان‌ها و نوشته‌های سهیل آقایانی (کاف پـن)</h2>\n            </div>\n        </header>\n        <div class="headerImage"></div>\n        <main>\n            <article class="blackthemePostBox">\n                <div class="blackthemePostInfo">\n                    <div class="blackthemePostInfoMain">\n                        <img src="../assets/images/author-avatar.jpg" alt="سهیل آقایانی" class="author-avatar-img">\n                        <div class="blackthemePostInfoContent">\n                            <h1 class="blackthemePostBoxTitle">' + title + '</h1>\n                            <span class="blackthemeDate"><b>سهیل آقایانی</b> &bull; ۱۴۰۵/۰۵/۰۷</span>\n                        </div>\n                    </div>\n                </div>\n                <div class="blackthemePostText story-body">\n' + storyHtml + '\n                </div>\n            </article>\n        </main>\n    </div>\n    <script src="../assets/js/main.js"><\/script>\n</body>\n</html>';
+
+            if (seriesMeta.enabled) {
+                var episodeHref = '../index.html?series=' + encodeURIComponent(seriesMeta.name) + '#latest-posts-heading';
+                var plainHeading = '<h1 class="blackthemePostBoxTitle">' + title + '</h1>';
+                var headingWithEpisode = '<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">' +
+                    '<h1 class="blackthemePostBoxTitle" style="margin:0;">' + escapeAdminText(title) + '</h1>' +
+                    '<a href="' + escapeAdminText(episodeHref) + '" title="مشاهده قسمت‌های مجموعه «' + escapeAdminText(seriesMeta.name) + '»" style="display:inline-flex;align-items:center;padding:5px 13px;border:1px solid var(--border-color);border-radius:999px;background:var(--bg-tag);color:var(--text-accent);font-size:8pt;font-weight:700;text-decoration:none;">قسمت ' + toPersianDigits(seriesMeta.episode) + '</a>' +
+                    '</div>';
+                template = template.replace(plainHeading, headingWithEpisode);
+            }
 
             document.getElementById('generatedTextarea').value = template;
             document.getElementById('generatedOutput').classList.add('show');
