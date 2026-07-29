@@ -636,9 +636,8 @@ function initSeriesFilter() {
     const requestedTag = params.get('tag');
     if (!requestedSeries && !requestedTag) return;
 
-    const heading = document.getElementById('latest-posts-heading');
-    const intro = document.querySelector('.home-intro');
     const posts = Array.from(document.querySelectorAll('.post-preview'));
+    const postList = document.getElementById('postList');
     const emptyState = document.querySelector('.empty-posts');
     const seriesHub = document.getElementById('seriesHub');
     let visibleCount = 0;
@@ -651,22 +650,15 @@ function initSeriesFilter() {
         if (belongs) visibleCount += 1;
     });
 
-    if (heading) {
-        heading.textContent = requestedSeries
-            ? 'مجموعه «' + requestedSeries + '»'
-            : 'برچسب «' + requestedTag + '»';
-    }
     if (seriesHub) seriesHub.hidden = true;
 
-    if (intro) {
-        let backLink = intro.querySelector('.series-filter-back');
-        if (!backLink) {
-            backLink = document.createElement('a');
-            backLink.className = 'series-filter-back';
-            backLink.href = 'index.html#latest-posts-heading';
-            backLink.textContent = 'نمایش همه نوشته‌ها ←';
-            intro.appendChild(backLink);
-        }
+    if (postList && !document.querySelector('.series-filter-summary')) {
+        const summary = document.createElement('div');
+        summary.className = 'series-filter-summary';
+        summary.innerHTML = '<strong>' +
+            escapeHtml(requestedSeries ? 'مجموعه «' + requestedSeries + '»' : 'برچسب «' + requestedTag + '»') +
+            '</strong><a href="index.html#latest-posts-heading">نمایش همه نوشته‌ها ←</a>';
+        postList.parentNode.insertBefore(summary, postList);
     }
 
     if (emptyState && visibleCount === 0) {
