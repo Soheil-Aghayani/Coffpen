@@ -1053,20 +1053,7 @@ function writeReaderStorage(key, value) {
     }
 }
 
-// Initialize Everything on Load
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', function () {
-        initTheme();
-        initSidebar();
-        initContextMenu();
-        initPostRegistry();
-        initSeriesHub();
-        initLiveHero();
-        initSeriesFilter();
-        initStoryPlaylist();
-        initLongformReader();
-    });
-} else {
+function initializeCoffpenPage() {
     initTheme();
     initSidebar();
     initContextMenu();
@@ -1076,4 +1063,16 @@ if (document.readyState === 'loading') {
     initSeriesFilter();
     initStoryPlaylist();
     initLongformReader();
+    window.setTimeout(function () {
+        window.requestAnimationFrame(function () {
+            document.documentElement.classList.add('page-ready');
+        });
+    }, 0);
+}
+
+// Initialize Everything on Load
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeCoffpenPage);
+} else {
+    initializeCoffpenPage();
 }
