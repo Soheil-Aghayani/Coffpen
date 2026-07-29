@@ -791,6 +791,11 @@ function initLongformReader() {
     let resizeTimer = null;
     let scrollTimer = null;
     let touchStartX = 0;
+    let bookBuildToken = 0;
+    let readerLayoutResolved = false;
+    const readerLayoutReady = waitForReaderLayout().then(function () {
+        readerLayoutResolved = true;
+    });
 
     function applyReaderPreferences() {
         document.documentElement.style.setProperty('--reader-font-scale', prefs.fontScale);
@@ -825,8 +830,10 @@ function initLongformReader() {
             story.hidden = true;
             book.hidden = false;
             document.body.classList.add('reader-book-mode');
-            buildBookPages(block);
+            queueStableBookBuild(block);
         } else {
+            bookBuildToken += 1;
+            book.classList.remove('reader-book-loading');
             const block = typeof preserveBlock === 'number' ? preserveBlock : getCurrentBookBlock();
             story.hidden = false;
             book.hidden = true;
@@ -837,6 +844,65 @@ function initLongformReader() {
             });
         }
         writeReaderStorage(prefsKey, prefs);
+    }
+
+    function waitForReaderLayout() {
+        const imagePromises = Array.from(story.querySelectorAll('img')).map(function (image) {
+            return new Promise(function (resolve) {
+                let settled = false;
+                let timeoutId = null;
+
+                function finish() {
+                    if (settled) return;
+                    settled = true;
+                    if (timeoutId) window.clearTimeout(timeoutId);
+                    image.removeEventListener('load', finish);
+                    image.removeEventListener('error', finish);
+                    if (image.complete && image.naturalWidth && typeof image.decode === 'function') {
+                        image.decode().catch(function () {}).then(resolve);
+                    } else {
+                        resolve();
+                    }
+                }
+
+                if (image.complete) {
+                    finish();
+                    return;
+                }
+
+                image.addEventListener('load', finish);
+                image.addEventListener('error', finish);
+                timeoutId = window.setTimeout(finish, 8000);
+            });
+        });
+        const fontsReady = document.fonts && document.fonts.ready
+            ? document.fonts.ready.catch(function () {})
+            : Promise.resolve();
+
+        return Promise.all([fontsReady].concat(imagePromises));
+    }
+
+    function queueStableBookBuild(targetBlock) {
+        const buildToken = ++bookBuildToken;
+        const stage = book.querySelector('.reader-book-stage');
+        const counter = book.querySelector('.reader-page-counter');
+
+        if (!readerLayoutResolved) {
+            book.classList.add('reader-book-loading');
+            stage.innerHTML = '';
+            if (counter) counter.textContent = 'در حال آماده‌سازی صفحه‌ها…';
+        }
+
+        readerLayoutReady.then(function () {
+            if (buildToken !== bookBuildToken || prefs.mode !== 'book') return;
+            window.requestAnimationFrame(function () {
+                window.requestAnimationFrame(function () {
+                    if (buildToken !== bookBuildToken || prefs.mode !== 'book') return;
+                    buildBookPages(targetBlock);
+                    book.classList.remove('reader-book-loading');
+                });
+            });
+        });
     }
 
     function buildBookPages(targetBlock) {
@@ -1063,7 +1129,7 @@ function initLongformReader() {
         if (!target) return;
         const block = Array.from(story.children).indexOf(target);
         if (prefs.mode === 'book') {
-            buildBookPages(block);
+            queueStableBookBuild(block);
         } else {
             target.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -1109,13 +1175,13 @@ function initLongformReader() {
     window.addEventListener('resize', function () {
         window.clearTimeout(resizeTimer);
         resizeTimer = window.setTimeout(function () {
-            if (prefs.mode === 'book') buildBookPages(getCurrentBookBlock());
+            if (prefs.mode === 'book') queueStableBookBuild(getCurrentBookBlock());
         }, 180);
     });
 
     if (prefs.rememberPosition) {
         maybeShowResumeNotice(savedPosition, story, function (block) {
-            if (prefs.mode === 'book') buildBookPages(block);
+            if (prefs.mode === 'book') queueStableBookBuild(block);
             else scrollToReaderBlock(story, block, true);
         }, function () {
             writeReaderStorage(storageKey, {});
@@ -1132,7 +1198,7 @@ function initLongformReader() {
     function rebuildBookAfterPreferenceChange() {
         if (prefs.mode === 'book') {
             window.requestAnimationFrame(function () {
-                buildBookPages(getCurrentBookBlock());
+                queueStableBookBuild(getCurrentBookBlock());
             });
         }
     }

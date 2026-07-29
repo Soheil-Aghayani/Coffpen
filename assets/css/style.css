@@ -2133,6 +2133,29 @@ footer {
     min-height: clamp(460px, calc(100vh - 210px), 720px);
 }
 
+.reader-book.reader-book-loading .reader-book-stage {
+    display: grid;
+    place-items: center;
+    border: 1px solid var(--border-color);
+    border-radius: 7px 18px 18px 7px;
+    background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.025), transparent 7%),
+        var(--bg-card);
+    box-shadow: -14px 18px 40px rgba(0, 0, 0, 0.1);
+}
+
+.reader-book.reader-book-loading .reader-book-stage::before {
+    content: "در حال آماده‌سازی صفحه‌ها…";
+    color: var(--text-muted);
+    font-size: 8.5pt;
+}
+
+.reader-book.reader-book-loading .reader-page-nav,
+.reader-book.reader-book-loading .reader-page-counter {
+    opacity: 0;
+    pointer-events: none;
+}
+
 .reader-book-page {
     display: none;
     width: 100%;
