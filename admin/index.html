@@ -878,10 +878,10 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         نوشته‌های فعال وبلاگ
                     </h3>
-                    <span class="badge-status">۰ نوشته</span>
+                    <span class="badge-status" id="adminPostCount">۰ نوشته</span>
                 </div>
 
-                <p class="empty-admin-posts">در حال حاضر نوشتهٔ نمونه‌ای برای نمایش وجود ندارد. نوشته‌های منتشرشده در این فهرست ظاهر می‌شوند.</p>
+                <p class="empty-admin-posts" id="adminPostsEmpty">هنوز فایل نوشته‌ای در پوشهٔ <code>posts/</code> پیدا نشده است.</p>
                 <table class="admin-table" aria-label="نوشته‌های فعال">
                     <thead>
                         <tr>
@@ -891,7 +891,7 @@
                             <th>تنظیمات</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="adminPostsBody">
                         <tr>
                             <td colspan="4" class="admin-empty-row">هنوز نوشته‌ای منتشر نشده است.</td>
                         </tr>
@@ -1084,9 +1084,9 @@
                         انتشار تغییرات در GitHub Pages
                     </h3>
                 </div>
-                <p style="font-size: 8.5pt; color: var(--text-muted); margin: 0 0 14px 0;">پس از ایجاد فایل جدید در پوشه <code>posts/</code>، دستور زیر را در ترمینال اجرا کنید تا وبلاگ آپدیت شود:</p>
+                <p style="font-size: 8.5pt; color: var(--text-muted); margin: 0 0 14px 0;">این دستور ابتدا فهرست نوشته‌ها را همگام می‌کند و سپس تغییرات را منتشر می‌کند:</p>
                 <div class="share-link-box">
-                    <input type="text" class="share-link-input" value="git add .; if ($LASTEXITCODE -eq 0) { git commit -m &quot;بروزرسانی وبلاگ&quot;; if ($LASTEXITCODE -eq 0) { git push origin main } }" id="gitCmdInput" readonly>
+                    <input type="text" class="share-link-input" value="node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git commit -m &quot;بروزرسانی وبلاگ&quot;; if ($LASTEXITCODE -eq 0) { git push origin main } } }" id="gitCmdInput" readonly>
                     <button type="button" class="share-copy-btn" onclick="copyGitCmd()">کپی دستور Git</button>
                 </div>
             </div>
@@ -1099,7 +1099,8 @@
     </div>
 
     <!-- Main JS Engine for Theme Sync -->
-    <script src="../assets/js/main.js?v=20260729-4"></script>
+    <script src="../posts/posts-data.js"></script>
+    <script src="../assets/js/main.js?v=20260729-5"></script>
 
     <script>
         var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
@@ -1113,8 +1114,42 @@
                 document.documentElement.setAttribute('data-theme', savedTheme);
             }
             checkAuthSession();
+            renderAdminPosts();
             updateGitCommand();
         });
+
+        function renderAdminPosts() {
+            var posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
+            var count = document.getElementById('adminPostCount');
+            var empty = document.getElementById('adminPostsEmpty');
+            var body = document.getElementById('adminPostsBody');
+            if (!count || !empty || !body) return;
+
+            count.textContent = toPersianDigits(posts.length) + ' نوشته';
+            empty.hidden = posts.length > 0;
+
+            if (!posts.length) {
+                body.innerHTML = '<tr><td colspan="4" class="admin-empty-row">هنوز نوشته‌ای منتشر نشده است.</td></tr>';
+                return;
+            }
+
+            body.innerHTML = posts.map(function (post) {
+                var episode = post.episode ? 'قسمت ' + toPersianDigits(post.episode) : '';
+                var status = post.empty ? 'بدون محتوا' : episode;
+                var date = post.date ? new Date(post.date).toLocaleDateString('fa-IR') : '—';
+                var postUrl = '../' + String(post.url || '');
+
+                return '<tr>' +
+                    '<td><strong>' + escapeAdminText(post.title || 'بدون عنوان') + '</strong>' +
+                    (status ? '<small style="display:block;margin-top:5px;color:var(--text-muted)">' + escapeAdminText(status) + '</small>' : '') +
+                    '</td>' +
+                    '<td>' + escapeAdminText(post.author || 'سهیل آقایانی') + '</td>' +
+                    '<td>' + escapeAdminText(date) + '</td>' +
+                    '<td><a class="admin-icon-btn" href="' + escapeAdminText(postUrl) + '" target="_blank" rel="noopener" title="مشاهده نوشته" aria-label="مشاهده نوشته">' +
+                    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12z"/><circle cx="12" cy="12" r="2.5"/></svg>' +
+                    '</a></td></tr>';
+            }).join('');
+        }
 
         function checkAuthSession() {
             var currentUser = localStorage.getItem('coffpen_admin_user');
@@ -1439,7 +1474,7 @@
             }
 
             commitTitle = commitTitle.replace(/["\r\n]/g, '').slice(0, 80);
-            commandInput.value = 'git add .; if ($LASTEXITCODE -eq 0) { git commit -m "انتشار ' + commitTitle + '"; if ($LASTEXITCODE -eq 0) { git push origin main } }';
+            commandInput.value = 'node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git commit -m "انتشار ' + commitTitle + '"; if ($LASTEXITCODE -eq 0) { git push origin main } } }';
         }
 
         function changeListFormat(type) {
@@ -1655,7 +1690,7 @@
 
             var deleteHelpBox = document.getElementById('deleteHelpBox');
             var deleteHelpText = document.getElementById('deleteHelpText');
-            deleteHelpText.innerHTML = 'برای حذف کامل این نوشته:<br>۱. فایل <code>' + filePath + '</code> را در پوشه پروژه حذف کنید.<br>۲. کارت آن را از فایل <code>index.html</code> بردارید.<br>۳. در PowerShell دستور <code>git add .; if ($LASTEXITCODE -eq 0) { git commit -m "حذف نوشته"; if ($LASTEXITCODE -eq 0) { git push origin main } }</code> را اجرا کنید.';
+            deleteHelpText.innerHTML = 'برای حذف کامل این نوشته:<br>۱. فایل <code>' + filePath + '</code> را از پوشه پروژه حذف کنید.<br>۲. در PowerShell دستور <code>node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git commit -m "حذف نوشته"; if ($LASTEXITCODE -eq 0) { git push origin main } } }</code> را اجرا کنید. فهرست خانه و پنل خودکار به‌روزرسانی می‌شود.';
             deleteHelpBox.style.display = 'block';
             deleteHelpBox.scrollIntoView({ behavior: 'smooth' });
         }

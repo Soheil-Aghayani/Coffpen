@@ -505,6 +505,24 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 
 .post-preview { animation: fadeInUp 0.45s ease both; }
 
+.post-registry-episode,
+.post-registry-empty {
+    display: inline-flex;
+    align-items: center;
+    flex: 0 0 auto;
+    padding: 4px 10px;
+    border: 1px solid var(--border-color);
+    border-radius: 999px;
+    background: var(--bg-tag);
+    color: var(--text-accent);
+    font-size: 7.5pt;
+    font-weight: 700;
+}
+
+.post-registry-empty {
+    color: var(--text-muted);
+}
+
 .empty-posts {
     text-align: center;
     max-width: 680px;

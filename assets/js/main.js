@@ -292,6 +292,55 @@ function initLiveHero() {
     window.setInterval(updateHeroTime, 30000);
 }
 
+function initPostRegistry() {
+    const postList = document.getElementById('postList');
+    if (!postList) return;
+
+    const posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
+    const emptyState = document.querySelector('.empty-posts');
+
+    if (!posts.length) {
+        postList.hidden = true;
+        if (emptyState) emptyState.hidden = false;
+        return;
+    }
+
+    postList.innerHTML = posts.map(function (post) {
+        const seriesAttribute = post.series ? ' data-series="' + escapeHtml(post.series) + '"' : '';
+        const episode = post.episode
+            ? '<span class="post-registry-episode">قسمت ' + Number(post.episode).toLocaleString('fa-IR') + '</span>'
+            : '';
+        const emptyBadge = post.empty
+            ? '<span class="post-registry-empty">بدون محتوا</span>'
+            : '';
+        const date = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+            year: 'numeric',
+            month: '2-digit',
+            day: '2-digit'
+        }).format(new Date(post.date));
+
+        return '<article class="blackthemePostBox post-preview"' + seriesAttribute + '>' +
+            '<div class="blackthemePostInfo">' +
+                '<div class="blackthemePostInfoMain">' +
+                    '<div class="blackthemePostInfoImg"><img src="assets/images/author-avatar.jpg" alt="' + escapeHtml(post.author) + '" class="author-avatar-img"></div>' +
+                    '<div class="blackthemePostInfoContent">' +
+                        '<div class="post-title-row">' +
+                            '<h2 class="blackthemePostBoxTitle"><a href="' + escapeHtml(post.url) + '">' + escapeHtml(post.title) + '</a></h2>' +
+                            episode +
+                        '</div>' +
+                        '<span class="blackthemeDate"><b>' + escapeHtml(post.author) + '</b> &bull; <time datetime="' + escapeHtml(post.date) + '">' + date + '</time></span>' +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="blackthemePostText"><p>' + escapeHtml(post.description) + '</p></div>' +
+            '<div class="post-action-bar"><div class="blackthemeCont"><a href="' + escapeHtml(post.url) + '">ادامه نوشته &larr;</a></div>' + emptyBadge + '</div>' +
+        '</article>';
+    }).join('');
+
+    postList.hidden = false;
+    if (emptyState) emptyState.hidden = true;
+}
+
 function initSeriesFilter() {
     const params = new URLSearchParams(window.location.search);
     const requestedSeries = params.get('series');
@@ -858,6 +907,7 @@ if (document.readyState === 'loading') {
         initTheme();
         initSidebar();
         initContextMenu();
+        initPostRegistry();
         initLiveHero();
         initSeriesFilter();
         initLongformReader();
@@ -866,6 +916,7 @@ if (document.readyState === 'loading') {
     initTheme();
     initSidebar();
     initContextMenu();
+    initPostRegistry();
     initLiveHero();
     initSeriesFilter();
     initLongformReader();
