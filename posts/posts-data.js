@@ -4,12 +4,12 @@ window.COFFPEN_POSTS = Object.freeze([
     "title": "درون باطل",
     "url": "posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html",
     "filename": "درون-باطل-قسمت-۱.html",
-    "description": "فایل نوشته ایجاد شده اما هنوز محتوایی داخل آن نیست.",
+    "description": "برای خواندن این نوشته وارد صفحه شوید.",
     "author": "سهیل آقایانی",
     "series": "درون باطل",
     "episode": "1",
-    "wordCount": 0,
-    "date": "2026-07-29T12:58:20.000Z",
-    "empty": true
+    "wordCount": 609,
+    "date": "2026-07-29T13:16:22.000Z",
+    "empty": false
   }
 ]);
