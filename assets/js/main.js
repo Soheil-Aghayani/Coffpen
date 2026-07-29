@@ -445,6 +445,88 @@ function initStoryPlaylist() {
     });
 }
 
+function initStoryHero() {
+    const story = document.querySelector('.story-body');
+    const hero = document.querySelector('.headerImage:not(.site-hero)');
+    if (!story || !hero || hero.dataset.storyHeroReady === 'true') return;
+    hero.dataset.storyHeroReady = 'true';
+
+    let filename = '';
+    try {
+        filename = decodeURIComponent(window.location.pathname.split('/').pop() || '');
+    } catch (error) {
+        filename = window.location.pathname.split('/').pop() || '';
+    }
+
+    const posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
+    const current = posts.find(function (post) { return post.filename === filename; }) || null;
+    const titleElement = document.querySelector('.blackthemePostBoxTitle');
+    const title = titleElement ? titleElement.textContent.trim() : 'این نوشته';
+    const descriptionMeta = document.querySelector('meta[name="description"]');
+    const plainText = (story.innerText || story.textContent || '').replace(/\s+/g, ' ').trim();
+    const summary = current && current.description
+        ? current.description
+        : descriptionMeta && descriptionMeta.content
+            ? descriptionMeta.content
+            : plainText.slice(0, 180) + (plainText.length > 180 ? '…' : '');
+    const wordCount = Number(current && current.wordCount) || (plainText ? plainText.split(/\s+/).filter(Boolean).length : 0);
+    const readMinutes = Math.max(1, Math.ceil(wordCount / 180));
+    const series = current && current.series ? current.series : '';
+    const episode = Number(current && current.episode) || 0;
+    const seriesEpisodes = series
+        ? posts.filter(function (post) { return post.series === series; })
+        : [];
+    const chapterLabel = episode
+        ? 'پیش‌درآمد قسمت ' + episode.toLocaleString('fa-IR')
+        : 'پیش از شروع خواندن';
+    const playlistHref = series
+        ? '../index.html?series=' + encodeURIComponent(series) + '#latest-posts-heading'
+        : '../index.html#latest-posts-heading';
+    const article = story.closest('article');
+    if (article && !article.id) article.id = 'story-reading-start';
+
+    hero.classList.add('story-hero');
+    hero.setAttribute('aria-label', 'پیش‌درآمد ' + title);
+    hero.innerHTML =
+        '<div class="story-hero-main">' +
+            '<div class="story-hero-kicker">' + escapeHtml(chapterLabel) + '</div>' +
+            '<p class="story-hero-summary">' + escapeHtml(summary || 'آماده‌ای؟ روایت از همین‌جا ادامه پیدا می‌کند.') + '</p>' +
+            '<div class="story-hero-meta">' +
+                (series ? '<a href="' + playlistHref + '" title="مشاهده همه قسمت‌ها">' + readerIcon('layers') + escapeHtml(series) + '</a>' : '') +
+                '<span>' + readerIcon('clock') + readMinutes.toLocaleString('fa-IR') + ' دقیقه مطالعه</span>' +
+                '<span>' + wordCount.toLocaleString('fa-IR') + ' کلمه</span>' +
+            '</div>' +
+        '</div>' +
+        (episode
+            ? '<div class="story-hero-chapter"><span>قسمت</span><strong>' + episode.toLocaleString('fa-IR') + '</strong><small>' +
+                (seriesEpisodes.length ? 'از ' + seriesEpisodes.length.toLocaleString('fa-IR') + ' قسمت منتشرشده' : escapeHtml(series)) +
+              '</small></div>'
+            : '<div class="story-hero-chapter"><span>زمان مطالعه</span><strong>' + readMinutes.toLocaleString('fa-IR') + '</strong><small>دقیقه</small></div>') +
+        '<div class="story-hero-footer">' +
+            '<a class="story-hero-start" href="#story-reading-start">شروع خواندن ↓</a>' +
+            '<div class="story-hero-progress-track" aria-hidden="true"><span></span></div>' +
+            '<span class="story-hero-progress-value">۰٪</span>' +
+        '</div>';
+
+    const progressBar = hero.querySelector('.story-hero-progress-track span');
+    const progressValue = hero.querySelector('.story-hero-progress-value');
+    let ticking = false;
+    function updateStoryHeroProgress() {
+        const rect = story.getBoundingClientRect();
+        const total = Math.max(1, story.scrollHeight - window.innerHeight * 0.55);
+        const percent = Math.min(1, Math.max(0, (-rect.top + window.innerHeight * 0.3) / total));
+        progressBar.style.transform = 'scaleX(' + percent + ')';
+        progressValue.textContent = Math.round(percent * 100).toLocaleString('fa-IR') + '٪';
+        ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+        if (ticking) return;
+        ticking = true;
+        window.requestAnimationFrame(updateStoryHeroProgress);
+    }, { passive: true });
+    updateStoryHeroProgress();
+}
+
 function initSeriesFilter() {
     const params = new URLSearchParams(window.location.search);
     const requestedSeries = params.get('series');
@@ -1061,6 +1143,7 @@ function initializeCoffpenPage() {
     initSeriesHub();
     initLiveHero();
     initSeriesFilter();
+    initStoryHero();
     initStoryPlaylist();
     initLongformReader();
     window.setTimeout(function () {
