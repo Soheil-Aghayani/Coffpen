@@ -715,50 +715,6 @@
             font-weight: 700;
         }
 
-        .preview-post-heading-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
-        .story-live-preview-box .blackthemePostInfoMain,
-        .story-live-preview-box .blackthemePostInfoContent {
-            width: 100%;
-            min-width: 0;
-            flex: 1;
-        }
-
-        .preview-post-heading-row h2 {
-            margin: 0;
-        }
-
-        .preview-episode-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            flex: 0 0 auto;
-            padding: 5px 13px;
-            border: 1px solid var(--border-color);
-            border-radius: 999px;
-            background: var(--bg-tag);
-            color: var(--text-accent);
-            font-size: 8pt;
-            font-weight: 700;
-            text-decoration: none;
-            transition: all 0.2s ease;
-        }
-
-        .preview-episode-link:hover {
-            border-color: var(--text-accent);
-            transform: translateY(-1px);
-        }
-
-        .preview-episode-link[hidden] {
-            display: none;
-        }
-
         @media screen and (max-width: 620px) {
             .slug-input-row {
                 grid-template-columns: 1fr;
@@ -771,60 +727,6 @@
             .series-mini-field:first-child {
                 grid-column: 1 / -1;
             }
-        }
-
-        /* Editor Tabs Bar & Live Preview Box */
-        .editor-view-tabs {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 16px;
-            border-bottom: 1px solid var(--border-subtle);
-            padding-bottom: 10px;
-            flex-wrap: wrap;
-        }
-
-        .editor-tab-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 7px 16px;
-            border-radius: 20px;
-            font-size: 8.5pt;
-            font-weight: 500;
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            color: var(--text-muted);
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .editor-tab-btn:hover {
-            color: var(--text-main);
-            border-color: var(--text-accent);
-        }
-
-        .editor-tab-btn.active {
-            background-color: var(--bg-tag);
-            color: var(--text-accent);
-            border-color: var(--text-accent);
-            font-weight: 700;
-        }
-
-        .story-live-preview-box {
-            background-color: var(--bg-card);
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            padding: 24px;
-            margin-top: 10px;
-            animation: fadeInUp 0.3s ease forwards;
-        }
-
-        .story-live-preview-box h2 {
-            font-size: 1.35em;
-            font-weight: 700;
-            margin: 0 0 16px 0;
-            color: var(--text-main);
         }
 
         /* Post Table List */
@@ -1006,22 +908,6 @@
                     </h3>
                 </div>
 
-                <!-- Editor Mode Tabs Switcher -->
-                <div class="editor-view-tabs">
-                    <button type="button" id="tabBtnWrite" class="editor-tab-btn active" onclick="switchEditorTab('write')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                        <span>ویرایشگر و نگارش</span>
-                    </button>
-                    <button type="button" id="tabBtnPreview" class="editor-tab-btn" onclick="switchEditorTab('preview')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                        <span>پیش‌نمایش زنده نوشته</span>
-                    </button>
-                    <button type="button" id="tabBtnCode" class="editor-tab-btn" onclick="switchEditorTab('code')">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
-                        <span>کد کامل HTML</span>
-                    </button>
-                </div>
-
                 <form onsubmit="generatePostHtml(event)">
                     <div id="writeTabSection">
                         <div class="form-group">
@@ -1160,27 +1046,6 @@
                         </div>
                     </div>
 
-                    <!-- 👁️ Live Rendered Story Preview Tab -->
-                    <div id="previewTabSection" style="display: none;">
-                        <div class="story-live-preview-box">
-                            <div class="blackthemePostInfo">
-                                <div class="blackthemePostInfoMain">
-                                    <img src="../assets/images/author-avatar.jpg" alt="سهیل آقایانی" class="author-avatar-img">
-                                    <div class="blackthemePostInfoContent">
-                                        <div class="preview-post-heading-row">
-                                            <h2 id="previewPostTitle">عنوان نوشته پیش‌نمایش</h2>
-                                            <a id="previewEpisodeLink" class="preview-episode-link" href="#" hidden>قسمت ۱</a>
-                                        </div>
-                                        <span class="blackthemeDate"><b>سهیل آقایانی</b> &bull; ۱۴۰۵/۰۵/۰۷ (پیش‌نمایش زنده)</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div id="previewPostBody" class="blackthemePostText story-body" style="margin-top: 20px;">
-                                <p>متن نوشته پیش‌نمایش در این بخش به صورت زنده و با استایل نهایی وبلاگ نمایش داده می‌شود...</p>
-                            </div>
-                        </div>
-                    </div>
-
                     <div class="form-actions">
                         <button type="submit" class="btn-primary">
                             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
@@ -1221,7 +1086,7 @@
                 </div>
                 <p style="font-size: 8.5pt; color: var(--text-muted); margin: 0 0 14px 0;">پس از ایجاد فایل جدید در پوشه <code>posts/</code>، دستور زیر را در ترمینال اجرا کنید تا وبلاگ آپدیت شود:</p>
                 <div class="share-link-box">
-                    <input type="text" class="share-link-input" value="git add . &amp;&amp; git commit -m &quot;بروزرسانی وبلاگ&quot; &amp;&amp; git push origin main" id="gitCmdInput" readonly>
+                    <input type="text" class="share-link-input" value="git add .; if ($LASTEXITCODE -eq 0) { git commit -m &quot;بروزرسانی وبلاگ&quot;; if ($LASTEXITCODE -eq 0) { git push origin main } }" id="gitCmdInput" readonly>
                     <button type="button" class="share-copy-btn" onclick="copyGitCmd()">کپی دستور Git</button>
                 </div>
             </div>
@@ -1574,7 +1439,7 @@
             }
 
             commitTitle = commitTitle.replace(/["\r\n]/g, '').slice(0, 80);
-            commandInput.value = 'git add . && git commit -m "انتشار ' + commitTitle + '" && git push origin main';
+            commandInput.value = 'git add .; if ($LASTEXITCODE -eq 0) { git commit -m "انتشار ' + commitTitle + '"; if ($LASTEXITCODE -eq 0) { git push origin main } }';
         }
 
         function changeListFormat(type) {
@@ -1743,68 +1608,6 @@
             }
         }
 
-        function switchEditorTab(tabName) {
-            var btnWrite = document.getElementById('tabBtnWrite');
-            var btnPreview = document.getElementById('tabBtnPreview');
-            var btnCode = document.getElementById('tabBtnCode');
-            var writeSection = document.getElementById('writeTabSection');
-            var previewSection = document.getElementById('previewTabSection');
-            var outputSection = document.getElementById('generatedOutput');
-
-            btnWrite.classList.remove('active');
-            btnPreview.classList.remove('active');
-            btnCode.classList.remove('active');
-
-            if (tabName === 'write') {
-                btnWrite.classList.add('active');
-                writeSection.style.display = 'block';
-                previewSection.style.display = 'none';
-                outputSection.classList.remove('show');
-            } else if (tabName === 'preview') {
-                btnPreview.classList.add('active');
-                writeSection.style.display = 'none';
-                previewSection.style.display = 'block';
-                outputSection.classList.remove('show');
-
-                renderLivePreview();
-            } else if (tabName === 'code') {
-                btnCode.classList.add('active');
-                writeSection.style.display = 'block';
-                previewSection.style.display = 'none';
-
-                generatePostHtml(new Event('submit'));
-            }
-        }
-
-        function renderLivePreview() {
-            var title = document.getElementById('postTitle').value || 'عنوان نوشته پیش‌نمایش';
-            var seriesMeta = getSeriesMeta();
-            var editor = document.getElementById('postContent');
-            var innerHtml = editor ? editor.innerHTML.trim() : '';
-
-            var titleElem = document.getElementById('previewPostTitle');
-            var episodeLink = document.getElementById('previewEpisodeLink');
-            titleElem.innerText = title;
-
-            if (seriesMeta.enabled && seriesMeta.name && seriesMeta.episode) {
-                episodeLink.textContent = 'قسمت ' + toPersianDigits(seriesMeta.episode);
-                episodeLink.href = '../index.html?series=' + encodeURIComponent(seriesMeta.name) + '#latest-posts-heading';
-                episodeLink.title = 'مشاهده قسمت‌های مجموعه «' + seriesMeta.name + '»';
-                episodeLink.hidden = false;
-            } else {
-                episodeLink.hidden = true;
-                episodeLink.removeAttribute('href');
-                episodeLink.removeAttribute('title');
-            }
-
-            if (!innerHtml || innerHtml === '<br>') {
-                document.getElementById('previewPostBody').innerHTML = '<p style="color: var(--text-muted);">متن نوشته خالی است. برای مشاهده پیش‌نمایش در تب ویرایشگر مانند Microsoft Word متن بنویسید...</p>';
-                return;
-            }
-
-            document.getElementById('previewPostBody').innerHTML = innerHtml;
-        }
-
         function updateLiveStats() {
             var editor = document.getElementById('postContent');
             var text = editor ? (editor.innerText || editor.textContent || '').trim() : '';
@@ -1852,7 +1655,7 @@
 
             var deleteHelpBox = document.getElementById('deleteHelpBox');
             var deleteHelpText = document.getElementById('deleteHelpText');
-            deleteHelpText.innerHTML = 'برای حذف کامل این نوشته:<br>۱. فایل <code>' + filePath + '</code> را در پوشه پروژه حذف کنید.<br>۲. کارت پیش‌نمایش آن را از فایل <code>index.html</code> بردارید.<br>۳. در ترمینال دستور <code>git add . && git commit -m "حذف نوشته" && git push origin main</code> را اجرا کنید.';
+            deleteHelpText.innerHTML = 'برای حذف کامل این نوشته:<br>۱. فایل <code>' + filePath + '</code> را در پوشه پروژه حذف کنید.<br>۲. کارت آن را از فایل <code>index.html</code> بردارید.<br>۳. در PowerShell دستور <code>git add .; if ($LASTEXITCODE -eq 0) { git commit -m "حذف نوشته"; if ($LASTEXITCODE -eq 0) { git push origin main } }</code> را اجرا کنید.';
             deleteHelpBox.style.display = 'block';
             deleteHelpBox.scrollIntoView({ behavior: 'smooth' });
         }
@@ -1871,13 +1674,13 @@
 
             if (seriesMeta.enabled && (!seriesMeta.name || !seriesMeta.episode)) {
                 showToast('نام مجموعه و شماره این قسمت را کامل کنید.');
-                switchEditorTab('write');
+                document.getElementById('postSeries').focus();
                 return;
             }
 
             if (seriesMeta.enabled && seriesMeta.total && Number(seriesMeta.total) < Number(seriesMeta.episode)) {
                 showToast('تعداد کل قسمت‌ها نمی‌تواند کمتر از شماره این قسمت باشد.');
-                switchEditorTab('write');
+                document.getElementById('postEpisodeTotal').focus();
                 return;
             }
 
