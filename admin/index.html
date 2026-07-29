@@ -1236,6 +1236,9 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                         ایجاد نوشته جدید
                     </h3>
+                    <button type="button" class="slug-suggest-btn" onclick="startNewPost()">
+                        نوشته‌ی تازه
+                    </button>
                 </div>
 
                 <form onsubmit="generatePostHtml(event)">
@@ -1896,9 +1899,30 @@
             showToast(scope === 'all' ? 'فرم و پیش‌نویس کاملاً پاک شدند.' : 'بخش انتخاب‌شده پاک شد.');
         }
 
+        function startNewPost() {
+            clearAdminForm('all');
+        }
+
+        function refreshSlugForIdentityChange() {
+            var slugInput = document.getElementById('postSlug');
+            if (!slugInput) return;
+
+            var currentSlug = slugInput.value.trim();
+            var followsCurrentFile = Boolean(
+                editingPostFilename &&
+                currentSlug &&
+                currentSlug === editingPostFilename
+            );
+
+            if (!slugWasManuallyEdited || !currentSlug || followsCurrentFile) {
+                slugWasManuallyEdited = false;
+            }
+            suggestPostSlug(false);
+        }
+
         function handleTitleInput() {
             updateLiveStats();
-            suggestPostSlug(false);
+            refreshSlugForIdentityChange();
             updateGitCommand();
             saveAdminDraft();
         }
@@ -1982,7 +2006,7 @@
                 window.setTimeout(function () { nameInput.focus(); }, 80);
             }
 
-            suggestPostSlug(false);
+            refreshSlugForIdentityChange();
             updateGitCommand();
             saveAdminDraft();
         }
@@ -2004,7 +2028,7 @@
 
         function handleSeriesInput() {
             updateSeriesSummary();
-            suggestPostSlug(false);
+            refreshSlugForIdentityChange();
             updateGitCommand();
             saveAdminDraft();
         }
@@ -2013,7 +2037,7 @@
             var englishDigits = toEnglishDigits(input.value).replace(/\D/g, '').slice(0, 4);
             input.value = toPersianDigits(englishDigits);
             updateSeriesSummary();
-            suggestPostSlug(false);
+            refreshSlugForIdentityChange();
             updateGitCommand();
             saveAdminDraft();
         }
@@ -2065,7 +2089,7 @@
             }
 
             commitTitle = commitTitle.replace(/["\r\n]/g, '').slice(0, 80);
-            commandInput.value = 'node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git diff --cached --quiet; if ($LASTEXITCODE -ne 0) { git commit -m "انتشار ' + commitTitle + '" }; if ($LASTEXITCODE -eq 0) { git push origin main } } }';
+            commandInput.value = 'git pull --rebase --autostash origin main; if ($LASTEXITCODE -eq 0) { node scripts/sync-posts.js; if ($LASTEXITCODE -eq 0) { git add .; if ($LASTEXITCODE -eq 0) { git diff --cached --quiet; if ($LASTEXITCODE -ne 0) { git commit -m "انتشار ' + commitTitle + '" }; if ($LASTEXITCODE -eq 0) { git push origin main } } } }';
         }
 
         function changeListFormat(type) {
@@ -2820,7 +2844,10 @@
 
         async function saveGeneratedHtmlFile(html) {
             var filename = getGeneratedFilename();
-            if (editingPostFilename && filename !== editingPostFilename) {
+            var activeHandleName = editingPostHandle && editingPostHandle.name
+                ? editingPostHandle.name
+                : editingPostFilename;
+            if (editingPostHandle && activeHandleName && filename !== activeHandleName) {
                 editingPostHandle = null;
             }
             try {
