@@ -307,11 +307,21 @@ function initPostRegistry() {
 
     postList.innerHTML = posts.map(function (post) {
         const seriesAttribute = post.series ? ' data-series="' + escapeHtml(post.series) + '"' : '';
+        const tagsAttribute = Array.isArray(post.tags) && post.tags.length
+            ? ' data-tags="' + escapeHtml(post.tags.join('|')) + '"'
+            : '';
         const episode = post.episode
-            ? '<span class="post-registry-episode">قسمت ' + Number(post.episode).toLocaleString('fa-IR') + '</span>'
+            ? '<a class="post-registry-episode" href="index.html?series=' + encodeURIComponent(post.series) +
+                '#latest-posts-heading" title="مشاهده پلی‌لیست «' + escapeHtml(post.series) + '»">قسمت ' +
+                Number(post.episode).toLocaleString('fa-IR') + '</a>'
             : '';
         const emptyBadge = post.empty
             ? '<span class="post-registry-empty">بدون محتوا</span>'
+            : '';
+        const tags = Array.isArray(post.tags) && post.tags.length
+            ? '<div class="post-registry-tags">' + post.tags.map(function (tag) {
+                return '<a href="index.html?tag=' + encodeURIComponent(tag) + '#latest-posts-heading">#' + escapeHtml(tag) + '</a>';
+            }).join('') + '</div>'
             : '';
         const date = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
             year: 'numeric',
@@ -319,7 +329,7 @@ function initPostRegistry() {
             day: '2-digit'
         }).format(new Date(post.date));
 
-        return '<article class="blackthemePostBox post-preview"' + seriesAttribute + '>' +
+        return '<article class="blackthemePostBox post-preview"' + seriesAttribute + tagsAttribute + '>' +
             '<div class="blackthemePostInfo">' +
                 '<div class="blackthemePostInfoMain">' +
                     '<div class="blackthemePostInfoImg"><img src="assets/images/author-avatar.jpg" alt="' + escapeHtml(post.author) + '" class="author-avatar-img"></div>' +
@@ -332,7 +342,7 @@ function initPostRegistry() {
                     '</div>' +
                 '</div>' +
             '</div>' +
-            '<div class="blackthemePostText"><p>' + escapeHtml(post.description) + '</p></div>' +
+            '<div class="blackthemePostText"><p>' + escapeHtml(post.description) + '</p>' + tags + '</div>' +
             '<div class="post-action-bar"><div class="blackthemeCont"><a href="' + escapeHtml(post.url) + '">ادامه نوشته &larr;</a></div>' + emptyBadge + '</div>' +
         '</article>';
     }).join('');
@@ -341,24 +351,127 @@ function initPostRegistry() {
     if (emptyState) emptyState.hidden = true;
 }
 
+function initSeriesHub() {
+    const hub = document.getElementById('seriesHub');
+    const list = document.getElementById('seriesHubList');
+    if (!hub || !list) return;
+
+    const posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
+    const groups = posts.reduce(function (result, post) {
+        if (!post.series) return result;
+        if (!result[post.series]) result[post.series] = [];
+        result[post.series].push(post);
+        return result;
+    }, {});
+
+    const seriesNames = Object.keys(groups);
+    if (!seriesNames.length) {
+        hub.hidden = true;
+        return;
+    }
+
+    list.innerHTML = seriesNames.map(function (name) {
+        const episodes = groups[name].slice().sort(function (a, b) {
+            return Number(a.episode || 0) - Number(b.episode || 0);
+        });
+        const latest = episodes[episodes.length - 1];
+        return '<a class="series-hub-card" href="index.html?series=' + encodeURIComponent(name) + '#latest-posts-heading">' +
+            '<span class="series-hub-icon" aria-hidden="true">' + readerIcon('layers') + '</span>' +
+            '<span class="series-hub-copy"><strong>' + escapeHtml(name) + '</strong>' +
+                '<small>' + episodes.length.toLocaleString('fa-IR') + ' قسمت منتشرشده</small></span>' +
+            '<span class="series-hub-latest">تا قسمت ' + Number(latest.episode || episodes.length).toLocaleString('fa-IR') + '</span>' +
+        '</a>';
+    }).join('');
+    hub.hidden = false;
+}
+
+function initStoryPlaylist() {
+    const posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
+    const story = document.querySelector('.story-body');
+    if (!story || !posts.length) return;
+
+    let filename = '';
+    try {
+        filename = decodeURIComponent(window.location.pathname.split('/').pop() || '');
+    } catch (error) {
+        filename = window.location.pathname.split('/').pop() || '';
+    }
+
+    const current = posts.find(function (post) { return post.filename === filename; });
+    if (!current || !current.series) return;
+
+    const episodes = posts.filter(function (post) {
+        return post.series === current.series;
+    }).sort(function (a, b) {
+        return Number(a.episode || 0) - Number(b.episode || 0);
+    });
+    if (!episodes.length) return;
+
+    const currentIndex = episodes.findIndex(function (post) { return post.filename === current.filename; });
+    const previous = currentIndex > 0 ? episodes[currentIndex - 1] : null;
+    const next = currentIndex < episodes.length - 1 ? episodes[currentIndex + 1] : null;
+    const playlist = document.createElement('nav');
+    playlist.className = 'story-playlist';
+    playlist.setAttribute('aria-label', 'پلی‌لیست مجموعه ' + current.series);
+    playlist.innerHTML =
+        '<div class="story-playlist-head">' +
+            '<div><span>از مجموعه</span><strong>' + escapeHtml(current.series) + '</strong></div>' +
+            '<button type="button" class="story-playlist-toggle" aria-expanded="false">' +
+                readerIcon('layers') + episodes.length.toLocaleString('fa-IR') + ' قسمت' +
+            '</button>' +
+        '</div>' +
+        '<div class="story-playlist-list" hidden>' +
+            episodes.map(function (post) {
+                const active = post.filename === current.filename;
+                return '<a href="../' + escapeHtml(post.url) + '"' + (active ? ' class="active" aria-current="page"' : '') + '>' +
+                    '<span>قسمت ' + Number(post.episode || 0).toLocaleString('fa-IR') + '</span>' +
+                    '<strong>' + escapeHtml(post.title) + '</strong>' +
+                '</a>';
+            }).join('') +
+        '</div>' +
+        '<div class="story-playlist-nav">' +
+            (previous ? '<a href="../' + escapeHtml(previous.url) + '">→ قسمت قبلی</a>' : '<span></span>') +
+            '<a href="../index.html?series=' + encodeURIComponent(current.series) + '#latest-posts-heading">همه قسمت‌ها</a>' +
+            (next ? '<a href="../' + escapeHtml(next.url) + '">قسمت بعدی ←</a>' : '<span></span>') +
+        '</div>';
+
+    story.parentNode.insertBefore(playlist, story);
+    const toggle = playlist.querySelector('.story-playlist-toggle');
+    const episodeList = playlist.querySelector('.story-playlist-list');
+    toggle.addEventListener('click', function () {
+        episodeList.hidden = !episodeList.hidden;
+        toggle.setAttribute('aria-expanded', episodeList.hidden ? 'false' : 'true');
+        toggle.classList.toggle('active', !episodeList.hidden);
+    });
+}
+
 function initSeriesFilter() {
     const params = new URLSearchParams(window.location.search);
     const requestedSeries = params.get('series');
-    if (!requestedSeries) return;
+    const requestedTag = params.get('tag');
+    if (!requestedSeries && !requestedTag) return;
 
     const heading = document.getElementById('latest-posts-heading');
     const intro = document.querySelector('.home-intro');
     const posts = Array.from(document.querySelectorAll('.post-preview'));
     const emptyState = document.querySelector('.empty-posts');
+    const seriesHub = document.getElementById('seriesHub');
     let visibleCount = 0;
 
     posts.forEach(function (post) {
-        const belongsToSeries = post.getAttribute('data-series') === requestedSeries;
-        post.hidden = !belongsToSeries;
-        if (belongsToSeries) visibleCount += 1;
+        const belongs = requestedSeries
+            ? post.getAttribute('data-series') === requestedSeries
+            : (post.getAttribute('data-tags') || '').split('|').includes(requestedTag);
+        post.hidden = !belongs;
+        if (belongs) visibleCount += 1;
     });
 
-    if (heading) heading.textContent = 'مجموعه «' + requestedSeries + '»';
+    if (heading) {
+        heading.textContent = requestedSeries
+            ? 'مجموعه «' + requestedSeries + '»'
+            : 'برچسب «' + requestedTag + '»';
+    }
+    if (seriesHub) seriesHub.hidden = true;
 
     if (intro) {
         let backLink = intro.querySelector('.series-filter-back');
@@ -375,8 +488,16 @@ function initSeriesFilter() {
         const emptyTitle = emptyState.querySelector('h2');
         const emptyText = emptyState.querySelector('p');
         const emptyLink = emptyState.querySelector('a');
-        if (emptyTitle) emptyTitle.textContent = 'هنوز قسمتی از این مجموعه منتشر نشده است';
-        if (emptyText) emptyText.textContent = 'قسمت‌های مجموعه «' + requestedSeries + '» پس از انتشار اینجا نمایش داده می‌شوند.';
+        if (emptyTitle) {
+            emptyTitle.textContent = requestedSeries
+                ? 'هنوز قسمتی از این مجموعه منتشر نشده است'
+                : 'هنوز نوشته‌ای با این برچسب منتشر نشده است';
+        }
+        if (emptyText) {
+            emptyText.textContent = requestedSeries
+                ? 'قسمت‌های مجموعه «' + requestedSeries + '» پس از انتشار اینجا نمایش داده می‌شوند.'
+                : 'نوشته‌های دارای برچسب «' + requestedTag + '» پس از انتشار اینجا نمایش داده می‌شوند.';
+        }
         if (emptyLink) {
             emptyLink.href = 'index.html#latest-posts-heading';
             emptyLink.textContent = 'بازگشت به همه نوشته‌ها';
@@ -835,6 +956,7 @@ function readerIcon(name) {
         clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
         book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11a2 2 0 0 1 2 2v16a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v18a2 2 0 0 1 2-2h2.5a2.5 2.5 0 0 1 2.5 2.5z"/>',
         bookmark: '<path d="M6 3h12v18l-6-4-6 4z"/>',
+        layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
         focus: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
         list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
         settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.1A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3V9.6h.1A1.7 1.7 0 0 0 4.6 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.5 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.4.3.7.6.8 1.1h.1v4h-.1c-.1.4-.4.8-.8.9z"/>',
@@ -938,8 +1060,10 @@ if (document.readyState === 'loading') {
         initSidebar();
         initContextMenu();
         initPostRegistry();
+        initSeriesHub();
         initLiveHero();
         initSeriesFilter();
+        initStoryPlaylist();
         initLongformReader();
     });
 } else {
@@ -947,7 +1071,9 @@ if (document.readyState === 'loading') {
     initSidebar();
     initContextMenu();
     initPostRegistry();
+    initSeriesHub();
     initLiveHero();
     initSeriesFilter();
+    initStoryPlaylist();
     initLongformReader();
 }

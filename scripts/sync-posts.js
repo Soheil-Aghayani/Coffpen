@@ -99,6 +99,12 @@ function parsePost(filename) {
         /<meta[^>]+name=["']author["'][^>]+content=["']([^"']*)["']/i,
         /<span[^>]*class=["'][^"']*blackthemeDate[^"']*["'][^>]*>[\s\S]*?<b[^>]*>([\s\S]*?)<\/b>/i
     ]) || 'سهیل آقایانی';
+    const tagsText = firstMatch(html, [
+        /<meta[^>]+name=["']keywords["'][^>]+content=["']([^"']*)["']/i
+    ]);
+    const tags = tagsText
+        ? tagsText.split(/[,،]/).map(tag => tag.trim()).filter(Boolean).slice(0, 8)
+        : [];
 
     const seriesLink = html.match(/[?&]series=([^"'&#]+)/i);
     let series = fallback.series;
@@ -130,6 +136,7 @@ function parsePost(filename) {
         filename,
         description: description || (html.trim() ? 'برای خواندن داستان، صفحهٔ نوشته را باز کنید.' : 'فایل نوشته ایجاد شده اما هنوز محتوایی داخل آن نیست.'),
         author,
+        tags,
         series,
         episode,
         wordCount,
