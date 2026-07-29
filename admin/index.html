@@ -1037,7 +1037,20 @@
         }
 
         .series-picker {
+            min-height: 42px;
+            padding-left: 42px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23967882' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: left 14px center;
+            background-size: 14px 14px;
+            line-height: 1.45;
             cursor: pointer;
+        }
+
+        .series-picker::-ms-expand {
+            display: none;
         }
 
         .series-new-field {
