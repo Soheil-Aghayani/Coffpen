@@ -9,7 +9,7 @@ window.COFFPEN_POSTS = Object.freeze([
     "series": "درون باطل",
     "episode": "1",
     "wordCount": 609,
-    "date": "2026-07-29T13:34:28.000Z",
+    "date": "2026-07-29T13:39:47.000Z",
     "empty": false
   }
 ]);
