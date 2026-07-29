@@ -31,4 +31,7 @@ collections:
       - { label: "چکیده / خلاصه داستان", name: "description", widget: "text", required: false }
       - { label: "تصویر کاور نوشته", name: "cover_image", widget: "image", required: false }
       - { label: "دسته‌بندی", name: "categories", widget: "list", required: false }
+      - { label: "نام مجموعه", name: "series", widget: "string", required: false, hint: "اگر نوشته بخشی از یک داستان چندقسمتی است." }
+      - { label: "شماره قسمت", name: "episode", widget: "number", required: false, value_type: "int", min: 1 }
+      - { label: "تعداد کل قسمت‌ها", name: "episode_total", widget: "number", required: false, value_type: "int", min: 1 }
       - { label: "متن اصلی نوشته (مارک‌داون)", name: "body", widget: "markdown" }

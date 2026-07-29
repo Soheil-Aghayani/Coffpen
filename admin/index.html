@@ -15,7 +15,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../assets/css/style.css?v=20260729-3">
+    <link rel="stylesheet" href="../assets/css/style.css?v=20260729-4">
 
     <style>
         body {
@@ -54,15 +54,50 @@
             color: var(--text-muted);
         }
 
+        .admin-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .admin-icon-btn {
+            display: inline-grid;
+            place-items: center;
+            width: 40px;
+            height: 40px;
+            padding: 0;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            background: var(--bg-card);
+            color: var(--text-muted);
+            cursor: pointer;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .admin-icon-btn:hover {
+            color: var(--text-accent);
+            border-color: var(--text-accent);
+            background: var(--bg-tag);
+            transform: translateY(-1px);
+        }
+
+        .admin-icon-btn.danger:hover {
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.5);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
         /* User Profile & Auth Badge */
         .admin-user-badge {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 6px;
             background-color: var(--bg-card);
             border: 1px solid var(--border-color);
-            padding: 6px 14px;
-            border-radius: 25px;
+            padding: 5px;
+            border-radius: 12px;
             font-size: 8.5pt;
             color: var(--text-main);
         }
@@ -72,22 +107,6 @@
             height: 28px;
             border-radius: 50%;
             border: 1px solid var(--border-color);
-        }
-
-        .logout-btn {
-            background: transparent;
-            border: none;
-            color: #ef4444;
-            font-size: 8pt;
-            font-weight: 700;
-            cursor: pointer;
-            padding: 2px 8px;
-            border-radius: 6px;
-            transition: background-color 0.2s ease;
-        }
-
-        .logout-btn:hover {
-            background-color: rgba(239, 68, 68, 0.15);
         }
 
         /* Auth Gate Screen */
@@ -907,23 +926,20 @@
                 <p>نگارش، ویرایش، حذف نوشته‌ها و راهنمای انتشار وبلاگ سیاه و قلم</p>
             </div>
 
-            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
-                <!-- 6-Theme Palette Toggle Button -->
-                <button type="button" class="theme-toggle-btn" onclick="cycleTheme()" title="تغییر پوسته" style="background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 7px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; color: var(--text-main); font-size: 8.5pt; cursor: pointer; transition: all 0.2s ease;">
+            <div class="admin-header-actions">
+                <button type="button" class="admin-icon-btn" onclick="cycleTheme()" title="تغییر پوسته" aria-label="تغییر پوسته">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor"/><circle cx="12" cy="7.5" r="1" fill="currentColor"/><circle cx="16.5" cy="10.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/></svg>
-                    <span>تغییر پوسته</span>
                 </button>
 
-                <!-- Logged in Admin Badge (Visible after authentication) -->
-                <div id="adminUserBadge" class="admin-user-badge" style="display: none;">
+                <div id="adminUserBadge" class="admin-user-badge" style="display: none;" title="سهیل آقایانی (@soheil-aghayani)">
                     <img src="https://github.com/soheil-aghayani.png" alt="سهیل آقایانی" class="admin-user-avatar">
-                    <span>سهیل آقایانی (@soheil-aghayani)</span>
-                    <button type="button" class="logout-btn" onclick="logoutAdmin()" title="خروج از پنل">خروج</button>
+                    <button type="button" class="admin-icon-btn danger" onclick="logoutAdmin()" title="خروج از پنل" aria-label="خروج از پنل">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 17l5-5-5-5"/><path d="M15 12H3"/><path d="M14 3h5a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-5"/></svg>
+                    </button>
                 </div>
 
-                <a href="../index.html" class="share-icon-btn" style="text-decoration: none;">
+                <a href="../index.html" class="admin-icon-btn" title="مشاهده وبلاگ اصلی" aria-label="مشاهده وبلاگ اصلی">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
-                    <span>مشاهده وبلاگ اصلی</span>
                 </a>
             </div>
         </div>
@@ -1101,6 +1117,9 @@
                                 <button type="button" class="type-btn" onclick="execCmd('formatBlock', '<blockquote>')" title="نقل‌قول">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h3c0 4-2 5-4 5m13 3c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h3c0 4-2 5-4 5"/></svg>
                                 </button>
+                                <button type="button" class="type-btn" onclick="insertSceneBreak()" title="جداکننده صحنه">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+                                </button>
                                 <button type="button" class="type-btn" onclick="promptLink()" title="پیوند (Link)">
                                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
                                 </button>
@@ -1215,7 +1234,7 @@
     </div>
 
     <!-- Main JS Engine for Theme Sync -->
-    <script src="../assets/js/main.js?v=20260729-3"></script>
+    <script src="../assets/js/main.js?v=20260729-4"></script>
 
     <script>
         var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
@@ -1385,6 +1404,10 @@
         function changeTextAlignment(command) {
             if (!command) return;
             execCmd(command);
+        }
+
+        function insertSceneBreak() {
+            execCmd('insertHorizontalRule');
         }
 
         function handleTitleInput() {

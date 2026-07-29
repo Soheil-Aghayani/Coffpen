@@ -337,6 +337,521 @@ function initSeriesFilter() {
     }
 }
 
+function initLongformReader() {
+    if (document.getElementById('postContent')) return;
+
+    const story = document.querySelector('.story-body');
+    if (!story || story.dataset.readerReady === 'true') return;
+    story.dataset.readerReady = 'true';
+
+    const plainText = (story.innerText || story.textContent || '').trim();
+    const wordCount = plainText ? plainText.split(/\s+/).filter(Boolean).length : 0;
+    const readMinutes = Math.max(1, Math.ceil(wordCount / 180));
+    const storageKey = 'coffpen_reader_' + window.location.pathname;
+    const prefsKey = 'coffpen_reader_preferences';
+    const savedPosition = readReaderStorage(storageKey, {});
+    const prefs = Object.assign({
+        mode: 'scroll',
+        fontScale: 1,
+        lineHeight: 2.1,
+        width: 760,
+        readerTheme: 'auto',
+        focus: false
+    }, readReaderStorage(prefsKey, {}));
+
+    const toolbar = document.createElement('div');
+    toolbar.className = 'reader-toolbar';
+    toolbar.setAttribute('aria-label', 'ابزارهای مطالعه');
+    toolbar.innerHTML =
+        '<div class="reader-stat" title="زمان تقریبی مطالعه">' +
+            readerIcon('clock') + '<span>' + readMinutes.toLocaleString('fa-IR') + ' دقیقه</span>' +
+        '</div>' +
+        '<div class="reader-actions">' +
+            readerButton('mode', 'book', 'حالت ورق‌زدن') +
+            readerButton('bookmark', 'bookmark', 'ذخیره محل مطالعه') +
+            readerButton('focus', 'focus', 'حالت تمرکز') +
+            readerButton('toc', 'list', 'فهرست بخش‌ها', 'reader-toc-toggle') +
+            readerButton('settings', 'settings', 'تنظیمات مطالعه') +
+        '</div>' +
+        '<div class="reader-settings-panel" hidden>' +
+            '<div class="reader-setting-group" aria-label="اندازه قلم">' +
+                readerButton('font-down', 'minus', 'کوچک‌کردن قلم') +
+                '<span class="reader-setting-value" data-reader-value="font">۱۰۰٪</span>' +
+                readerButton('font-up', 'plus', 'بزرگ‌کردن قلم') +
+            '</div>' +
+            '<div class="reader-setting-group" aria-label="فاصله خطوط">' +
+                readerButton('line-height', 'lines', 'تغییر فاصله خطوط') +
+                '<span class="reader-setting-value" data-reader-value="line">معمولی</span>' +
+            '</div>' +
+            '<div class="reader-setting-group" aria-label="عرض متن">' +
+                readerButton('width', 'width', 'تغییر عرض متن') +
+                '<span class="reader-setting-value" data-reader-value="width">متوسط</span>' +
+            '</div>' +
+            '<div class="reader-setting-group" aria-label="پوسته مطالعه">' +
+                readerButton('reader-theme', 'sun', 'تغییر پوسته مطالعه') +
+                '<span class="reader-setting-value" data-reader-value="theme">خودکار</span>' +
+            '</div>' +
+        '</div>' +
+        '<div class="reader-toc-panel" hidden></div>';
+
+    story.parentNode.insertBefore(toolbar, story);
+    story.classList.add('reader-source');
+
+    const progress = document.createElement('div');
+    progress.className = 'reader-progress';
+    progress.setAttribute('aria-hidden', 'true');
+    progress.innerHTML = '<span></span>';
+    document.body.appendChild(progress);
+
+    const book = document.createElement('section');
+    book.className = 'reader-book';
+    book.hidden = true;
+    book.innerHTML =
+        '<button type="button" class="reader-page-nav reader-page-prev" data-page-action="prev" aria-label="صفحه قبل" title="صفحه قبل">' + readerIcon('chevron-right') + '</button>' +
+        '<div class="reader-book-stage"></div>' +
+        '<button type="button" class="reader-page-nav reader-page-next" data-page-action="next" aria-label="صفحه بعد" title="صفحه بعد">' + readerIcon('chevron-left') + '</button>' +
+        '<div class="reader-page-counter" aria-live="polite"></div>';
+    story.insertAdjacentElement('afterend', book);
+
+    const headings = Array.from(story.querySelectorAll('h2, h3'));
+    const tocButton = toolbar.querySelector('[data-reader-action="toc"]');
+    const tocPanel = toolbar.querySelector('.reader-toc-panel');
+    if (headings.length < 2) {
+        if (tocButton) tocButton.hidden = true;
+    } else {
+        tocPanel.innerHTML = headings.map(function (heading, index) {
+            if (!heading.id) heading.id = 'reader-section-' + (index + 1);
+            return '<a href="#' + heading.id + '" data-reader-heading="' + heading.id + '">' +
+                escapeHtml(heading.textContent.trim()) + '</a>';
+        }).join('');
+    }
+
+    addReaderPausePoint(story, wordCount, storageKey);
+    applyReaderPreferences();
+
+    let pages = [];
+    let currentPage = 0;
+    let resizeTimer = null;
+    let scrollTimer = null;
+    let touchStartX = 0;
+
+    function applyReaderPreferences() {
+        document.documentElement.style.setProperty('--reader-font-scale', prefs.fontScale);
+        document.documentElement.style.setProperty('--reader-line-height', prefs.lineHeight);
+        document.documentElement.style.setProperty('--reader-width', prefs.width + 'px');
+        document.documentElement.setAttribute('data-reader-theme', prefs.readerTheme);
+        document.body.classList.toggle('reader-focus', Boolean(prefs.focus));
+        const focusButton = toolbar.querySelector('[data-reader-action="focus"]');
+        if (focusButton) focusButton.classList.toggle('active', Boolean(prefs.focus));
+        updateReaderSettingsLabels(toolbar, prefs);
+        writeReaderStorage(prefsKey, prefs);
+    }
+
+    function setMode(mode, preserveBlock) {
+        prefs.mode = mode === 'book' ? 'book' : 'scroll';
+        const modeButton = toolbar.querySelector('[data-reader-action="mode"]');
+        if (modeButton) {
+            modeButton.classList.toggle('active', prefs.mode === 'book');
+            modeButton.setAttribute('title', prefs.mode === 'book' ? 'حالت اسکرول' : 'حالت ورق‌زدن');
+            modeButton.setAttribute('aria-label', prefs.mode === 'book' ? 'حالت اسکرول' : 'حالت ورق‌زدن');
+        }
+
+        if (prefs.mode === 'book') {
+            const block = typeof preserveBlock === 'number' ? preserveBlock : getCurrentReaderBlock(story);
+            story.hidden = true;
+            book.hidden = false;
+            document.body.classList.add('reader-book-mode');
+            buildBookPages(block);
+        } else {
+            const block = typeof preserveBlock === 'number' ? preserveBlock : getCurrentBookBlock();
+            story.hidden = false;
+            book.hidden = true;
+            document.body.classList.remove('reader-book-mode');
+            window.requestAnimationFrame(function () {
+                scrollToReaderBlock(story, block, false);
+                updateScrollProgress();
+            });
+        }
+        writeReaderStorage(prefsKey, prefs);
+    }
+
+    function buildBookPages(targetBlock) {
+        const stage = book.querySelector('.reader-book-stage');
+        stage.innerHTML = '';
+        pages = [];
+        currentPage = 0;
+
+        const blocks = Array.from(story.children);
+
+        blocks.forEach(function (block, index) {
+            block.dataset.readerBlock = index;
+        });
+
+        function createPage() {
+            const page = document.createElement('article');
+            page.className = 'reader-book-page measuring';
+            page.dataset.startBlock = '0';
+            stage.appendChild(page);
+            pages.push(page);
+            return page;
+        }
+
+        let page = createPage();
+        blocks.forEach(function (block, index) {
+            const clone = block.cloneNode(true);
+            clone.dataset.readerBlock = index;
+            if (!page.children.length) page.dataset.startBlock = index;
+            page.appendChild(clone);
+
+            if (page.scrollHeight > page.clientHeight && page.children.length > 1) {
+                page.removeChild(clone);
+                page = createPage();
+                page.dataset.startBlock = index;
+                page.appendChild(clone);
+            }
+
+            if (page.scrollHeight > page.clientHeight) {
+                page.removeChild(clone);
+                const words = (block.innerText || block.textContent || '').trim().split(/\s+/).filter(Boolean);
+
+                if (words.length > 1 && /^(P|BLOCKQUOTE|LI|DIV)$/.test(block.tagName)) {
+                    let remaining = words.slice();
+                    while (remaining.length) {
+                        if (page.children.length) page = createPage();
+                        page.dataset.startBlock = index;
+
+                        const piece = block.cloneNode(false);
+                        piece.dataset.readerBlock = index;
+                        page.appendChild(piece);
+
+                        let low = 1;
+                        let high = remaining.length;
+                        let best = 1;
+                        while (low <= high) {
+                            const middle = Math.floor((low + high) / 2);
+                            piece.textContent = remaining.slice(0, middle).join(' ');
+                            if (page.scrollHeight <= page.clientHeight) {
+                                best = middle;
+                                low = middle + 1;
+                            } else {
+                                high = middle - 1;
+                            }
+                        }
+
+                        piece.textContent = remaining.slice(0, best).join(' ');
+                        remaining = remaining.slice(best);
+                        if (remaining.length) page = createPage();
+                    }
+                } else {
+                    page.appendChild(clone);
+                    clone.classList.add('reader-oversized-block');
+                }
+            }
+        });
+
+        if (pages.length > 1 && !pages[pages.length - 1].children.length) {
+            pages[pages.length - 1].remove();
+            pages.pop();
+        }
+
+        pages.forEach(function (readerPage) {
+            readerPage.classList.remove('measuring');
+        });
+
+        const wantedBlock = Number.isFinite(Number(targetBlock)) ? Number(targetBlock) : 0;
+        let foundPage = pages.findIndex(function (candidate) {
+            return Number(candidate.dataset.startBlock || 0) === wantedBlock;
+        });
+        if (foundPage < 0) {
+            pages.forEach(function (candidate, index) {
+                if (Number(candidate.dataset.startBlock || 0) <= wantedBlock) foundPage = index;
+            });
+        }
+        currentPage = foundPage >= 0 ? foundPage : 0;
+        showBookPage(currentPage, false);
+    }
+
+    function showBookPage(index, animate) {
+        if (!pages.length) return;
+        currentPage = Math.max(0, Math.min(index, pages.length - 1));
+        pages.forEach(function (page, pageIndex) {
+            page.classList.toggle('active', pageIndex === currentPage);
+            page.classList.remove('turning');
+        });
+        if (animate) {
+            pages[currentPage].classList.add('turning');
+            window.setTimeout(function () {
+                if (pages[currentPage]) pages[currentPage].classList.remove('turning');
+            }, 320);
+        }
+
+        const counter = book.querySelector('.reader-page-counter');
+        counter.textContent = 'صفحه ' + (currentPage + 1).toLocaleString('fa-IR') + ' از ' + pages.length.toLocaleString('fa-IR');
+        book.querySelector('[data-page-action="prev"]').disabled = currentPage === 0;
+        book.querySelector('[data-page-action="next"]').disabled = currentPage === pages.length - 1;
+        updateBookProgress();
+        saveReaderPosition();
+    }
+
+    function getCurrentBookBlock() {
+        if (!pages[currentPage]) return 0;
+        return Number(pages[currentPage].dataset.startBlock || 0);
+    }
+
+    function updateScrollProgress() {
+        if (prefs.mode !== 'scroll') return;
+        const rect = story.getBoundingClientRect();
+        const total = Math.max(1, story.scrollHeight - window.innerHeight * 0.6);
+        const read = Math.max(0, -rect.top + window.innerHeight * 0.25);
+        const percent = Math.min(1, read / total);
+        progress.querySelector('span').style.transform = 'scaleX(' + percent + ')';
+    }
+
+    function updateBookProgress() {
+        const percent = pages.length > 1 ? currentPage / (pages.length - 1) : 1;
+        progress.querySelector('span').style.transform = 'scaleX(' + percent + ')';
+    }
+
+    function saveReaderPosition() {
+        const data = prefs.mode === 'book'
+            ? { mode: 'book', block: getCurrentBookBlock(), page: currentPage, savedAt: Date.now() }
+            : {
+                mode: 'scroll',
+                block: getCurrentReaderBlock(story),
+                percent: getReaderScrollPercent(story),
+                savedAt: Date.now()
+            };
+        writeReaderStorage(storageKey, data);
+    }
+
+    toolbar.addEventListener('click', function (event) {
+        const button = event.target.closest('[data-reader-action]');
+        if (!button) return;
+        const action = button.dataset.readerAction;
+
+        if (action === 'mode') {
+            setMode(prefs.mode === 'book' ? 'scroll' : 'book');
+        } else if (action === 'bookmark') {
+            saveReaderPosition();
+            showToast('محل مطالعه ذخیره شد.');
+            button.classList.add('active');
+        } else if (action === 'focus') {
+            prefs.focus = !prefs.focus;
+            button.classList.toggle('active', prefs.focus);
+            applyReaderPreferences();
+        } else if (action === 'settings') {
+            const panel = toolbar.querySelector('.reader-settings-panel');
+            panel.hidden = !panel.hidden;
+            tocPanel.hidden = true;
+        } else if (action === 'toc') {
+            tocPanel.hidden = !tocPanel.hidden;
+            toolbar.querySelector('.reader-settings-panel').hidden = true;
+        } else if (action === 'font-up' || action === 'font-down') {
+            prefs.fontScale = Math.min(1.35, Math.max(0.85, prefs.fontScale + (action === 'font-up' ? 0.08 : -0.08)));
+            applyReaderPreferences();
+            rebuildBookAfterPreferenceChange();
+        } else if (action === 'line-height') {
+            const lines = [1.75, 2.1, 2.5];
+            prefs.lineHeight = lines[(lines.indexOf(prefs.lineHeight) + 1) % lines.length];
+            applyReaderPreferences();
+            rebuildBookAfterPreferenceChange();
+        } else if (action === 'width') {
+            const widths = [620, 760, 900];
+            prefs.width = widths[(widths.indexOf(prefs.width) + 1) % widths.length];
+            applyReaderPreferences();
+            rebuildBookAfterPreferenceChange();
+        } else if (action === 'reader-theme') {
+            const themes = ['auto', 'paper', 'light', 'dark'];
+            prefs.readerTheme = themes[(themes.indexOf(prefs.readerTheme) + 1) % themes.length];
+            applyReaderPreferences();
+        }
+    });
+
+    tocPanel.addEventListener('click', function (event) {
+        const link = event.target.closest('a[data-reader-heading]');
+        if (!link) return;
+        event.preventDefault();
+        const target = story.querySelector('#' + link.dataset.readerHeading);
+        if (!target) return;
+        const block = Array.from(story.children).indexOf(target);
+        if (prefs.mode === 'book') {
+            buildBookPages(block);
+        } else {
+            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        tocPanel.hidden = true;
+    });
+
+    book.addEventListener('click', function (event) {
+        const pauseButton = event.target.closest('.reader-pause-point button');
+        if (pauseButton) {
+            saveReaderPosition();
+            showToast('این صفحه برای ادامه مطالعه ذخیره شد.');
+            return;
+        }
+        const pageButton = event.target.closest('[data-page-action]');
+        if (!pageButton) return;
+        showBookPage(currentPage + (pageButton.dataset.pageAction === 'next' ? 1 : -1), true);
+    });
+
+    book.addEventListener('pointerdown', function (event) {
+        touchStartX = event.clientX;
+    });
+    book.addEventListener('pointerup', function (event) {
+        const delta = event.clientX - touchStartX;
+        if (Math.abs(delta) < 55) return;
+        showBookPage(currentPage + (delta < 0 ? 1 : -1), true);
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if (prefs.mode !== 'book' || /INPUT|TEXTAREA|SELECT/.test(document.activeElement.tagName)) return;
+        if (event.key === 'ArrowLeft' || event.key === 'PageDown') showBookPage(currentPage + 1, true);
+        if (event.key === 'ArrowRight' || event.key === 'PageUp') showBookPage(currentPage - 1, true);
+    });
+
+    window.addEventListener('scroll', function () {
+        if (prefs.mode !== 'scroll') return;
+        updateScrollProgress();
+        window.clearTimeout(scrollTimer);
+        scrollTimer = window.setTimeout(saveReaderPosition, 180);
+    }, { passive: true });
+
+    window.addEventListener('resize', function () {
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(function () {
+            if (prefs.mode === 'book') buildBookPages(getCurrentBookBlock());
+        }, 180);
+    });
+
+    maybeShowResumeNotice(savedPosition, story, function (block) {
+        if (prefs.mode === 'book') buildBookPages(block);
+        else scrollToReaderBlock(story, block, true);
+    }, function () {
+        writeReaderStorage(storageKey, {});
+    });
+
+    window.addEventListener('beforeunload', saveReaderPosition);
+
+    setMode(prefs.mode, 0);
+    updateScrollProgress();
+
+    function rebuildBookAfterPreferenceChange() {
+        if (prefs.mode === 'book') {
+            window.requestAnimationFrame(function () {
+                buildBookPages(getCurrentBookBlock());
+            });
+        }
+    }
+}
+
+function readerButton(action, icon, label, extraClass) {
+    return '<button type="button" class="reader-icon-btn ' + (extraClass || '') + '" data-reader-action="' + action +
+        '" aria-label="' + label + '" title="' + label + '">' + readerIcon(icon) + '</button>';
+}
+
+function readerIcon(name) {
+    const icons = {
+        clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+        book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11a2 2 0 0 1 2 2v16a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v18a2 2 0 0 1 2-2h2.5a2.5 2.5 0 0 1 2.5 2.5z"/>',
+        bookmark: '<path d="M6 3h12v18l-6-4-6 4z"/>',
+        focus: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
+        list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
+        settings: '<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.88l.06.06-2.83 2.83-.06-.06A1.7 1.7 0 0 0 15 19.4a1.7 1.7 0 0 0-1 .6 1.7 1.7 0 0 0-.4 1.1V21H9.6v-.1A1.7 1.7 0 0 0 8.5 19.4a1.7 1.7 0 0 0-1.88.34l-.06.06-2.83-2.83.06-.06A1.7 1.7 0 0 0 4.6 15a1.7 1.7 0 0 0-.6-1 1.7 1.7 0 0 0-1.1-.4H3V9.6h.1A1.7 1.7 0 0 0 4.6 8.5a1.7 1.7 0 0 0-.34-1.88l-.06-.06 2.83-2.83.06.06A1.7 1.7 0 0 0 9 4.6a1.7 1.7 0 0 0 1-.6 1.7 1.7 0 0 0 .4-1.1V3h4v.1A1.7 1.7 0 0 0 15.5 4.6a1.7 1.7 0 0 0 1.88-.34l.06-.06 2.83 2.83-.06.06A1.7 1.7 0 0 0 19.4 9c.4.3.7.6.8 1.1h.1v4h-.1c-.1.4-.4.8-.8.9z"/>',
+        minus: '<path d="M5 12h14"/>',
+        plus: '<path d="M12 5v14M5 12h14"/>',
+        lines: '<path d="M4 6h16M4 12h16M4 18h16"/>',
+        width: '<path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"/><path d="M8 12h8"/>',
+        sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+        'chevron-right': '<path d="m9 18 6-6-6-6"/>',
+        'chevron-left': '<path d="m15 18-6-6 6-6"/>'
+    };
+    return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + (icons[name] || icons.settings) + '</svg>';
+}
+
+function updateReaderSettingsLabels(toolbar, prefs) {
+    const font = toolbar.querySelector('[data-reader-value="font"]');
+    const line = toolbar.querySelector('[data-reader-value="line"]');
+    const width = toolbar.querySelector('[data-reader-value="width"]');
+    const theme = toolbar.querySelector('[data-reader-value="theme"]');
+    if (font) font.textContent = Math.round(prefs.fontScale * 100).toLocaleString('fa-IR') + '٪';
+    if (line) line.textContent = prefs.lineHeight < 2 ? 'فشرده' : prefs.lineHeight > 2.2 ? 'باز' : 'معمولی';
+    if (width) width.textContent = prefs.width < 700 ? 'باریک' : prefs.width > 800 ? 'عریض' : 'متوسط';
+    if (theme) theme.textContent = { auto: 'خودکار', paper: 'کاغذی', light: 'روشن', dark: 'تاریک' }[prefs.readerTheme] || 'خودکار';
+}
+
+function addReaderPausePoint(story, wordCount, storageKey) {
+    if (wordCount < 700 || story.querySelector('.reader-pause-point')) return;
+    const blocks = Array.from(story.children);
+    if (blocks.length < 6) return;
+    const middle = blocks[Math.floor(blocks.length / 2)];
+    const marker = document.createElement('aside');
+    marker.className = 'reader-pause-point';
+    marker.innerHTML = '<span>جای مناسبی برای مکث</span><button type="button" title="ذخیره این نقطه">' +
+        readerIcon('bookmark') + 'ذخیره و ادامه در فرصتی دیگر</button>';
+    middle.insertAdjacentElement('afterend', marker);
+    marker.querySelector('button').addEventListener('click', function () {
+        const block = Array.from(story.children).indexOf(marker);
+        writeReaderStorage(storageKey, { mode: 'scroll', block: block, percent: getReaderScrollPercent(story), savedAt: Date.now() });
+        showToast('این نقطه برای ادامه مطالعه ذخیره شد.');
+    });
+}
+
+function getCurrentReaderBlock(story) {
+    const blocks = Array.from(story.children);
+    let current = 0;
+    blocks.forEach(function (block, index) {
+        if (block.getBoundingClientRect().top <= window.innerHeight * 0.38) current = index;
+    });
+    return current;
+}
+
+function getReaderScrollPercent(story) {
+    const rect = story.getBoundingClientRect();
+    const total = Math.max(1, story.scrollHeight - window.innerHeight * 0.6);
+    return Math.min(1, Math.max(0, (-rect.top + window.innerHeight * 0.25) / total));
+}
+
+function scrollToReaderBlock(story, block, smooth) {
+    const blocks = Array.from(story.children);
+    const target = blocks[Math.max(0, Math.min(Number(block) || 0, blocks.length - 1))];
+    if (target) target.scrollIntoView({ behavior: smooth ? 'smooth' : 'auto', block: 'center' });
+}
+
+function maybeShowResumeNotice(saved, story, resume, discard) {
+    if (!saved || (!saved.block && !saved.percent) || Date.now() - Number(saved.savedAt || 0) > 1000 * 60 * 60 * 24 * 90) return;
+    const notice = document.createElement('div');
+    notice.className = 'reader-resume-notice';
+    notice.innerHTML = '<span>' + readerIcon('bookmark') + 'ادامه از آخرین محل مطالعه؟</span>' +
+        '<div><button type="button" data-resume="yes">ادامه</button><button type="button" data-resume="no">از ابتدا</button></div>';
+    document.body.appendChild(notice);
+    notice.addEventListener('click', function (event) {
+        const choice = event.target.closest('[data-resume]');
+        if (!choice) return;
+        if (choice.dataset.resume === 'yes') resume(Number(saved.block || 0));
+        else {
+            scrollToReaderBlock(story, 0, true);
+            if (discard) discard();
+        }
+        notice.remove();
+    });
+}
+
+function readReaderStorage(key, fallback) {
+    try {
+        return JSON.parse(localStorage.getItem(key)) || fallback;
+    } catch (error) {
+        return fallback;
+    }
+}
+
+function writeReaderStorage(key, value) {
+    try {
+        localStorage.setItem(key, JSON.stringify(value));
+    } catch (error) {
+        // Reading preferences remain functional even when storage is unavailable.
+    }
+}
+
 // Initialize Everything on Load
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
@@ -345,6 +860,7 @@ if (document.readyState === 'loading') {
         initContextMenu();
         initLiveHero();
         initSeriesFilter();
+        initLongformReader();
     });
 } else {
     initTheme();
@@ -352,4 +868,5 @@ if (document.readyState === 'loading') {
     initContextMenu();
     initLiveHero();
     initSeriesFilter();
+    initLongformReader();
 }

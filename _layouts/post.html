@@ -9,9 +9,18 @@ layout: default
         </div>
 
         <div class="blackthemePostInfoContent">
-            <h1 class="blackthemePostBoxTitle">
-                {{ page.title }}
-            </h1>
+            <div class="post-title-row">
+                <h1 class="blackthemePostBoxTitle">
+                    {{ page.title }}
+                </h1>
+                {% if page.series and page.episode %}
+                <a class="post-episode-link"
+                   href="{{ '/' | relative_url }}?series={{ page.series | url_encode }}#latest-posts-heading"
+                   title="مشاهده قسمت‌های مجموعه {{ page.series }}">
+                    قسمت {{ page.episode }}
+                </a>
+                {% endif %}
+            </div>
 
             <div class="blackthemeDate">
                 <b>{{ page.author | default: site.author.name }}</b> &bull;
