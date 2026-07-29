@@ -1632,6 +1632,24 @@ footer {
     border-radius: 10px;
 }
 
+.story-body img[data-image-align="center"],
+.reader-book-page img[data-image-align="center"] {
+    display: block;
+    margin: 18px auto !important;
+}
+
+.story-body img[data-image-align="right"],
+.reader-book-page img[data-image-align="right"] {
+    display: block;
+    margin: 18px 0 18px auto !important;
+}
+
+.story-body img[data-image-align="left"],
+.reader-book-page img[data-image-align="left"] {
+    display: block;
+    margin: 18px auto 18px 0 !important;
+}
+
 .story-body figure,
 .reader-book-page figure {
     margin: 24px 0;
