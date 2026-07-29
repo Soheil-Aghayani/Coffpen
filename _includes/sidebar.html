@@ -1,0 +1,66 @@
+<div class="blackthemeSidebar">
+    <!-- Theme Selector Box -->
+    <div class="blackthemeSideBox">
+        <h6>
+            پوسته وبلاگ
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4C4.02 12.04 3.56 11.58 3 11c0-4.97 4.03-9 9-9z" fill="currentColor"/></svg>
+        </h6>
+        <div class="theme-selector-wrapper">
+            <button type="button" class="theme-opt-btn" data-theme-val="dark" onclick="setTheme('dark')">🌑 تاریک</button>
+            <button type="button" class="theme-opt-btn" data-theme-val="light" onclick="setTheme('light')">☀️ روشن</button>
+            <button type="button" class="theme-opt-btn" data-theme-val="sepia" onclick="setTheme('sepia')">📜 سپیا</button>
+        </div>
+    </div>
+
+    <!-- Biography -->
+    <div class="blackthemeSideBox">
+        <h6>
+            بیوگرافی
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><g fill="none"><path d="M12 4a8 8 0 1 0 0 16a8 8 0 0 0 0-16zM2 12C2 6.477 6.477 2 12 2s10 4.477 10 10s-4.477 10-10 10S2 17.523 2 12z" fill="currentColor"/><path d="M12 10a1 1 0 0 1 1 1v6a1 1 0 1 1-2 0v-6a1 1 0 0 1 1-1zm1.5-2.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 0 1 3 0z" fill="currentColor"/></g></svg>
+        </h6>
+        <p>{{ site.author.bio }}</p>
+    </div>
+
+    <!-- Latest Posts -->
+    <div class="blackthemeSideBox">
+        <h6>
+            آخرین نوشته‌ها
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><g fill="none"><path d="M12 2.5a1 1 0 0 1 .894.553l2.58 5.158l5.67.824a1 1 0 0 1 .554 1.706l-4.127 4.024l.928 5.674a1 1 0 0 1-1.455 1.044L12 18.807l-5.044 2.676a1 1 0 0 1-1.455-1.044l.928-5.674l-4.127-4.024a1 1 0 0 1 .554-1.706l5.67-.824l2.58-5.158A1 1 0 0 1 12 2.5zm0 3.236l-1.918 3.836a1 1 0 0 1-.75.543l-4.184.608l3.05 2.973a1 1 0 0 1 .289.878L7.8 18.771l3.731-1.98a1 1 0 0 1 .938 0l3.731 1.98l-.687-4.197a1 1 0 0 1 .289-.877l3.05-2.974l-4.183-.608a1 1 0 0 1-.75-.543L12 5.736z" fill="currentColor"/></g></svg>
+        </h6>
+        <ul>
+            {% for post in site.posts limit:10 %}
+            <li>
+                <a href="{{ post.url | relative_url }}" title="{{ post.date | date: '%Y/%m/%d' }}">{{ post.title }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Tags -->
+    <div class="blackthemeSideBox">
+        <h6>
+            برچسب‌ها
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><g fill="none"><path d="M2 3a1 1 0 0 1 1-1h8a1 1 0 0 1 .707.293l10 10a1 1 0 0 1 0 1.414l-8 8a1 1 0 0 1-1.414 0l-10-10A1 1 0 0 1 2 11V3zm2 1v6.586l9 9L19.586 13l-9-9H4z" fill="currentColor"/><path d="M9 7.5a1.5 1.5 0 1 1-3 0a1.5 1.5 0 0 1 3 0z" fill="currentColor"/></g></svg>
+        </h6>
+        <ul>
+            {% assign tags = site.posts | map: 'tags' | flatten | uniq %}
+            {% for tag in tags %}
+            <li>
+                <a href="{{ '/' | relative_url }}#tag-{{ tag | slugify }}">{{ tag }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <!-- Links -->
+    <div class="blackthemeSideBox">
+        <h6>
+            پیوندها
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20"><g fill="none"><path d="M12 4.528a6 6 0 0 0-8.243 8.715l6.829 6.828a2 2 0 0 0 2.828 0l6.829-6.828A6 6 0 0 0 12 4.528zm-1.172 1.644l.465.464a1 1 0 0 0 1.414 0l.465-.464a4 4 0 1 1 5.656 5.656L12 18.657l-6.828-6.829a4 4 0 0 1 5.656-5.656z" fill="currentColor"/></g></svg>
+        </h6>
+        <ul>
+            <li><a href="https://github.com" target="_blank" rel="noopener">گیت‌هاب (GitHub)</a></li>
+            <li><a href="{{ '/admin/' | relative_url }}">ورود به پنل مدیریت</a></li>
+        </ul>
+    </div>
+</div>

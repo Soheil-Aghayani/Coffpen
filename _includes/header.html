@@ -1,0 +1,43 @@
+<header>
+    <nav>
+        <ul>
+            <li>
+                <a href="{{ '/' | relative_url }}" title="صفحه اصلی">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><g fill="none"><path d="M11.336 2.253a1 1 0 0 1 1.328 0l9 8a1 1 0 0 1-1.328 1.494L20 11.45V19a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-7.55l-.336.297a1 1 0 0 1-1.328-1.494l9-8zM6 9.67V19h3v-5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v5h3V9.671l-6-5.333l-6 5.333zM13 19v-4h-2v4h2z" fill="currentColor" /></g></svg>
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/about/' | relative_url }}" title="درباره نویسنده">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><g fill="none"><path d="M12 4a4 4 0 1 0 0 8a4 4 0 0 0 0-8zM6 8a6 6 0 1 1 12 0A6 6 0 0 1 6 8zm2 10a3 3 0 0 0-3 3a1 1 0 1 1-2 0a5 5 0 0 1 5-5h8a5 5 0 0 1 5 5a1 1 0 1 1-2 0a3 3 0 0 0-3-3H8z" fill="currentColor" /></g></svg>
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/feed.xml' | relative_url }}" title="خوراک RSS">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><g fill="none"><path d="M6.18 15.64a2.18 2.18 0 0 1 2.18 2.18C8.36 19 7.38 20 6.18 20C5 20 4 19 4 17.82a2.18 2.18 0 0 1 2.18-2.18M4 4.44A15.56 15.56 0 0 1 19.56 20h-2.83A12.73 12.73 0 0 0 4 7.27V4.44m0 5.66a9.9 9.9 0 0 1 9.9 9.9h-2.83A7.07 7.07 0 0 0 4 12.93V10.1z" fill="currentColor"/></g></svg>
+                </a>
+            </li>
+            <li>
+                <a href="{{ '/admin/' | relative_url }}" title="پنل مدیریت">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><g fill="none"><path d="M16.293 2.293a1 1 0 0 1 1.414 0l4 4a1 1 0 0 1 0 1.414l-13 13A1 1 0 0 1 8 21H4a1 1 0 0 1-1-1v-4a1 1 0 0 1 .293-.707l10-10l3-3zM14 7.414l-9 9V19h2.586l9-9L14 7.414zm4 1.172L19.586 7L17 4.414L15.414 6L18 8.586z" fill="currentColor" /></g></svg>
+                </a>
+            </li>
+            <li>
+                <button type="button" class="theme-toggle-btn" onclick="cycleTheme()" title="تغییر پوسته (تاریک / روشن / سپیا)">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4C4.02 12.04 3.56 11.58 3 11c0-4.97 4.03-9 9-9z"/></svg>
+                </button>
+            </li>
+            <li>
+                <a href="javascript:void(0);" id="blackthemeMenu" title="منوی اصلی / آرشیو">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22"><g fill="none"><path d="M4 7a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1zm0 5a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2H5a1 1 0 0 1-1-1z" fill="currentColor" /></g></svg>
+                </a>
+            </li>
+        </ul>
+    </nav>
+
+    <div class="blackthemeInfo">
+        <h1><a href="{{ '/' | relative_url }}">{{ site.title }}</a></h1>
+        <h2>{{ site.description }}</h2>
+    </div>
+</header>
+
+<div class="headerImage"></div>

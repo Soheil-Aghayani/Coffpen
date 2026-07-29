@@ -1,0 +1,71 @@
+---
+layout: default
+---
+
+<article class="blackthemePostBox single-post-box">
+    <div class="blackthemePostInfo">
+        <div class="blackthemePostInfoImg">
+            <img src="{{ page.author_avatar | default: site.author.avatar }}" alt="{{ page.author | default: site.author.name }}" />
+        </div>
+
+        <div class="blackthemePostInfoContent">
+            <h1 class="blackthemePostBoxTitle">
+                {{ page.title }}
+            </h1>
+
+            <div class="blackthemeDate">
+                <b>{{ page.author | default: site.author.name }}</b> &bull;
+                <time datetime="{{ page.date | date_to_xmlschema }}">
+                    {{ page.date | date: "%Y/%m/%d" }}
+                </time>
+                {% if page.content %}
+                &bull; <span>زمان مطالعه: {{ page.content | strip_html | number_of_words | divided_by: 120 | plus: 1 }} دقیقه</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Optional Cover Image -->
+    {% if page.cover_image %}
+    <div class="post-cover-image">
+        <img src="{{ page.cover_image | relative_url }}" alt="{{ page.title | escape }}" loading="lazy">
+    </div>
+    {% endif %}
+
+    <!-- Story Text -->
+    <div class="blackthemePostText story-body">
+        {{ content }}
+    </div>
+
+    <div class="blackthemeClear"></div>
+
+    <!-- Tags -->
+    {% if page.tags.size > 0 %}
+    <div class="blackthemePostTag">
+        {% for tag in page.tags %}
+        <a href="{{ '/' | relative_url }}#tag-{{ tag | slugify }}">#{{ tag }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Social Share Buttons Toolbar -->
+    {% include share-buttons.html %}
+</article>
+
+<!-- Previous / Next Story Navigation -->
+<div class="blackthemePagination story-navigation">
+    {% if page.previous.url %}
+    <a href="{{ page.previous.url | relative_url }}" class="blackthemePrevoius" title="{{ page.previous.title }}">
+        &rarr; نوشته قبلی: {{ page.previous.title | truncate: 35 }}
+    </a>
+    {% endif %}
+    {% if page.next.url %}
+    <a href="{{ page.next.url | relative_url }}" class="blackthemeNext" title="{{ page.next.title }}">
+        نوشته بعدی: {{ page.next.title | truncate: 35 }} &larr;
+    </a>
+    {% endif %}
+    <div class="blackthemeClear"></div>
+</div>
+
+<!-- GitHub Discussions Comments Section -->
+{% include comments.html %}

@@ -1,0 +1,34 @@
+# Decap CMS Configuration for Coffpen Blog
+backend:
+  name: github
+  repo: coffpen/coffpen.github.io
+  branch: main
+
+local_backend: true
+
+# Media Assets Folder
+media_folder: "assets/images/uploads"
+public_folder: "/assets/images/uploads"
+
+# Display Settings
+locale: "fa"
+site_url: "https://coffpen.github.io"
+
+# Content Collections
+collections:
+  - name: "posts"
+    label: "داستان‌ها و نوشته‌ها"
+    label_singular: "نوشته"
+    folder: "_posts"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    editor:
+      preview: true
+    fields:
+      - { label: "عنوان نوشته", name: "title", widget: "string" }
+      - { label: "تاریخ انتشار", name: "date", widget: "datetime", format: "YYYY-MM-DD HH:mm:ss Z", dateFormat: "YYYY-MM-DD", timeFormat: "HH:mm" }
+      - { label: "نام نویسنده", name: "author", widget: "string", default: "سهیل آقایانی (کاف پن)" }
+      - { label: "چکیده / خلاصه داستان", name: "description", widget: "text", required: false }
+      - { label: "تصویر کاور نوشته", name: "cover_image", widget: "image", required: false }
+      - { label: "دسته‌بندی", name: "categories", widget: "list", required: false }
+      - { label: "متن اصلی نوشته (مارک‌داون)", name: "body", widget: "markdown" }

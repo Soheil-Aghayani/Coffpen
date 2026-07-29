@@ -1,0 +1,34 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="content-language" content="fa">
+
+<title>{% if page.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }} - {{ site.description }}{% endif %}</title>
+<meta name="description" content="{% if page.description %}{{ page.description }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+<meta name="author" content="{{ page.author | default: site.author.name }}">
+
+<!-- Open Graph / Facebook / Telegram -->
+<meta property="og:type" content="{% if page.date %}article{% else %}website{% endif %}">
+<meta property="og:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
+<meta property="og:site_name" content="{{ site.title }}">
+<meta property="og:description" content="{% if page.description %}{{ page.description }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+<meta property="og:url" content="{{ page.url | absolute_url }}">
+<meta property="og:image" content="{% if page.cover_image %}{{ page.cover_image | absolute_url }}{% else %}{{ site.header_image | absolute_url }}{% endif %}">
+<meta property="og:locale" content="fa_IR">
+
+<!-- Twitter Cards -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{% if page.title %}{{ page.title }}{% else %}{{ site.title }}{% endif %}">
+<meta name="twitter:description" content="{% if page.description %}{{ page.description }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">
+<meta name="twitter:image" content="{% if page.cover_image %}{{ page.cover_image | absolute_url }}{% else %}{{ site.header_image | absolute_url }}{% endif %}">
+
+<!-- RSS Feed -->
+<link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ '/feed.xml' | relative_url }}">
+
+<!-- Fonts (Sahel & Vazirmatn) -->
+<link type="text/css" rel="stylesheet" href="https://cdn.jsdelivr.net/gh/rastikerdar/sahel-font@v3.4.0/dist/font-face.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+
+<!-- Main Theme Stylesheet -->
+<link rel="stylesheet" href="{{ '/assets/css/style.css' | relative_url }}?v={{ site.time | date: '%s' }}">

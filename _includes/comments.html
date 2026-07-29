@@ -1,0 +1,30 @@
+<div class="story-comments-wrapper" id="comments">
+    <h3 class="comments-title">نظرات و گفتگو</h3>
+    
+    <!-- Giscus Comments Container -->
+    <div class="giscus"></div>
+
+    <!-- Script loading Giscus powered by GitHub Discussions -->
+    <script src="https://giscus.app/client.js"
+            data-repo="{{ site.giscus.repo | default: 'coffpen/coffpen.github.io' }}"
+            data-repo-id="{{ site.giscus.repo_id | default: '' }}"
+            data-category="{{ site.giscus.category | default: 'Announcements' }}"
+            data-category-id="{{ site.giscus.category_id | default: '' }}"
+            data-mapping="pathname"
+            data-strict="0"
+            data-reactions-enabled="1"
+            data-emit-metadata="0"
+            data-input-position="top"
+            data-theme="light"
+            data-lang="fa"
+            data-loading="lazy"
+            crossorigin="anonymous"
+            async>
+    </script>
+
+    <noscript>
+        <p style="text-align: center; color: #737685; margin-top: 20px;">
+            برای مشاهده و ارسال نظرات، لطفاً جاوااسکریپت مرورگر خود را فعال کنید.
+        </p>
+    </noscript>
+</div>

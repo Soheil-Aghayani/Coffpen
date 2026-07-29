@@ -1,0 +1,22 @@
+---
+layout: default
+---
+
+<article class="blackthemePostBox single-page-box">
+    <div class="blackthemePostInfo">
+        <div class="blackthemePostInfoContent">
+            <h1 class="blackthemePostBoxTitle">
+                {{ page.title }}
+            </h1>
+            {% if page.description %}
+            <span class="blackthemeDate">{{ page.description }}</span>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="blackthemePostText story-body">
+        {{ content }}
+    </div>
+
+    <div class="blackthemeClear"></div>
+</article>

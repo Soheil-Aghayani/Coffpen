@@ -1,0 +1,1419 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" data-theme="dark">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta http-equiv="content-language" content="fa">
+
+    <title>داشبورد مدیریت | سیاه و قلم (کاف پـن)</title>
+    <meta name="robots" content="noindex, nofollow">
+
+    <!-- Minimal High-Performance Vazirmatn Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="../assets/css/style.css">
+
+    <style>
+        body {
+            background-color: var(--bg-body) !important;
+            color: var(--text-main) !important;
+            transition: background-color 0.3s ease, color 0.3s ease;
+            margin: 0;
+            padding: 0;
+        }
+
+        .admin-dashboard-wrapper {
+            max-width: 880px;
+            margin: 40px auto;
+            padding: 0 15px;
+        }
+
+        .admin-header-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .admin-header-title h1 {
+            margin: 0;
+            font-size: 1.5em;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .admin-header-title p {
+            margin: 4px 0 0 0;
+            font-size: 8.5pt;
+            color: var(--text-muted);
+        }
+
+        /* User Profile & Auth Badge */
+        .admin-user-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            padding: 6px 14px;
+            border-radius: 25px;
+            font-size: 8.5pt;
+            color: var(--text-main);
+        }
+
+        .admin-user-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--border-color);
+        }
+
+        .logout-btn {
+            background: transparent;
+            border: none;
+            color: #ef4444;
+            font-size: 8pt;
+            font-weight: 700;
+            cursor: pointer;
+            padding: 2px 8px;
+            border-radius: 6px;
+            transition: background-color 0.2s ease;
+        }
+
+        .logout-btn:hover {
+            background-color: rgba(239, 68, 68, 0.15);
+        }
+
+        /* Auth Gate Screen */
+        .auth-gate-card {
+            max-width: 460px;
+            margin: 60px auto;
+            background-color: var(--bg-box);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 35px 30px;
+            box-shadow: var(--shadow-box);
+            text-align: center;
+            animation: fadeInUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        .auth-gate-icon {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--bg-tag);
+            border: 1px solid var(--border-color);
+            border-radius: 50%;
+            color: var(--text-main);
+        }
+
+        .auth-gate-icon svg {
+            width: 32px;
+            height: 32px;
+        }
+
+        .auth-gate-card h2 {
+            margin: 0 0 10px 0;
+            font-size: 1.3em;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .auth-gate-card p {
+            margin: 0 0 24px 0;
+            font-size: 8.5pt;
+            color: var(--text-muted);
+            line-height: 1.7;
+        }
+
+        .auth-input-group {
+            margin-bottom: 20px;
+            text-align: right;
+        }
+
+        .auth-input-group label {
+            display: block;
+            font-size: 8.5pt;
+            font-weight: 700;
+            margin-bottom: 6px;
+            color: var(--text-main);
+        }
+
+        .auth-error-alert {
+            display: none;
+            background-color: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            color: #ef4444;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 8.5pt;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            text-align: right;
+        }
+
+        .admin-grid-layout {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 24px;
+        }
+
+        .admin-card {
+            background-color: var(--bg-box);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 26px;
+            box-shadow: var(--shadow-box);
+            overflow: visible !important;
+            position: relative;
+        }
+
+        .admin-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .admin-card-header h3 {
+            margin: 0;
+            font-size: 1.1em;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-card-header svg {
+            color: var(--text-accent);
+        }
+
+        /* Form Controls */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 8.5pt;
+            font-weight: 700;
+            color: var(--text-main);
+            margin-bottom: 6px;
+        }
+
+        .form-control {
+            width: 100%;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 14px;
+            color: var(--text-main);
+            font-size: 9pt;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--text-accent);
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 22px;
+        }
+
+        .btn-primary {
+            background-color: var(--text-main);
+            color: var(--bg-box);
+            border: none;
+            padding: 10px 22px;
+            border-radius: 20px;
+            font-size: 8.5pt;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary:hover {
+            background-color: var(--text-accent);
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        /* Horizontal 3-Dots Action Menu Container */
+        .action-menu-wrapper {
+            position: relative !important;
+            display: inline-block !important;
+            overflow: visible !important;
+        }
+
+        .horizontal-dots-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--bg-tag);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .horizontal-dots-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-accent);
+            background-color: var(--bg-card);
+            transform: scale(1.05);
+        }
+
+        /* Context Dropdown Box */
+        .row-context-dropdown {
+            position: absolute !important;
+            left: 0 !important;
+            top: 100% !important;
+            margin-top: 4px;
+            width: 165px;
+            background-color: var(--bg-menu) !important;
+            border: 1px solid var(--border-color) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 12px 35px rgba(0, 0, 0, 0.5) !important;
+            padding: 6px !important;
+            z-index: 999999 !important;
+            display: none;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .row-context-dropdown.active {
+            display: flex !important;
+        }
+
+        .dropdown-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            font-size: 8.5pt;
+            font-weight: 500;
+            color: var(--text-main);
+            border-radius: 6px;
+            background: transparent;
+            border: none;
+            width: 100%;
+            text-align: right;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background-color 0.15s ease, color 0.15s ease;
+        }
+
+        .dropdown-item:hover {
+            background-color: var(--bg-tag);
+            color: var(--text-accent);
+        }
+
+        .dropdown-item svg {
+            color: var(--text-muted);
+            width: 15px;
+            height: 15px;
+        }
+
+        .dropdown-item:hover svg {
+            color: var(--text-accent);
+        }
+
+        .dropdown-item.danger-item:hover {
+            color: #ef4444;
+            background-color: rgba(239, 68, 68, 0.1);
+        }
+
+        .dropdown-item.danger-item:hover svg {
+            color: #ef4444;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: var(--border-subtle);
+            margin: 4px 6px;
+        }
+
+        /* Typography Formatting Toolbar (Clean Minimalist Notion/Substack Style) */
+        .typography-toolbar {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-subtle);
+            border-radius: 12px 12px 0 0;
+            padding: 8px 14px;
+            flex-wrap: wrap;
+        }
+
+        .type-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 28px;
+            height: 28px;
+            padding: 0 6px;
+            background: transparent;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            color: var(--text-muted);
+            font-size: 8.5pt;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .type-btn:hover {
+            background-color: var(--bg-tag);
+            color: var(--text-accent);
+        }
+
+        .type-select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            background-color: var(--bg-tag);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 8.5pt;
+            font-weight: 700;
+            font-family: inherit;
+            padding: 2px 10px;
+            height: 28px;
+            cursor: pointer;
+            outline: none;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .type-select:hover, .type-select:focus {
+            border-color: var(--text-accent);
+            color: var(--text-accent);
+            background-color: var(--bg-card);
+        }
+
+        .toolbar-divider {
+            height: 14px;
+            width: 1px;
+            background-color: var(--border-subtle);
+            margin: 0 4px;
+        }
+
+        /* WYSIWYG Word-Style Rich Text Editor */
+        .wysiwyg-editor {
+            min-height: 220px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 0 0 12px 12px;
+            padding: 18px 20px;
+            font-size: 10.5pt;
+            line-height: 2.1;
+            color: var(--text-main);
+            outline: none;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            overflow-y: auto;
+            max-height: 500px;
+        }
+
+        .wysiwyg-editor:focus {
+            border-color: var(--text-accent);
+            box-shadow: 0 0 0 3px var(--bg-tag);
+        }
+
+        .wysiwyg-editor:empty:before {
+            content: attr(placeholder);
+            color: var(--text-muted);
+            opacity: 0.6;
+            cursor: text;
+        }
+
+        .wysiwyg-editor h2 {
+            font-size: 1.4em;
+            font-weight: 700;
+            margin: 15px 0 10px 0;
+            color: var(--text-main);
+        }
+
+        .wysiwyg-editor h3 {
+            font-size: 1.2em;
+            font-weight: 700;
+            margin: 15px 0 10px 0;
+            color: var(--text-main);
+        }
+
+        .wysiwyg-editor blockquote {
+            border-right: 3px solid var(--text-accent);
+            padding: 10px 15px;
+            margin: 15px 0;
+            background-color: var(--bg-tag);
+            border-radius: 0 8px 8px 0;
+            font-style: italic;
+            color: var(--text-main);
+        }
+
+        .wysiwyg-editor a {
+            color: var(--text-accent);
+            text-decoration: underline;
+        }
+
+        .wysiwyg-editor code {
+            background-color: var(--bg-tag);
+            border: 1px solid var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 9pt;
+        }
+
+        .wysiwyg-editor ul, .wysiwyg-editor ol {
+            padding-right: 25px;
+            margin: 12px 0;
+        }
+
+        /* Editor Tabs Bar & Live Preview Box */
+        .editor-view-tabs {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border-subtle);
+            padding-bottom: 10px;
+            flex-wrap: wrap;
+        }
+
+        .editor-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 8.5pt;
+            font-weight: 500;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .editor-tab-btn:hover {
+            color: var(--text-main);
+            border-color: var(--text-accent);
+        }
+
+        .editor-tab-btn.active {
+            background-color: var(--bg-tag);
+            color: var(--text-accent);
+            border-color: var(--text-accent);
+            font-weight: 700;
+        }
+
+        .story-live-preview-box {
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 24px;
+            margin-top: 10px;
+            animation: fadeInUp 0.3s ease forwards;
+        }
+
+        .story-live-preview-box h2 {
+            font-size: 1.35em;
+            font-weight: 700;
+            margin: 0 0 16px 0;
+            color: var(--text-main);
+        }
+
+        /* Post Table List */
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 8.5pt;
+            overflow: visible !important;
+        }
+
+        .admin-table th, .admin-table td {
+            padding: 14px;
+            text-align: right;
+            border-bottom: 1px solid var(--border-subtle);
+            overflow: visible !important;
+            position: relative;
+        }
+
+        .admin-table th {
+            color: var(--text-muted);
+            font-weight: 700;
+        }
+
+        .admin-table td {
+            color: var(--text-main);
+        }
+
+        .admin-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .badge-status {
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 7.5pt;
+            font-weight: 500;
+            background-color: var(--bg-tag);
+            color: var(--text-accent);
+            border: 1px solid var(--border-color);
+        }
+
+        /* Code Output Box */
+        .generated-code-box {
+            display: none;
+            margin-top: 20px;
+            background-color: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+        }
+
+        .generated-code-box.show {
+            display: block;
+        }
+
+        .generated-code-box textarea {
+            width: 100%;
+            height: 180px;
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: monospace;
+            font-size: 8.5pt;
+            direction: ltr;
+            outline: none;
+            resize: vertical;
+        }
+
+        /* Help Box */
+        .help-alert-box {
+            background-color: var(--bg-tag);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            margin-top: 14px;
+            font-size: 8.5pt;
+            line-height: 1.8;
+        }
+
+        .help-alert-box strong {
+            color: var(--text-accent);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-dashboard-wrapper">
+        <!-- Header Bar -->
+        <div class="admin-header-bar">
+            <div class="admin-header-title">
+                <h1>داشبورد مدیریت نوشته‌ها</h1>
+                <p>نگارش، ویرایش، حذف نوشته‌ها و راهنمای انتشار وبلاگ سیاه و قلم</p>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                <!-- 6-Theme Palette Toggle Button -->
+                <button type="button" class="theme-toggle-btn" onclick="cycleTheme()" title="تغییر پوسته" style="background-color: var(--bg-card); border: 1px solid var(--border-color); padding: 7px 14px; border-radius: 20px; display: flex; align-items: center; gap: 6px; color: var(--text-main); font-size: 8.5pt; cursor: pointer; transition: all 0.2s ease;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor"/><circle cx="12" cy="7.5" r="1" fill="currentColor"/><circle cx="16.5" cy="10.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/></svg>
+                    <span>تغییر پوسته</span>
+                </button>
+
+                <!-- Logged in Admin Badge (Visible after authentication) -->
+                <div id="adminUserBadge" class="admin-user-badge" style="display: none;">
+                    <img src="https://github.com/soheil-aghayani.png" alt="سهیل آقایانی" class="admin-user-avatar">
+                    <span>سهیل آقایانی (@soheil-aghayani)</span>
+                    <button type="button" class="logout-btn" onclick="logoutAdmin()" title="خروج از پنل">خروج</button>
+                </div>
+
+                <a href="../index.html" class="share-icon-btn" style="text-decoration: none;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+                    <span>مشاهده وبلاگ اصلی</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- 🔐 GitHub Authentication Gate Card (Shown when not authenticated) -->
+        <div id="authGateCard" class="auth-gate-card">
+            <div class="auth-gate-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            </div>
+            <h2>احراز هویت حساب GitHub</h2>
+            <p>این پنل فقط برای مدیر وبلاگ (سهیل آقایانی) قابل دسترسی است.<br>لطفاً نام کاربری حساب GitHub خود را برای تایید هویت وارد کنید.</p>
+
+            <div id="authErrorAlert" class="auth-error-alert"></div>
+
+            <form onsubmit="handleGitHubAuth(event)">
+                <div class="auth-input-group">
+                    <label for="githubUsernameInput">نام کاربری GitHub (Username):</label>
+                    <input type="text" id="githubUsernameInput" class="form-control" placeholder="مانند: soheil-aghayani" required dir="ltr">
+                </div>
+
+                <button type="submit" class="btn-primary" style="width: 100%; justify-content: center; padding: 12px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+                    <span>ورود و بررسی دسترسی</span>
+                </button>
+            </form>
+        </div>
+
+        <!-- 📊 Main Admin Dashboard Content (Hidden until authenticated as soheil-aghayani) -->
+        <div id="adminDashboardContent" class="admin-grid-layout" style="display: none;">
+            <!-- Active Stories List with Horizontal 3-Dots Action Dropdown Menu -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                        نوشته‌های فعال وبلاگ
+                    </h3>
+                    <span class="badge-status">۲ نوشته</span>
+                </div>
+
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>عنوان نوشته</th>
+                            <th>نویسنده</th>
+                            <th>تاریخ</th>
+                            <th>تنظیمات</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr id="post-row-1">
+                            <td><strong>خوش آمدید به خانه جدید کاف پـن</strong></td>
+                            <td>سهیل آقایانی</td>
+                            <td>۱۴۰۵/۰۵/۰۷</td>
+                            <td>
+                                <!-- Horizontal 3-Dots Button -->
+                                <div class="action-menu-wrapper">
+                                    <button type="button" class="horizontal-dots-btn" onclick="togglePostMenu(1)" title="منوی مدیریت نوشته">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+                                    </button>
+
+                                    <div id="postMenu-1" class="row-context-dropdown">
+                                        <a href="../posts/welcome-to-coffpen.html" target="_blank" class="dropdown-item">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            <span>مشاهده نوشته</span>
+                                        </a>
+                                        <button type="button" class="dropdown-item" onclick="editExistingPost(1)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                            <span>ویرایش متن</span>
+                                        </button>
+                                        <div class="dropdown-divider"></div>
+                                        <button type="button" class="dropdown-item danger-item" onclick="showDeleteGuide('posts/welcome-to-coffpen.html')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            <span>حذف نوشته</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr id="post-row-2">
+                            <td><strong>وقتی کلمات در شب بیدار می‌شوند</strong></td>
+                            <td>سهیل آقایانی</td>
+                            <td>۱۴۰۵/۰۵/۰۷</td>
+                            <td>
+                                <!-- Horizontal 3-Dots Button -->
+                                <div class="action-menu-wrapper">
+                                    <button type="button" class="horizontal-dots-btn" onclick="togglePostMenu(2)" title="منوی مدیریت نوشته">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="12" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/></svg>
+                                    </button>
+
+                                    <div id="postMenu-2" class="row-context-dropdown">
+                                        <a href="../posts/second-story.html" target="_blank" class="dropdown-item">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                                            <span>مشاهده نوشته</span>
+                                        </a>
+                                        <button type="button" class="dropdown-item" onclick="editExistingPost(2)">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                                            <span>ویرایش متن</span>
+                                        </button>
+                                        <div class="dropdown-divider"></div>
+                                        <button type="button" class="dropdown-item danger-item" onclick="showDeleteGuide('posts/second-story.html')">
+                                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                                            <span>حذف نوشته</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Post Creator & Generator -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3 id="editorCardTitle">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        ایجاد نوشته جدید
+                    </h3>
+                </div>
+
+                <!-- Editor Mode Tabs Switcher -->
+                <div class="editor-view-tabs">
+                    <button type="button" id="tabBtnWrite" class="editor-tab-btn active" onclick="switchEditorTab('write')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                        <span>ویرایشگر و نگارش</span>
+                    </button>
+                    <button type="button" id="tabBtnPreview" class="editor-tab-btn" onclick="switchEditorTab('preview')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                        <span>پیش‌نمایش زنده نوشته</span>
+                    </button>
+                    <button type="button" id="tabBtnCode" class="editor-tab-btn" onclick="switchEditorTab('code')">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                        <span>کد کامل HTML</span>
+                    </button>
+                </div>
+
+                <form onsubmit="generatePostHtml(event)">
+                    <div id="writeTabSection">
+                        <div class="form-group">
+                            <label for="postTitle">عنوان نوشته:</label>
+                            <input type="text" id="postTitle" class="form-control" placeholder="مثلاً: داستان کوتاه در انتهای شب..." oninput="updateLiveStats()" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="postSlug">نام فایل (Slug):</label>
+                            <input type="text" id="postSlug" class="form-control" placeholder="مثلاً: my-new-story.html" required dir="ltr">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="postSeries">مجموعه / سلسله داستان (پلی‌لیست اختیاری):</label>
+                            <input type="text" id="postSeries" class="form-control" placeholder="مثلاً: درون باطل (جهت گروه‌بندی قسمت‌های مرتبط)" list="seriesOptions">
+                            <datalist id="seriesOptions">
+                                <option value="درون باطل"></option>
+                                <option value="دفتر یادداشت‌های شبانه"></option>
+                                <option value="داستان‌های کوتاه"></option>
+                            </datalist>
+                        </div>
+
+                        <div class="form-group">
+                            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+                                <label for="postContent" style="margin-bottom: 0;">متن نوشته:</label>
+                                <span id="editorLiveStats" style="font-size: 8pt; color: var(--text-muted);">۰ کلمه &bull; ۰ کاراکتر</span>
+                            </div>
+
+                            <!-- Clean Minimalist WYSIWYG Typography Toolbar -->
+                            <div class="typography-toolbar">
+                                <!-- Group 1: Headings & Text Format -->
+                                <select class="type-select" onchange="changeFormatBlock(this.value); this.selectedIndex=0;" title="فرمت تیترها">
+                                    <option value="" disabled selected>فرمت تیتر ▾</option>
+                                    <option value="p">متن معمولی (Paragraph)</option>
+                                    <option value="h1">تیتر ۱ (عنوان اصلی)</option>
+                                    <option value="h2">تیتر ۲ (عنوان بخش)</option>
+                                    <option value="h3">تیتر ۳ (عنوان فرعی)</option>
+                                    <option value="h4">تیتر ۴ (تیتر کوچک)</option>
+                                </select>
+
+                                <div class="toolbar-divider"></div>
+
+                                <!-- Group 2: Basic Formatting -->
+                                <button type="button" class="type-btn" onclick="execCmd('bold')" title="درشت (Bold)"><b>B</b></button>
+                                <button type="button" class="type-btn" onclick="execCmd('italic')" title="مورب (Italic)"><i>I</i></button>
+                                <button type="button" class="type-btn" onclick="execCmd('underline')" title="زیرخط (Underline)"><span style="text-decoration: underline;">U</span></button>
+                                <button type="button" class="type-btn" onclick="execCmd('strikeThrough')" title="خط روی متن"><span style="text-decoration: line-through;">S</span></button>
+
+                                <div class="toolbar-divider"></div>
+
+                                <!-- Group 3: Text Alignment Controls -->
+                                <button type="button" class="type-btn" onclick="execCmd('justifyRight')" title="راست‌چین">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
+                                </button>
+                                <button type="button" class="type-btn" onclick="execCmd('justifyCenter')" title="وسط‌چین">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
+                                </button>
+                                <button type="button" class="type-btn" onclick="execCmd('justifyLeft')" title="چپ‌چین">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
+                                </button>
+                                <button type="button" class="type-btn" onclick="execCmd('justifyFull')" title="هم‌ترازی دوطرفه (Justify)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
+                                </button>
+
+                                <div class="toolbar-divider"></div>
+
+                                <!-- Group 4: Inserts -->
+                                <button type="button" class="type-btn" onclick="execCmd('formatBlock', '<blockquote>')" title="نقل‌قول">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.75-2-2-2H4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h3c0 4-2 5-4 5m13 3c3 0 7-1 7-8V5c0-1.25-.75-2-2-2h-4c-1.25 0-2 .75-2 2v6c0 1.25.75 2 2 2h3c0 4-2 5-4 5"/></svg>
+                                </button>
+                                <button type="button" class="type-btn" onclick="promptLink()" title="پیوند (Link)">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>
+                                </button>
+                                <button type="button" class="type-btn" onclick="promptImage()" title="تصویر">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                                </button>
+                                <button type="button" class="type-btn" onclick="execCmd('formatBlock', '<pre>')" title="کد"><code>&lt;/&gt;</code></button>
+
+                                <div class="toolbar-divider"></div>
+
+                                <!-- Group 5: Lists & Level Indenting -->
+                                <select class="type-select" onchange="changeListFormat(this.value); this.selectedIndex=0;" title="انواع لیست‌ها">
+                                    <option value="" disabled selected>نوع لیست ▾</option>
+                                    <option value="ul-disc">لیست نقطه‌ای (•)</option>
+                                    <option value="ul-dash">لیست خط‌تیره (-)</option>
+                                    <option value="ol-numeric">عددی (۱، ۲، ۳...)</option>
+                                    <option value="ol-persian">الفبایی (الف، ب، پ، ت...)</option>
+                                    <option value="ol-abjad">ابجد (الف، ب، ج، د...)</option>
+                                </select>
+                                <button type="button" class="type-btn" onclick="execCmd('indent')" title="افزایش لول / تورفتگی">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="21" y1="6" x2="21" y2="18"/></svg>
+                                </button>
+                                <button type="button" class="type-btn" onclick="execCmd('outdent')" title="کاهش لول / برآمدگی">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/></svg>
+                                </button>
+
+                                <div style="flex: 1;"></div>
+
+                                <!-- Group 5: Clear Action -->
+                                <button type="button" class="type-btn" onclick="execCmd('removeFormat')" title="پاکسازی فرمت" style="font-size: 7.5pt; color: var(--text-muted);">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" style="margin-left: 3px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+                                    <span>پاکسازی</span>
+                                </button>
+                            </div>
+
+                            <!-- WYSIWYG ContentEditable Div (Word Style) -->
+                            <div id="postContent" class="wysiwyg-editor" contenteditable="true" placeholder="متن نوشته خود را مانند Microsoft Word اینجا بنویسید..." oninput="updateLiveStats()"></div>
+                        </div>
+                    </div>
+
+                    <!-- 👁️ Live Rendered Story Preview Tab -->
+                    <div id="previewTabSection" style="display: none;">
+                        <div class="story-live-preview-box">
+                            <div class="blackthemePostInfo">
+                                <div class="blackthemePostInfoMain">
+                                    <img src="../assets/images/author-avatar.jpg" alt="سهیل آقایانی" class="author-avatar-img">
+                                    <div class="blackthemePostInfoContent">
+                                        <h2 id="previewPostTitle">عنوان نوشته پیش‌نمایش</h2>
+                                        <span class="blackthemeDate"><b>سهیل آقایانی</b> &bull; ۱۴۰۵/۰۵/۰۷ (پیش‌نمایش زنده)</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div id="previewPostBody" class="blackthemePostText story-body" style="margin-top: 20px;">
+                                <p>متن نوشته پیش‌نمایش در این بخش به صورت زنده و با استایل نهایی وبلاگ نمایش داده می‌شود...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                            <span id="submitBtnText">تولید و کپی کد HTML نوشته</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Generated HTML Code Box -->
+                <div id="generatedOutput" class="generated-code-box">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                        <strong style="font-size: 8.5pt; color: var(--text-main);">کد کامل صفحه HTML نوشته جدید:</strong>
+                        <button type="button" class="btn-primary" onclick="copyGeneratedCode()" style="padding: 5px 14px; font-size: 8pt;">کپی کد HTML</button>
+                    </div>
+                    <textarea id="generatedTextarea" readonly></textarea>
+                </div>
+            </div>
+
+            <!-- Delete Help Box -->
+            <div id="deleteHelpBox" class="admin-card" style="display: none;">
+                <div class="admin-card-header">
+                    <h3 style="color: #ef4444;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        راهنمای حذف نوشته
+                    </h3>
+                </div>
+                <div id="deleteHelpText" class="help-alert-box" style="background-color: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.3); color: var(--text-main);">
+                </div>
+            </div>
+
+            <!-- Git Commit & Deployment Hub -->
+            <div class="admin-card">
+                <div class="admin-card-header">
+                    <h3>
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M1.05 12H7m10 0h5.95"/><path d="M12 1.05V7m0 10v5.95"/></svg>
+                        انتشار تغییرات در GitHub Pages
+                    </h3>
+                </div>
+                <p style="font-size: 8.5pt; color: var(--text-muted); margin: 0 0 14px 0;">پس از ایجاد فایل جدید در پوشه <code>posts/</code>، دستور زیر را در ترمینال اجرا کنید تا وبلاگ آپدیت شود:</p>
+                <div class="share-link-box">
+                    <input type="text" class="share-link-input" value="git add . &amp;&amp; git commit -m &quot;بروزرسانی وبلاگ&quot; &amp;&amp; git push origin main" id="gitCmdInput" readonly>
+                    <button type="button" class="share-copy-btn" onclick="copyGitCmd()">کپی دستور Git</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-notification" class="toast-notification">
+        <span id="toastMessage">عملیات انجام شد</span>
+    </div>
+
+    <!-- Main JS Engine for Theme Sync -->
+    <script src="../assets/js/main.js"></script>
+
+    <script>
+        var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
+
+        var postsData = {
+            1: {
+                id: 1,
+                title: 'خوش آمدید به خانه جدید کاف پـن',
+                slug: 'welcome-to-coffpen.html',
+                content: 'این نخستین یادداشت در این سالنامه است. جایی برای ثبت کلمات، تجربه‌های توسعه وب، و داستان‌هایی که در طول مسیر متولد می‌شوند.\nوقتی نوشتن را آغاز می‌کنیم، هر خط کدی که می‌زنیم و هر جمله‌ای که ثبت می‌کنیم، بخشی از مسیر یادگیری و خلق کردن است.'
+            },
+            2: {
+                id: 2,
+                title: 'وقتی کلمات در شب بیدار می‌شوند',
+                slug: 'second-story.html',
+                content: 'گاهی در انتهای شب، کلمات رنگ دیگری به خود می‌گیرند. نوشتن درباره برنامه‌نویسی و طراحی وب، فراتر از کدهاست.\nسکوت شب فرصتی است برای تامل روی خطوط کدهایی که نوشته‌ایم و داستان‌هایی که هنوز به زبان نیاورده‌ایم.'
+            }
+        };
+
+        // Initialize Theme & Authentication Check
+        window.addEventListener('DOMContentLoaded', function () {
+            if (typeof initTheme === 'function') {
+                initTheme();
+            } else {
+                var savedTheme = localStorage.getItem('coffpen_theme') || 'dark';
+                document.documentElement.setAttribute('data-theme', savedTheme);
+            }
+            checkAuthSession();
+        });
+
+        function checkAuthSession() {
+            var currentUser = localStorage.getItem('coffpen_admin_user');
+            if (currentUser && currentUser.toLowerCase() === AUTHORIZED_GITHUB_USER) {
+                showAdminDashboard(currentUser);
+            } else {
+                showAuthGate();
+            }
+        }
+
+        function handleGitHubAuth(event) {
+            event.preventDefault();
+            var inputVal = document.getElementById('githubUsernameInput').value.trim().replace(/^@/, '');
+            var authAlert = document.getElementById('authErrorAlert');
+
+            if (!inputVal) {
+                authAlert.innerText = 'لطفاً نام کاربری گیت‌هاب خود را وارد کنید.';
+                authAlert.style.display = 'block';
+                return;
+            }
+
+            // Verify if entered username matches authorized admin
+            if (inputVal.toLowerCase() === AUTHORIZED_GITHUB_USER) {
+                localStorage.setItem('coffpen_admin_user', AUTHORIZED_GITHUB_USER);
+                authAlert.style.display = 'none';
+                showAdminDashboard(AUTHORIZED_GITHUB_USER);
+                showToast('خوش آمدید سهیل آقایانی! دسترسی مدیریت تایید شد.');
+            } else {
+                authAlert.innerHTML = '<strong>خطای دسترسی:</strong> حساب گیت‌هاب «' + inputVal + '» مجاز به ورود نیست.<br>فقط کاربر <code>soheil-aghayani</code> اجازه دسترسی دارد.';
+                authAlert.style.display = 'block';
+            }
+        }
+
+        function showAdminDashboard(username) {
+            document.getElementById('authGateCard').style.display = 'none';
+            document.getElementById('adminDashboardContent').style.display = 'grid';
+            document.getElementById('adminUserBadge').style.display = 'flex';
+        }
+
+        function showAuthGate() {
+            document.getElementById('authGateCard').style.display = 'block';
+            document.getElementById('adminDashboardContent').style.display = 'none';
+            document.getElementById('adminUserBadge').style.display = 'none';
+        }
+
+        function logoutAdmin() {
+            localStorage.removeItem('coffpen_admin_user');
+            showAuthGate();
+            showToast('از پنل مدیریت خارج شدید.');
+        }
+
+        function showToast(msg) {
+            var toast = document.getElementById('toast-notification');
+            var toastMsg = document.getElementById('toastMessage');
+            if (toast && toastMsg) {
+                toastMsg.innerText = msg;
+                toast.classList.add('show');
+                setTimeout(function () {
+                    toast.classList.remove('show');
+                }, 2500);
+            }
+        }
+
+        function copyGitCmd() {
+            var input = document.getElementById('gitCmdInput');
+            input.select();
+            document.execCommand('copy');
+            showToast('دستور Git کپی شد!');
+        }
+
+        function togglePostMenu(id) {
+            var menu = document.getElementById('postMenu-' + id);
+            if (!menu) return;
+            var isCurrentlyActive = menu.classList.contains('active');
+
+            setTimeout(function () {
+                var allMenus = document.querySelectorAll('.row-context-dropdown');
+                for (var i = 0; i < allMenus.length; i++) {
+                    allMenus[i].classList.remove('active');
+                }
+
+                if (!isCurrentlyActive) {
+                    menu.classList.add('active');
+                }
+            }, 10);
+        }
+
+        document.addEventListener('click', function (e) {
+            if (!e.target.closest('.action-menu-wrapper')) {
+                var allMenus = document.querySelectorAll('.row-context-dropdown');
+                for (var i = 0; i < allMenus.length; i++) {
+                    allMenus[i].classList.remove('active');
+                }
+            }
+        });
+
+        function toPersianDigits(n) {
+            var persian = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
+            return String(n).replace(/[0-9]/g, function (w) {
+                return persian[+w];
+            });
+        }
+
+        function execCmd(command, value) {
+            document.execCommand(command, false, value || null);
+            var editor = document.getElementById('postContent');
+            if (editor) editor.focus();
+            updateLiveStats();
+        }
+
+        function changeFormatBlock(tag) {
+            if (!tag) return;
+            execCmd('formatBlock', '<' + tag + '>');
+        }
+
+        function changeListFormat(type) {
+            if (!type) return;
+            var editor = document.getElementById('postContent');
+            if (!editor) return;
+            editor.focus();
+
+            // Snapshot existing lists BEFORE command to detect the new one
+            var beforeLists = Array.prototype.slice.call(editor.querySelectorAll('ul, ol'));
+
+            if (type === 'ul-disc' || type === 'ul-dash') {
+                document.execCommand('insertUnorderedList', false, null);
+            } else {
+                document.execCommand('insertOrderedList', false, null);
+            }
+
+            setTimeout(function() {
+                // 1. Find newly created list (not in pre-snapshot)
+                var newList = null;
+                var afterLists = editor.querySelectorAll('ul, ol');
+                for (var i = 0; i < afterLists.length; i++) {
+                    if (beforeLists.indexOf(afterLists[i]) === -1) {
+                        newList = afterLists[i];
+                        break;
+                    }
+                }
+
+                // 2. Fallback: walk up from cursor
+                if (!newList) {
+                    var sel = window.getSelection();
+                    if (sel && sel.rangeCount > 0) {
+                        var node = sel.getRangeAt(0).startContainer;
+                        while (node && node !== editor) {
+                            if (node.nodeName === 'UL' || node.nodeName === 'OL') {
+                                newList = node; break;
+                            }
+                            node = node.parentNode;
+                        }
+                    }
+                }
+
+                // 3. Last resort: last list in editor
+                if (!newList) {
+                    var all = editor.querySelectorAll('ul, ol');
+                    if (all.length) newList = all[all.length - 1];
+                }
+
+                if (!newList) { updateLiveStats(); return; }
+
+                newList.setAttribute('dir', 'rtl');
+                newList.style.paddingLeft = '0';
+
+                if (type === 'ul-disc') {
+                    newList.style.listStyleType = 'disc';
+                    newList.style.paddingRight = '1.6em';
+
+                } else if (type === 'ul-dash') {
+                    newList.style.listStyleType = 'none';
+                    newList.style.paddingRight = '0.5em';
+                    var dashItems = newList.querySelectorAll('li');
+                    for (var j = 0; j < dashItems.length; j++) {
+                        dashItems[j].style.cssText = 'list-style:none; padding-right:1.8em; position:relative; margin-bottom:0.15em;';
+                        if (!dashItems[j].querySelector('.coffpen-label')) {
+                            var ds = document.createElement('span');
+                            ds.className = 'coffpen-label';
+                            ds.style.cssText = 'position:absolute;right:0;top:0;color:var(--text-muted);font-weight:500;';
+                            ds.textContent = '–';
+                            dashItems[j].insertBefore(ds, dashItems[j].firstChild);
+                        }
+                    }
+
+                } else if (type === 'ol-numeric') {
+                    newList.style.listStyleType = 'persian';
+                    newList.style.paddingRight = '2.2em';
+
+                } else if (type === 'ol-persian') {
+                    newList.dataset.coffpenList = 'persian-alpha';
+                    applyLetterList(newList, ['الف','ب','پ','ت','ث','ج','چ','ح','خ','د','ذ','ر','ز','ژ','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ک','گ','ل','م','ن','و','ه','ی']);
+
+                } else if (type === 'ol-abjad') {
+                    newList.dataset.coffpenList = 'abjad';
+                    applyLetterList(newList, ['الف','ب','ج','د','ه','و','ز','ح','ط','ی','ک','ل','م','ن','س','ع','ف','ص','ق','ر','ش','ت','ث','خ','ذ','ض','ظ','غ']);
+
+                } else if (type === 'ul-dash') {
+                    newList.dataset.coffpenList = 'dash';
+                }
+
+                updateLiveStats();
+            }, 80);
+        }
+
+        function applyLetterList(listEl, letters) {
+            listEl.style.cssText += '; list-style-type: none; padding-right: 0; padding-left: 0;';
+            listEl.dataset.coffpenLetters = JSON.stringify(letters);
+            var items = listEl.querySelectorAll(':scope > li');
+            for (var i = 0; i < items.length; i++) {
+                var lbl = (i < letters.length ? letters[i] : String(i + 1)) + '.';
+                items[i].style.cssText = 'list-style:none; position:relative; padding-right:2.8em; padding-left:0; margin-bottom:0.2em;';
+                var prev = items[i].querySelector('.coffpen-label');
+                if (prev) {
+                    prev.textContent = lbl; // just update text, don't re-insert
+                } else {
+                    var sp = document.createElement('span');
+                    sp.className = 'coffpen-label';
+                    sp.contentEditable = 'false';
+                    sp.style.cssText = 'position:absolute;right:0;top:0;font-weight:700;color:var(--text-accent,#b56b6b);min-width:2.4em;text-align:right;user-select:none;pointer-events:none;';
+                    sp.textContent = lbl;
+                    items[i].insertBefore(sp, items[i].firstChild);
+                }
+            }
+        }
+
+        // Watch for new <li> elements created by pressing Enter in custom lists
+        (function initListObserver() {
+            var editor = document.getElementById('postContent');
+            if (!editor) return;
+            var obs = new MutationObserver(function(mutations) {
+                var listsToRefresh = new Set();
+                mutations.forEach(function(m) {
+                    if (m.type !== 'childList') return;
+                    m.addedNodes.forEach(function(n) {
+                        if (n.nodeName === 'LI') {
+                            var parent = n.parentElement;
+                            if (parent && parent.dataset.coffpenList) listsToRefresh.add(parent);
+                        }
+                    });
+                });
+                listsToRefresh.forEach(function(listEl) {
+                    var ctype = listEl.dataset.coffpenList;
+                    if (ctype === 'persian-alpha') {
+                        var letters = listEl.dataset.coffpenLetters ? JSON.parse(listEl.dataset.coffpenLetters) : ['الف','ب','پ','ت','ث','ج','چ','ح','خ','د','ذ','ر','ز','ژ','س','ش','ص','ض','ط','ظ','ع','غ','ف','ق','ک','گ','ل','م','ن','و','ه','ی'];
+                        applyLetterList(listEl, letters);
+                    } else if (ctype === 'abjad') {
+                        var letters2 = listEl.dataset.coffpenLetters ? JSON.parse(listEl.dataset.coffpenLetters) : ['الف','ب','ج','د','ه','و','ز','ح','ط','ی','ک','ل','م','ن','س','ع','ف','ص','ق','ر','ش','ت','ث','خ','ذ','ض','ظ','غ'];
+                        applyLetterList(listEl, letters2);
+                    } else if (ctype === 'dash') {
+                        listEl.querySelectorAll('li').forEach(function(li) {
+                            li.style.cssText = 'list-style:none; padding-right:1.8em; position:relative; margin-bottom:0.15em;';
+                            if (!li.querySelector('.coffpen-label')) {
+                                var ds = document.createElement('span');
+                                ds.className = 'coffpen-label';
+                                ds.contentEditable = 'false';
+                                ds.style.cssText = 'position:absolute;right:0;top:0;color:var(--text-muted);font-weight:500;pointer-events:none;';
+                                ds.textContent = '–';
+                                li.insertBefore(ds, li.firstChild);
+                            }
+                        });
+                    }
+                });
+            });
+            obs.observe(editor, { childList: true, subtree: true });
+        })();
+
+        function promptLink() {
+            var url = prompt('نشانی پیوند (URL) را وارد کنید:', 'https://');
+            if (url && url !== 'https://') {
+                execCmd('createLink', url);
+            }
+        }
+
+        function promptImage() {
+            var imgUrl = prompt('نشانی تصویر (URL) را وارد کنید:', '../assets/images/author-avatar.jpg');
+            if (imgUrl) {
+                execCmd('insertImage', imgUrl);
+            }
+        }
+
+        function switchEditorTab(tabName) {
+            var btnWrite = document.getElementById('tabBtnWrite');
+            var btnPreview = document.getElementById('tabBtnPreview');
+            var btnCode = document.getElementById('tabBtnCode');
+            var writeSection = document.getElementById('writeTabSection');
+            var previewSection = document.getElementById('previewTabSection');
+            var outputSection = document.getElementById('generatedOutput');
+
+            btnWrite.classList.remove('active');
+            btnPreview.classList.remove('active');
+            btnCode.classList.remove('active');
+
+            if (tabName === 'write') {
+                btnWrite.classList.add('active');
+                writeSection.style.display = 'block';
+                previewSection.style.display = 'none';
+                outputSection.classList.remove('show');
+            } else if (tabName === 'preview') {
+                btnPreview.classList.add('active');
+                writeSection.style.display = 'none';
+                previewSection.style.display = 'block';
+                outputSection.classList.remove('show');
+
+                renderLivePreview();
+            } else if (tabName === 'code') {
+                btnCode.classList.add('active');
+                writeSection.style.display = 'block';
+                previewSection.style.display = 'none';
+
+                generatePostHtml(new Event('submit'));
+            }
+        }
+
+        function renderLivePreview() {
+            var title = document.getElementById('postTitle').value || 'عنوان نوشته پیش‌نمایش';
+            var series = document.getElementById('postSeries') ? document.getElementById('postSeries').value.trim() : '';
+            var editor = document.getElementById('postContent');
+            var innerHtml = editor ? editor.innerHTML.trim() : '';
+
+            var titleElem = document.getElementById('previewPostTitle');
+            if (series) {
+                titleElem.innerHTML = '<div style="display: inline-flex; align-items: center; gap: 6px; background-color: var(--bg-tag); border: 1px solid var(--border-color); padding: 4px 12px; border-radius: 20px; font-size: 8.5pt; color: var(--text-accent); margin-bottom: 10px;"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg><span>بخشی از مجموعه: <b>' + series + '</b></span></div><br>' + title;
+            } else {
+                titleElem.innerText = title;
+            }
+
+            if (!innerHtml || innerHtml === '<br>') {
+                document.getElementById('previewPostBody').innerHTML = '<p style="color: var(--text-muted);">متن نوشته خالی است. برای مشاهده پیش‌نمایش در تب ویرایشگر مانند Microsoft Word متن بنویسید...</p>';
+                return;
+            }
+
+            document.getElementById('previewPostBody').innerHTML = innerHtml;
+        }
+
+        function updateLiveStats() {
+            var editor = document.getElementById('postContent');
+            var text = editor ? (editor.innerText || editor.textContent || '').trim() : '';
+            var words = text ? text.split(/\s+/).filter(Boolean).length : 0;
+            var chars = text.length;
+            var minutes = Math.max(1, Math.ceil(words / 180));
+
+            var statsElem = document.getElementById('editorLiveStats');
+            if (statsElem) {
+                statsElem.innerText = toPersianDigits(words) + ' کلمه • ' + toPersianDigits(chars) + ' کاراکتر • ~' + toPersianDigits(minutes) + ' دقیقه مطالعه';
+            }
+        }
+
+        function editExistingPost(id) {
+            var allMenus = document.querySelectorAll('.row-context-dropdown');
+            for (var i = 0; i < allMenus.length; i++) {
+                allMenus[i].classList.remove('active');
+            }
+
+            var post = postsData[id];
+            if (post) {
+                document.getElementById('postTitle').value = post.title;
+                document.getElementById('postSlug').value = post.slug;
+
+                var editor = document.getElementById('postContent');
+                var formattedHtml = post.content.split('\n').map(function(p) {
+                    return p.trim() ? '<p>' + p.trim() + '</p>' : '';
+                }).join('');
+                editor.innerHTML = formattedHtml;
+
+                document.getElementById('editorCardTitle').innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg> ویرایش نوشته: "' + post.title + '"';
+                document.getElementById('submitBtnText').innerText = 'بروزرسانی و کپی کد HTML نوشته';
+
+                updateLiveStats();
+                document.getElementById('editorCardTitle').scrollIntoView({ behavior: 'smooth' });
+                showToast('نوشته "' + post.title + '" در ویرایشگر بارگذاری شد!');
+            }
+        }
+
+        function showDeleteGuide(filePath) {
+            var allMenus = document.querySelectorAll('.row-context-dropdown');
+            for (var i = 0; i < allMenus.length; i++) {
+                allMenus[i].classList.remove('active');
+            }
+
+            var deleteHelpBox = document.getElementById('deleteHelpBox');
+            var deleteHelpText = document.getElementById('deleteHelpText');
+            deleteHelpText.innerHTML = 'برای حذف کامل این نوشته:<br>۱. فایل <code>' + filePath + '</code> را در پوشه پروژه حذف کنید.<br>۲. کارت پیش‌نمایش آن را از فایل <code>index.html</code> بردارید.<br>۳. در ترمینال دستور <code>git add . && git commit -m "حذف نوشته" && git push origin main</code> را اجرا کنید.';
+            deleteHelpBox.style.display = 'block';
+            deleteHelpBox.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function generatePostHtml(event) {
+            if (event) event.preventDefault();
+            var title = document.getElementById('postTitle').value || 'عنوان نوشته';
+            var editor = document.getElementById('postContent');
+            var storyHtml = editor ? editor.innerHTML.trim() : '';
+
+            if (!storyHtml || storyHtml === '<br>') {
+                showToast('لطفاً متن نوشته را وارد کنید.');
+                return;
+            }
+
+            var template = '<!DOCTYPE html>\n<html lang="fa" dir="rtl" data-theme="dark">\n<head>\n    <meta charset="utf-8">\n    <meta name="viewport" content="width=device-width, initial-scale=1">\n    <title>' + title + ' | سیاه و قلم</title>\n    <link rel="preconnect" href="https://fonts.googleapis.com">\n    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">\n    <link rel="stylesheet" href="../assets/css/style.css">\n</head>\n<body>\n    <div class="blackthemeBox">\n        <header>\n            <nav>\n                <ul>\n                    <li><a href="../index.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 10.5L12 3l9 7.5V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V10.5z"/><path d="M9 22V12h6v10"/></svg></a></li>\n                    <li><a href="../about.html"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/></svg></a></li>\n                    <li><button class="theme-toggle-btn" onclick="cycleTheme()"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18z"/><circle cx="7.5" cy="10.5" r="1" fill="currentColor"/><circle cx="12" cy="7.5" r="1" fill="currentColor"/><circle cx="16.5" cy="10.5" r="1" fill="currentColor"/><circle cx="15.5" cy="15.5" r="1" fill="currentColor"/></svg></button></li>\n                </ul>\n            </nav>\n            <div class="blackthemeInfo">\n                <h1><a href="../index.html">سیاه و قلم</a></h1>\n                <h2>یادداشت‌ها، داستان‌ها و نوشته‌های سهیل آقایانی (کاف پـن)</h2>\n            </div>\n        </header>\n        <div class="headerImage"></div>\n        <main>\n            <article class="blackthemePostBox">\n                <div class="blackthemePostInfo">\n                    <div class="blackthemePostInfoMain">\n                        <img src="../assets/images/author-avatar.jpg" alt="سهیل آقایانی" class="author-avatar-img">\n                        <div class="blackthemePostInfoContent">\n                            <h1 class="blackthemePostBoxTitle">' + title + '</h1>\n                            <span class="blackthemeDate"><b>سهیل آقایانی</b> &bull; ۱۴۰۵/۰۵/۰۷</span>\n                        </div>\n                    </div>\n                </div>\n                <div class="blackthemePostText story-body">\n' + storyHtml + '\n                </div>\n            </article>\n        </main>\n    </div>\n    <script src="../assets/js/main.js"><\/script>\n</body>\n</html>';
+
+            document.getElementById('generatedTextarea').value = template;
+            document.getElementById('generatedOutput').classList.add('show');
+            showToast('کد HTML نوشته با موفقیت تولید شد!');
+        }
+
+        function copyGeneratedCode() {
+            var textarea = document.getElementById('generatedTextarea');
+            textarea.select();
+            document.execCommand('copy');
+            showToast('کد HTML کپی شد!');
+        }
+    </script>
+</body>
+
+</html>
