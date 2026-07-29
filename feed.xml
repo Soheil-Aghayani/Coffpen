@@ -1,26 +1,24 @@
+---
+layout: null
+---
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="assets/css/rss.xsl"?>
+<?xml-stylesheet type="text/xsl" href="{{ '/assets/css/rss.xsl' | relative_url }}"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>سیاه و قلم (کاف پـن)</title>
-    <description>یادداشت‌ها، داستان‌های کوتاه و نوشته‌های سهیل آقایانی (کاف پـن)</description>
-    <link>https://soheil-aghayani.github.io/</link>
-    <atom:link href="https://soheil-aghayani.github.io/feed.xml" rel="self" type="application/rss+xml"/>
+    <title>{{ site.title | xml_escape }}</title>
+    <description>{{ site.description | xml_escape }}</description>
+    <link>{{ site.url }}{{ site.baseurl }}/</link>
+    <atom:link href="{{ site.url }}{{ site.baseurl }}/feed.xml" rel="self" type="application/rss+xml"/>
     <language>fa-ir</language>
-    <lastBuildDate>Wed, 29 Jul 2026 12:42:00 +0330</lastBuildDate>
+    <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
+    {% for post in site.posts %}
     <item>
-      <title>خوش آمدید به خانه جدید کاف پـن</title>
-      <description>این نخستین یادداشت در این سالنامه است. جایی برای ثبت کلمات، تجربه‌های توسعه وب، و داستان‌هایی که در طول مسیر متولد می‌شوند.</description>
-      <pubDate>Wed, 29 Jul 2026 00:00:00 +0330</pubDate>
-      <link>https://soheil-aghayani.github.io/posts/welcome-to-coffpen.html</link>
-      <guid isPermaLink="true">https://soheil-aghayani.github.io/posts/welcome-to-coffpen.html</guid>
+      <title>{{ post.title | xml_escape }}</title>
+      <description>{{ post.description | default: post.excerpt | strip_html | normalize_whitespace | xml_escape }}</description>
+      <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
+      <link>{{ site.url }}{{ site.baseurl }}{{ post.url }}</link>
+      <guid isPermaLink="true">{{ site.url }}{{ site.baseurl }}{{ post.url }}</guid>
     </item>
-    <item>
-      <title>وقتی کلمات در شب بیدار می‌شوند</title>
-      <description>گاهی در انتهای شب، کلمات رنگ دیگری به خود می‌گیرند. نوشتن درباره برنامه‌نویسی و طراحی وب، فراتر از کدهاست.</description>
-      <pubDate>Wed, 29 Jul 2026 00:00:00 +0330</pubDate>
-      <link>https://soheil-aghayani.github.io/posts/second-story.html</link>
-      <guid isPermaLink="true">https://soheil-aghayani.github.io/posts/second-story.html</guid>
-    </item>
+    {% endfor %}
   </channel>
 </rss>

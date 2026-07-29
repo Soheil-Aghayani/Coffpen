@@ -585,6 +585,17 @@
             border: 1px solid var(--border-color);
         }
 
+        .admin-static-posts {
+            display: none;
+        }
+
+        .empty-admin-posts {
+            margin: 0;
+            color: var(--text-muted);
+            font-size: 9pt;
+            line-height: 2;
+        }
+
         /* Code Output Box */
         .generated-code-box {
             display: none;
@@ -691,10 +702,11 @@
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                         نوشته‌های فعال وبلاگ
                     </h3>
-                    <span class="badge-status">۲ نوشته</span>
+                    <span class="badge-status">۰ نوشته</span>
                 </div>
 
-                <table class="admin-table">
+                <p class="empty-admin-posts">در حال حاضر نوشتهٔ نمونه‌ای برای نمایش وجود ندارد. نوشته‌های منتشرشده در این فهرست ظاهر می‌شوند.</p>
+                <table class="admin-table" aria-label="نوشته‌های فعال">
                     <thead>
                         <tr>
                             <th>عنوان نوشته</th>
@@ -704,7 +716,10 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr id="post-row-1">
+                        <tr>
+                            <td colspan="4" class="admin-empty-row">هنوز نوشته‌ای منتشر نشده است.</td>
+                        </tr>
+                        <tr id="post-row-1" class="admin-static-posts" aria-hidden="true">
                             <td><strong>خوش آمدید به خانه جدید کاف پـن</strong></td>
                             <td>سهیل آقایانی</td>
                             <td>۱۴۰۵/۰۵/۰۷</td>
@@ -733,7 +748,7 @@
                                 </div>
                             </td>
                         </tr>
-                        <tr id="post-row-2">
+                        <tr id="post-row-2" class="admin-static-posts" aria-hidden="true">
                             <td><strong>وقتی کلمات در شب بیدار می‌شوند</strong></td>
                             <td>سهیل آقایانی</td>
                             <td>۱۴۰۵/۰۵/۰۷</td>
@@ -976,21 +991,6 @@
 
     <script>
         var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
-
-        var postsData = {
-            1: {
-                id: 1,
-                title: 'خوش آمدید به خانه جدید کاف پـن',
-                slug: 'welcome-to-coffpen.html',
-                content: 'این نخستین یادداشت در این سالنامه است. جایی برای ثبت کلمات، تجربه‌های توسعه وب، و داستان‌هایی که در طول مسیر متولد می‌شوند.\nوقتی نوشتن را آغاز می‌کنیم، هر خط کدی که می‌زنیم و هر جمله‌ای که ثبت می‌کنیم، بخشی از مسیر یادگیری و خلق کردن است.'
-            },
-            2: {
-                id: 2,
-                title: 'وقتی کلمات در شب بیدار می‌شوند',
-                slug: 'second-story.html',
-                content: 'گاهی در انتهای شب، کلمات رنگ دیگری به خود می‌گیرند. نوشتن درباره برنامه‌نویسی و طراحی وب، فراتر از کدهاست.\nسکوت شب فرصتی است برای تامل روی خطوط کدهایی که نوشته‌ایم و داستان‌هایی که هنوز به زبان نیاورده‌ایم.'
-            }
-        };
 
         // Initialize Theme & Authentication Check
         window.addEventListener('DOMContentLoaded', function () {

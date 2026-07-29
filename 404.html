@@ -4,11 +4,13 @@ title: "صفحه پیدا نشد (404)"
 permalink: /404.html
 ---
 
-<article class="blackthemePostBox" style="text-align: center; padding: 60px 20px;">
-    <h1 style="font-size: 4em; margin-bottom: 10px; color: #737685;">404</h1>
-    <h2 style="font-size: 1.5em; margin-bottom: 20px;">صفحه مورد نظر یافت نشد!</h2>
-    <p style="color: #737685; margin-bottom: 30px;">ممکن است آدرس به اشتباه وارد شده یا نوشته حذف شده باشد.</p>
-    <a href="{{ '/' | relative_url }}" class="share-btn share-btn-native" style="display: inline-flex; text-decoration: none;">
-        بازگشت به صفحه اصلی &rarr;
-    </a>
-</article>
+<section class="not-found" aria-labelledby="not-found-title">
+    <p class="not-found-kicker">خطای ۴۰۴</p>
+    <div class="not-found-code" aria-hidden="true">404</div>
+    <h1 id="not-found-title">این صفحه پیدا نشد.</h1>
+    <p>ممکن است نشانی تغییر کرده باشد، یا نوشته‌ای که دنبالش هستید دیگر منتشر نشده باشد.</p>
+    <div class="not-found-actions">
+        <a href="{{ '/' | relative_url }}" class="not-found-primary">بازگشت به خانه <span aria-hidden="true">←</span></a>
+        <a href="{{ '/about/' | relative_url }}" class="not-found-secondary">درباره کاف پـن</a>
+    </div>
+</section>

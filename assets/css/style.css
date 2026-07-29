@@ -343,6 +343,87 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     margin-bottom: 20px;
 }
 
+/* Homepage and 404 states */
+.home-intro {
+    margin: 0 0 42px;
+    max-width: 620px;
+}
+
+.eyebrow, .not-found-kicker {
+    margin: 0 0 8px;
+    color: var(--text-accent);
+    font-size: 8.5pt;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.home-intro h1 {
+    margin: 0 0 10px;
+    font-size: 1.85em;
+}
+
+.home-intro p:not(.eyebrow) {
+    margin: 0;
+    color: var(--text-muted);
+}
+
+.post-preview { animation: fadeInUp 0.45s ease both; }
+
+.empty-posts, .not-found {
+    text-align: center;
+    max-width: 680px;
+    margin: 40px auto 65px;
+    padding: clamp(32px, 8vw, 72px) clamp(22px, 7vw, 76px);
+    background: linear-gradient(145deg, var(--bg-card), var(--bg-box));
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    box-shadow: var(--shadow-box);
+}
+
+.empty-posts-icon {
+    display: inline-grid;
+    place-items: center;
+    width: 48px;
+    height: 48px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    color: var(--text-accent);
+    background: var(--bg-tag);
+    font-size: 1.4em;
+}
+
+.empty-posts h2, .not-found h1 { margin: 0 0 12px; font-size: 1.5em; }
+.empty-posts p, .not-found > p { margin: 0; color: var(--text-muted); line-height: 2; }
+
+.empty-posts-link, .not-found-primary, .not-found-secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 42px;
+    padding: 8px 18px;
+    border-radius: 10px;
+    font-size: 9pt;
+    font-weight: 700;
+}
+
+.empty-posts-link, .not-found-primary {
+    margin-top: 22px;
+    color: var(--bg-box);
+    background: var(--text-main);
+}
+
+.empty-posts-link:hover, .not-found-primary:hover { color: var(--bg-box) !important; background: var(--text-accent); }
+
+.not-found { position: relative; overflow: hidden; }
+.not-found::before { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at 50% 0%, color-mix(in srgb, var(--text-accent) 18%, transparent), transparent 48%); pointer-events: none; }
+.not-found > * { position: relative; }
+.not-found-code { color: var(--text-accent); font-size: clamp(4.8rem, 16vw, 8.8rem); font-weight: 700; letter-spacing: -0.08em; line-height: 1; opacity: 0.9; }
+.not-found-actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 26px; }
+.not-found-primary { margin-top: 0; }
+.not-found-secondary { border: 1px solid var(--border-color); color: var(--text-main); background: var(--bg-tag); }
+.not-found-secondary:hover { border-color: var(--text-accent); }
+
 .blackthemePostInfo {
     display: flex;
     flex-direction: row;
