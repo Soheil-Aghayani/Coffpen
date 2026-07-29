@@ -511,14 +511,25 @@ function initStoryHero() {
     const progressBar = hero.querySelector('.story-hero-progress-track span');
     const progressValue = hero.querySelector('.story-hero-progress-value');
     let ticking = false;
+    function renderStoryHeroProgress(percent) {
+        const normalized = Math.min(1, Math.max(0, Number(percent) || 0));
+        progressBar.style.transform = 'scaleX(' + normalized + ')';
+        progressValue.textContent = Math.round(normalized * 100).toLocaleString('fa-IR') + '٪';
+    }
     function updateStoryHeroProgress() {
+        if (document.body.classList.contains('reader-book-mode')) {
+            ticking = false;
+            return;
+        }
         const rect = story.getBoundingClientRect();
         const total = Math.max(1, story.scrollHeight - window.innerHeight * 0.55);
         const percent = Math.min(1, Math.max(0, (-rect.top + window.innerHeight * 0.3) / total));
-        progressBar.style.transform = 'scaleX(' + percent + ')';
-        progressValue.textContent = Math.round(percent * 100).toLocaleString('fa-IR') + '٪';
+        renderStoryHeroProgress(percent);
         ticking = false;
     }
+    window.addEventListener('coffpen:reader-progress', function (event) {
+        if (event.detail) renderStoryHeroProgress(event.detail.percent);
+    });
     window.addEventListener('scroll', function () {
         if (ticking) return;
         ticking = true;
@@ -873,11 +884,22 @@ function initLongformReader() {
         const read = Math.max(0, -rect.top + window.innerHeight * 0.25);
         const percent = Math.min(1, read / total);
         progress.querySelector('span').style.transform = 'scaleX(' + percent + ')';
+        window.dispatchEvent(new CustomEvent('coffpen:reader-progress', {
+            detail: { percent: percent, mode: 'scroll' }
+        }));
     }
 
     function updateBookProgress() {
-        const percent = pages.length > 1 ? currentPage / (pages.length - 1) : 1;
+        const percent = pages.length ? (currentPage + 1) / pages.length : 0;
         progress.querySelector('span').style.transform = 'scaleX(' + percent + ')';
+        window.dispatchEvent(new CustomEvent('coffpen:reader-progress', {
+            detail: {
+                percent: percent,
+                mode: 'book',
+                page: currentPage + 1,
+                totalPages: pages.length
+            }
+        }));
     }
 
     function saveReaderPosition(force) {
