@@ -113,9 +113,79 @@ function initContextMenu() {
 let currentShareTitle = '';
 let currentShareUrl = '';
 
+function getStoryShareData() {
+    const heading = document.querySelector('.blackthemePostBoxTitle, .story-hero h1, article h1');
+    const canonical = document.querySelector('link[rel="canonical"]');
+    const cleanUrl = new URL(canonical ? canonical.href : window.location.href, window.location.href);
+    cleanUrl.hash = '';
+    cleanUrl.search = '';
+
+    return {
+        title: heading && heading.textContent.trim() ? heading.textContent.trim() + ' | سیاه و قلم' : document.title,
+        url: cleanUrl.href
+    };
+}
+
+function ensureStoryShareUi() {
+    if (!document.getElementById('toast-notification')) {
+        const toast = document.createElement('div');
+        toast.id = 'toast-notification';
+        toast.className = 'toast-notification';
+        toast.setAttribute('aria-live', 'polite');
+        toast.innerHTML = '<span>لینک نوشته با موفقیت کپی شد!</span>';
+        document.body.appendChild(toast);
+    }
+
+    if (document.getElementById('shareModal')) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'shareModal';
+    modal.className = 'share-modal-overlay';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'shareModalTitle');
+    modal.setAttribute('aria-hidden', 'true');
+    modal.innerHTML =
+        '<div class="share-modal-card">' +
+            '<div class="share-modal-header">' +
+                '<h3 id="shareModalTitle">اشتراک‌گذاری نوشته</h3>' +
+                '<button type="button" class="share-modal-close" aria-label="بستن پنجره">' + readerIcon('x') + '</button>' +
+            '</div>' +
+            '<div class="share-grid">' +
+                '<button type="button" class="share-grid-item" data-share-target="whatsapp">' + readerIcon('message') + '<span>واتساپ</span></button>' +
+                '<button type="button" class="share-grid-item" data-share-target="telegram">' + readerIcon('send') + '<span>تلگرام</span></button>' +
+                '<button type="button" class="share-grid-item" data-share-target="x">' + readerIcon('x') + '<span>ایکس</span></button>' +
+                '<button type="button" class="share-grid-item" data-share-target="copy">' + readerIcon('link') + '<span>کپی لینک</span></button>' +
+            '</div>' +
+            '<div class="share-link-box">' +
+                '<input id="shareModalInput" class="share-link-input" type="text" readonly aria-label="نشانی نوشته">' +
+                '<button type="button" class="share-copy-btn">کپی</button>' +
+            '</div>' +
+        '</div>';
+    document.body.appendChild(modal);
+
+    modal.addEventListener('click', function (event) {
+        if (event.target === modal || event.target.closest('.share-modal-close')) {
+            closeShareModal();
+            return;
+        }
+        const target = event.target.closest('[data-share-target]');
+        if (!target) return;
+        if (target.dataset.shareTarget === 'whatsapp') shareToWhatsApp();
+        else if (target.dataset.shareTarget === 'telegram') shareToTelegram();
+        else if (target.dataset.shareTarget === 'x') shareToX();
+        else copyModalLink();
+    });
+    modal.querySelector('.share-copy-btn').addEventListener('click', copyModalLink);
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape' && modal.classList.contains('active')) closeShareModal();
+    });
+}
+
 function handleSmartShare(event, title, url) {
     if (event) event.preventDefault();
 
+    ensureStoryShareUi();
     const targetTitle = title || document.title;
     const targetUrl = url || window.location.href;
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
@@ -124,12 +194,13 @@ function handleSmartShare(event, title, url) {
         if (navigator.share) {
             navigator.share({
                 title: targetTitle,
+                text: targetTitle,
                 url: targetUrl
-            }).catch(function () {
-                copyStoryLink(targetUrl);
+            }).catch(function (error) {
+                if (!error || error.name !== 'AbortError') openShareModal(targetTitle, targetUrl, event);
             });
         } else {
-            copyStoryLink(targetUrl);
+            openShareModal(targetTitle, targetUrl, event);
         }
     } else {
         openShareModal(targetTitle, targetUrl, event);
@@ -137,6 +208,7 @@ function handleSmartShare(event, title, url) {
 }
 
 function openShareModal(title, url, event) {
+    ensureStoryShareUi();
     currentShareTitle = title || document.title;
     currentShareUrl = url || window.location.href;
 
@@ -146,6 +218,11 @@ function openShareModal(title, url, event) {
     if (modal && input) {
         input.value = currentShareUrl;
         modal.classList.add('active');
+        modal.setAttribute('aria-hidden', 'false');
+        window.setTimeout(function () {
+            const closeButton = modal.querySelector('.share-modal-close');
+            if (closeButton) closeButton.focus();
+        }, 0);
     }
 }
 
@@ -153,6 +230,7 @@ function closeShareModal() {
     const modal = document.getElementById('shareModal');
     if (modal) {
         modal.classList.remove('active');
+        modal.setAttribute('aria-hidden', 'true');
     }
 }
 
@@ -343,9 +421,23 @@ function initPostRegistry() {
                 '</div>' +
             '</div>' +
             '<div class="blackthemePostText"><p>' + escapeHtml(post.description) + '</p>' + tags + '</div>' +
-            '<div class="post-action-bar"><div class="blackthemeCont"><a href="' + escapeHtml(post.url) + '">ادامه نوشته &larr;</a></div>' + emptyBadge + '</div>' +
+            '<div class="post-action-bar">' +
+                '<div class="blackthemeCont"><a href="' + escapeHtml(post.url) + '">ادامه نوشته &larr;</a></div>' +
+                '<div class="post-preview-actions">' + emptyBadge +
+                    '<button type="button" class="share-icon-btn post-preview-share" data-share-title="' + escapeHtml(post.title) +
+                        '" data-share-url="' + escapeHtml(post.url) + '" aria-label="اشتراک‌گذاری «' + escapeHtml(post.title) +
+                        '»" title="اشتراک‌گذاری نوشته">' + readerIcon('share') + '</button>' +
+                '</div>' +
+            '</div>' +
         '</article>';
     }).join('');
+
+    postList.addEventListener('click', function (event) {
+        const shareButton = event.target.closest('.post-preview-share');
+        if (!shareButton) return;
+        const shareUrl = new URL(shareButton.dataset.shareUrl, window.location.href).href;
+        handleSmartShare(event, shareButton.dataset.shareTitle + ' | سیاه و قلم', shareUrl);
+    });
 
     postList.hidden = false;
     if (emptyState) emptyState.hidden = true;
@@ -634,6 +726,7 @@ function initLongformReader() {
             readerIcon('clock') + '<span>' + readMinutes.toLocaleString('fa-IR') + ' دقیقه</span>' +
         '</div>' +
         '<div class="reader-actions">' +
+            readerButton('share', 'share', 'اشتراک‌گذاری نوشته') +
             readerButton('mode', 'book', 'حالت ورق‌زدن') +
             readerButton('bookmark', 'bookmark', 'ذخیره محل مطالعه') +
             readerButton('focus', 'focus', 'حالت تمرکز') +
@@ -920,7 +1013,10 @@ function initLongformReader() {
         if (!button) return;
         const action = button.dataset.readerAction;
 
-        if (action === 'mode') {
+        if (action === 'share') {
+            const shareData = getStoryShareData();
+            handleSmartShare(event, shareData.title, shareData.url);
+        } else if (action === 'mode') {
             setMode(prefs.mode === 'book' ? 'scroll' : 'book');
         } else if (action === 'bookmark') {
             prefs.rememberPosition = !prefs.rememberPosition;
@@ -1069,6 +1165,11 @@ function readerIcon(name) {
         lines: '<path d="M4 6h16M4 12h16M4 18h16"/>',
         width: '<path d="M4 8V4h4M20 8V4h-4M4 16v4h4M20 16v4h-4"/><path d="M8 12h8"/>',
         sun: '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+        share: '<circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.7 10.7 6.6-4.1M8.7 13.3l6.6 4.1"/>',
+        message: '<path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.4 9.4 0 0 1-4-.9L3 21l1.8-4.7A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 9.5c1 2.5 2.5 4 5 5"/>',
+        send: '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
+        link: '<path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/>',
+        x: '<path d="M6 6l12 12M18 6 6 18"/>',
         'chevron-right': '<path d="m9 18 6-6-6-6"/>',
         'chevron-left': '<path d="m15 18-6-6 6-6"/>'
     };

@@ -1132,6 +1132,20 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     stroke: currentColor;
 }
 
+.post-preview-actions {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.share-icon-btn.post-preview-share {
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border-radius: 10px;
+}
+
 /* Story Comments Section & Fallback Box */
 .story-comments-wrapper {
     margin-top: 45px;
@@ -1443,6 +1457,14 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     pointer-events: all;
 }
 
+.share-modal-overlay[aria-hidden="true"] {
+    visibility: hidden;
+}
+
+.share-modal-overlay.active[aria-hidden="false"] {
+    visibility: visible;
+}
+
 .share-modal-card {
     width: 100%;
     max-width: 440px;
@@ -1511,6 +1533,8 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     font-size: 8pt;
     font-weight: 500;
     border: 1px solid var(--border-color);
+    font-family: inherit;
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
@@ -2338,6 +2362,9 @@ html[data-reader-theme="dark"] .reader-book-page {
 }
 
 @media screen and (max-width: 520px) {
+    .reader-toolbar { justify-content: center; padding-inline: 6px; }
+    .reader-stat { display: none; }
+    .reader-actions { width: 100%; justify-content: space-between; gap: 2px; }
     .story-hero { grid-template-columns: 1fr; }
     .story-hero-chapter {
         grid-template-columns: auto auto 1fr;
