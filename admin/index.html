@@ -1104,6 +1104,29 @@
             font-weight: 700;
         }
 
+        .series-clear {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 10px;
+            padding: 7px 11px;
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            background: transparent;
+            color: var(--text-muted);
+            font-family: inherit;
+            font-size: 7.75pt;
+            font-weight: 700;
+            cursor: pointer;
+            transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+        }
+
+        .series-clear:hover {
+            border-color: var(--text-accent);
+            background: var(--bg-tag);
+            color: var(--text-accent);
+        }
+
         @media screen and (max-width: 620px) {
             .slug-input-row {
                 grid-template-columns: 1fr;
@@ -1515,6 +1538,7 @@
                                             <label for="postSeries">پلی‌لیست / مجموعه</label>
                                             <select id="postSeries" class="form-control series-picker" onchange="handleSeriesSelection()" disabled>
                                                 <option value="">یک پلی‌لیست انتخاب کن…</option>
+                                                <option value="__standalone__">بدون پلی‌لیست — انتشار مستقل</option>
                                                 <option value="__new__">＋ ساخت پلی‌لیست جدید</option>
                                             </select>
                                             <div id="newSeriesField" class="series-new-field" hidden>
@@ -1533,6 +1557,10 @@
                                         </div>
                                     </div>
                                     <p id="seriesSummary" class="series-summary">نمونه نمایش: نام مجموعه • قسمت ۱</p>
+                                    <button type="button" class="series-clear" onclick="clearSeriesSelection(true)">
+                                        <i data-lucide="unlink" aria-hidden="true"></i>
+                                        لغو پلی‌لیست و انتشار به‌صورت مستقل
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -2359,7 +2387,9 @@
             var totalInput = document.getElementById('postEpisodeTotal');
             var selectedValue = seriesSelect ? seriesSelect.value : '';
             var enteredName = newNameInput ? newNameInput.value.trim() : '';
-            var name = selectedValue === '__new__' ? enteredName : selectedValue;
+            var name = selectedValue === '__new__'
+                ? enteredName
+                : (selectedValue === '__standalone__' ? '' : selectedValue);
             var exactMatch = findMatchingSeries(name);
             if (selectedValue === '__new__' && exactMatch) name = exactMatch;
 
@@ -2414,7 +2444,7 @@
         function seriesEditDistance(first, second) {
             var a = Array.from(first || '');
             var b = Array.from(second || '');
-            var previous = b.map(function (_, index) { return index; });
+            var previous = [0].concat(b.map(function (_, index) { return index + 1; }));
             for (var row = 1; row <= a.length; row += 1) {
                 var current = [row];
                 for (var column = 1; column <= b.length; column += 1) {
@@ -2426,7 +2456,7 @@
                 }
                 previous = current;
             }
-            return previous[b.length] || 0;
+            return previous[b.length];
         }
 
         function findNearSeriesName(value) {
@@ -2453,6 +2483,7 @@
             });
             var names = getPublishedSeriesNames(posts);
             select.innerHTML = '<option value="">یک پلی‌لیست انتخاب کن…</option>' +
+                '<option value="__standalone__">بدون پلی‌لیست — انتشار مستقل</option>' +
                 names.map(function (name) {
                     var count = Number(episodeCounts[normalizeSeriesIdentity(name)] || 0).toLocaleString('fa-IR');
                     return '<option value="' + escapeAdminText(name) + '">' +
@@ -2556,6 +2587,10 @@
         }
 
         function handleSeriesSelection(shouldFocus) {
+            if (document.getElementById('postSeries').value === '__standalone__') {
+                clearSeriesSelection(true);
+                return;
+            }
             updateNewSeriesField();
             updateSeriesSummary();
             refreshSlugForIdentityChange();
@@ -2564,6 +2599,23 @@
             if (shouldFocus !== false && document.getElementById('postSeries').value === '__new__') {
                 window.setTimeout(function () { document.getElementById('postSeriesNew').focus(); }, 50);
             }
+        }
+
+        function clearSeriesSelection(notify) {
+            var toggle = document.getElementById('postHasSeries');
+            var select = document.getElementById('postSeries');
+            var newNameInput = document.getElementById('postSeriesNew');
+            var episodeInput = document.getElementById('postEpisode');
+            var totalInput = document.getElementById('postEpisodeTotal');
+
+            if (toggle) toggle.checked = false;
+            if (select) select.value = '';
+            if (newNameInput) newNameInput.value = '';
+            if (episodeInput) episodeInput.value = '';
+            if (totalInput) totalInput.value = '';
+            toggleSeriesFields();
+
+            if (notify) showToast('پلی‌لیست لغو شد؛ این نوشته به‌صورت مستقل منتشر می‌شود.');
         }
 
         function handleNewSeriesInput() {
