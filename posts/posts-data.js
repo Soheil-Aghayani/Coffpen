@@ -2,15 +2,15 @@
 window.COFFPEN_POSTS = Object.freeze([
   {
     "title": "غم",
-    "url": "posts/%D8%BA%D9%85.html",
-    "filename": "غم.html",
+    "url": "posts/%D8%BA%D9%85-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html",
+    "filename": "غم-قسمت-۱.html",
     "description": "- آقای هانس، می‌دونی وقتی احساساتی مثل غم رو خفه کنی چی می‌شه؟ + نمی‌دونم، باعث می‌شه افسرده بشی؟ - حدس خوبی بود. اما وقتی غم روی هم تلبار بشه و سعی هم نشه به بیرون ریخته بشه در فرم‌های…",
     "author": "سهیل آقایانی",
     "tags": [],
-    "series": "",
-    "episode": "",
+    "series": "هانس و جان",
+    "episode": "1",
     "wordCount": 639,
-    "date": "2026-07-29T21:15:29.929Z",
+    "date": "2026-07-29T21:34:15.691Z",
     "empty": false
   },
   {
