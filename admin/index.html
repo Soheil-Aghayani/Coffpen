@@ -2075,7 +2075,7 @@
         }
 
         function getGeneratedFilename() {
-            var slug = editingPostFilename || document.getElementById('postSlug').value.trim();
+            var slug = document.getElementById('postSlug').value.trim() || editingPostFilename;
             if (!slug) slug = createSlugFromTitle(document.getElementById('postTitle').value);
             slug = slug.replace(/[\\/:*?"<>|]/g, '-').replace(/\.html?$/i, '') + '.html';
             return slug;
@@ -2083,11 +2083,16 @@
 
         async function saveGeneratedHtmlFile(html) {
             var filename = getGeneratedFilename();
+            if (editingPostFilename && filename !== editingPostFilename) {
+                editingPostHandle = null;
+            }
             try {
                 if (editingPostHandle) {
                     var existingWritable = await editingPostHandle.createWritable();
                     await existingWritable.write(html);
                     await existingWritable.close();
+                    editingPostFilename = filename;
+                    document.getElementById('postSlug').value = filename;
                     localStorage.removeItem(ADMIN_DRAFT_KEY);
                     showToast('تغییرات داخل فایل اصلی ذخیره شد.');
                     return;
@@ -2105,6 +2110,8 @@
                     await writable.write(html);
                     await writable.close();
                     editingPostFilename = handle.name || filename;
+                    editingPostHandle = handle;
+                    document.getElementById('postSlug').value = editingPostFilename;
                     localStorage.removeItem(ADMIN_DRAFT_KEY);
                     showToast('فایل HTML با محتوای کامل ذخیره شد.');
                     return;
