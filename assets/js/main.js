@@ -392,6 +392,9 @@ function initLongformReader() {
     const story = document.querySelector('.story-body');
     if (!story || story.dataset.readerReady === 'true') return;
     story.dataset.readerReady = 'true';
+    story.querySelectorAll('[style*="font-size"]').forEach(function (element) {
+        element.style.removeProperty('font-size');
+    });
 
     const plainText = (story.innerText || story.textContent || '').trim();
     const wordCount = plainText ? plainText.split(/\s+/).filter(Boolean).length : 0;
@@ -405,7 +408,8 @@ function initLongformReader() {
         lineHeight: 2.1,
         width: 760,
         readerTheme: 'auto',
-        focus: false
+        focus: false,
+        rememberPosition: false
     }, readReaderStorage(prefsKey, {}));
 
     const toolbar = document.createElement('div');
@@ -475,7 +479,12 @@ function initLongformReader() {
         }).join('');
     }
 
-    addReaderPausePoint(story, wordCount, storageKey);
+    addReaderPausePoint(story, wordCount, function () {
+        prefs.rememberPosition = true;
+        applyReaderPreferences();
+        saveReaderPosition(true);
+        showToast('این نقطه ذخیره شد و یادآوری محل مطالعه روشن است.');
+    });
     applyReaderPreferences();
 
     let pages = [];
@@ -492,6 +501,13 @@ function initLongformReader() {
         document.body.classList.toggle('reader-focus', Boolean(prefs.focus));
         const focusButton = toolbar.querySelector('[data-reader-action="focus"]');
         if (focusButton) focusButton.classList.toggle('active', Boolean(prefs.focus));
+        const bookmarkButton = toolbar.querySelector('[data-reader-action="bookmark"]');
+        if (bookmarkButton) {
+            bookmarkButton.classList.toggle('active', Boolean(prefs.rememberPosition));
+            bookmarkButton.setAttribute('aria-pressed', prefs.rememberPosition ? 'true' : 'false');
+            bookmarkButton.setAttribute('title', prefs.rememberPosition ? 'غیرفعال‌کردن ذخیره محل مطالعه' : 'فعال‌کردن ذخیره محل مطالعه');
+            bookmarkButton.setAttribute('aria-label', prefs.rememberPosition ? 'غیرفعال‌کردن ذخیره محل مطالعه' : 'فعال‌کردن ذخیره محل مطالعه');
+        }
         updateReaderSettingsLabels(toolbar, prefs);
         writeReaderStorage(prefsKey, prefs);
     }
@@ -661,7 +677,8 @@ function initLongformReader() {
         progress.querySelector('span').style.transform = 'scaleX(' + percent + ')';
     }
 
-    function saveReaderPosition() {
+    function saveReaderPosition(force) {
+        if (!prefs.rememberPosition && force !== true) return;
         const data = prefs.mode === 'book'
             ? { mode: 'book', block: getCurrentBookBlock(), page: currentPage, savedAt: Date.now() }
             : {
@@ -681,9 +698,15 @@ function initLongformReader() {
         if (action === 'mode') {
             setMode(prefs.mode === 'book' ? 'scroll' : 'book');
         } else if (action === 'bookmark') {
-            saveReaderPosition();
-            showToast('محل مطالعه ذخیره شد.');
-            button.classList.add('active');
+            prefs.rememberPosition = !prefs.rememberPosition;
+            applyReaderPreferences();
+            if (prefs.rememberPosition) {
+                saveReaderPosition(true);
+                showToast('ذخیره خودکار محل مطالعه فعال شد.');
+            } else {
+                writeReaderStorage(storageKey, {});
+                showToast('ذخیره محل مطالعه غیرفعال و موقعیت قبلی پاک شد.');
+            }
         } else if (action === 'focus') {
             prefs.focus = !prefs.focus;
             button.classList.toggle('active', prefs.focus);
@@ -696,7 +719,10 @@ function initLongformReader() {
             tocPanel.hidden = !tocPanel.hidden;
             toolbar.querySelector('.reader-settings-panel').hidden = true;
         } else if (action === 'font-up' || action === 'font-down') {
-            prefs.fontScale = Math.min(1.35, Math.max(0.85, prefs.fontScale + (action === 'font-up' ? 0.08 : -0.08)));
+            const fontChange = action === 'font-up' ? 0.1 : -0.1;
+            prefs.fontScale = Math.round(
+                Math.min(1.6, Math.max(0.8, Number(prefs.fontScale || 1) + fontChange)) * 100
+            ) / 100;
             applyReaderPreferences();
             rebuildBookAfterPreferenceChange();
         } else if (action === 'line-height') {
@@ -734,8 +760,10 @@ function initLongformReader() {
     book.addEventListener('click', function (event) {
         const pauseButton = event.target.closest('.reader-pause-point button');
         if (pauseButton) {
-            saveReaderPosition();
-            showToast('این صفحه برای ادامه مطالعه ذخیره شد.');
+            prefs.rememberPosition = true;
+            applyReaderPreferences();
+            saveReaderPosition(true);
+            showToast('این صفحه ذخیره شد و یادآوری محل مطالعه روشن است.');
             return;
         }
         const pageButton = event.target.closest('[data-page-action]');
@@ -772,14 +800,18 @@ function initLongformReader() {
         }, 180);
     });
 
-    maybeShowResumeNotice(savedPosition, story, function (block) {
-        if (prefs.mode === 'book') buildBookPages(block);
-        else scrollToReaderBlock(story, block, true);
-    }, function () {
-        writeReaderStorage(storageKey, {});
-    });
+    if (prefs.rememberPosition) {
+        maybeShowResumeNotice(savedPosition, story, function (block) {
+            if (prefs.mode === 'book') buildBookPages(block);
+            else scrollToReaderBlock(story, block, true);
+        }, function () {
+            writeReaderStorage(storageKey, {});
+        });
+    }
 
-    window.addEventListener('beforeunload', saveReaderPosition);
+    window.addEventListener('beforeunload', function () {
+        saveReaderPosition();
+    });
 
     setMode(prefs.mode, 0);
     updateScrollProgress();
@@ -828,7 +860,7 @@ function updateReaderSettingsLabels(toolbar, prefs) {
     if (theme) theme.textContent = { auto: 'خودکار', paper: 'کاغذی', light: 'روشن', dark: 'تاریک' }[prefs.readerTheme] || 'خودکار';
 }
 
-function addReaderPausePoint(story, wordCount, storageKey) {
+function addReaderPausePoint(story, wordCount, onSave) {
     if (wordCount < 700 || story.querySelector('.reader-pause-point')) return;
     const blocks = Array.from(story.children);
     if (blocks.length < 6) return;
@@ -839,9 +871,7 @@ function addReaderPausePoint(story, wordCount, storageKey) {
         readerIcon('bookmark') + 'ذخیره و ادامه در فرصتی دیگر</button>';
     middle.insertAdjacentElement('afterend', marker);
     marker.querySelector('button').addEventListener('click', function () {
-        const block = Array.from(story.children).indexOf(marker);
-        writeReaderStorage(storageKey, { mode: 'scroll', block: block, percent: getReaderScrollPercent(story), savedAt: Date.now() });
-        showToast('این نقطه برای ادامه مطالعه ذخیره شد.');
+        if (typeof onSave === 'function') onSave();
     });
 }
 

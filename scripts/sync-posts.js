@@ -74,7 +74,7 @@ function parsePost(filename) {
         /<title[^>]*>([\s\S]*?)<\/title>/i
     ]).split(/\s*[|–—]\s*/)[0] || fallback.title;
 
-    const description = firstMatch(html, [
+    let description = firstMatch(html, [
         /<meta[^>]+name=["']description["'][^>]+content=["']([^"']*)["']/i,
         /<div[^>]*class=["'][^"']*story-body[^"']*["'][^>]*>[\s\S]*?<p[^>]*>([\s\S]*?)<\/p>/i,
         /<p[^>]*>([\s\S]*?)<\/p>/i
@@ -103,12 +103,17 @@ function parsePost(filename) {
         /<div[^>]*class=["'][^"']*story-body[^"']*["'][^>]*>([\s\S]*?)<\/div>\s*<\/article>/i
     ]);
     const wordCount = bodyText ? bodyText.split(/\s+/).filter(Boolean).length : 0;
+    if (!description && bodyText) {
+        description = bodyText.length > 190
+            ? bodyText.slice(0, 187).replace(/\s+\S*$/, '') + '…'
+            : bodyText;
+    }
 
     return {
         title,
         url: 'posts/' + encodeURIComponent(filename),
         filename,
-        description: description || (html.trim() ? 'برای خواندن این نوشته وارد صفحه شوید.' : 'فایل نوشته ایجاد شده اما هنوز محتوایی داخل آن نیست.'),
+        description: description || (html.trim() ? 'برای خواندن داستان، صفحهٔ نوشته را باز کنید.' : 'فایل نوشته ایجاد شده اما هنوز محتوایی داخل آن نیست.'),
         author,
         series,
         episode,
