@@ -530,6 +530,17 @@
             color: var(--text-main);
         }
 
+        .wysiwyg-editor [dir="ltr"] {
+            direction: ltr;
+            text-align: left;
+            unicode-bidi: plaintext;
+        }
+
+        .wysiwyg-editor blockquote[dir="ltr"] {
+            border-right: none;
+            border-left: 3px solid var(--text-accent);
+        }
+
         .wysiwyg-editor a {
             color: var(--text-accent);
             text-decoration: underline;
@@ -1049,12 +1060,16 @@
                                 <div class="toolbar-divider"></div>
 
                                 <!-- Group 3: Text Alignment -->
-                                <select class="type-select alignment-select" onchange="changeTextAlignment(this.value); this.selectedIndex=0;" title="تراز متن">
-                                    <option value="" disabled selected>تراز متن ▾</option>
+                                <select class="type-select alignment-select" onchange="changeTextAlignment(this.value); this.selectedIndex=0;" title="تراز و جهت متن">
+                                    <option value="" disabled selected>تراز و جهت ▾</option>
                                     <option value="justifyRight">راست‌چین</option>
                                     <option value="justifyLeft">چپ‌چین</option>
                                     <option value="justifyCenter">وسط‌چین</option>
                                     <option value="justifyFull">هم‌تراز دوطرفه (Justify)</option>
+                                    <option value="" disabled>──────────</option>
+                                    <option value="dir-rtl">فارسی — راست‌به‌چپ</option>
+                                    <option value="dir-ltr">لاتین — چپ‌به‌راست</option>
+                                    <option value="dir-auto">تشخیص خودکار جهت</option>
                                 </select>
 
                                 <div class="toolbar-divider"></div>
@@ -1085,12 +1100,6 @@
                                     <option value="ol-persian">الفبایی (الف، ب، پ، ت...)</option>
                                     <option value="ol-abjad">ابجد (الف، ب، ج، د...)</option>
                                 </select>
-                                <button type="button" class="type-btn" onclick="execCmd('indent')" title="افزایش لول / تورفتگی">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="21" y1="6" x2="21" y2="18"/></svg>
-                                </button>
-                                <button type="button" class="type-btn" onclick="execCmd('outdent')" title="کاهش لول / برآمدگی">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="3" y1="6" x2="3" y2="18"/></svg>
-                                </button>
 
                                 <div style="flex: 1;"></div>
 
@@ -1387,7 +1396,70 @@
 
         function changeTextAlignment(command) {
             if (!command) return;
+            if (command.indexOf('dir-') === 0) {
+                changeTextDirection(command.replace('dir-', ''));
+                return;
+            }
             execCmd(command);
+        }
+
+        function changeTextDirection(direction) {
+            var editor = document.getElementById('postContent');
+            if (!editor) return;
+            restoreEditorSelection();
+
+            var selection = window.getSelection();
+            if (!selection || !selection.rangeCount) return;
+            var range = selection.getRangeAt(0);
+            var blockSelector = 'p, div, blockquote, li, pre, h1, h2, h3, h4';
+            var blocks = [];
+
+            if (range.collapsed) {
+                var node = selection.anchorNode;
+                var element = node && node.nodeType === Node.ELEMENT_NODE ? node : node && node.parentElement;
+                var closestBlock = element && element.closest ? element.closest(blockSelector) : null;
+                if (closestBlock && editor.contains(closestBlock)) blocks = [closestBlock];
+            } else {
+                blocks = Array.from(editor.querySelectorAll(blockSelector)).filter(function (block) {
+                    try {
+                        return range.intersectsNode(block);
+                    } catch (error) {
+                        return false;
+                    }
+                }).filter(function (block, index, allBlocks) {
+                    return !allBlocks.some(function (other) {
+                        return other !== block && block.contains(other);
+                    });
+                });
+            }
+
+            if (!blocks.length) {
+                document.execCommand('formatBlock', false, '<div>');
+                var currentNode = selection.anchorNode;
+                var currentElement = currentNode && currentNode.nodeType === Node.ELEMENT_NODE
+                    ? currentNode
+                    : currentNode && currentNode.parentElement;
+                var currentBlock = currentElement && currentElement.closest ? currentElement.closest(blockSelector) : null;
+                if (currentBlock && editor.contains(currentBlock)) blocks = [currentBlock];
+            }
+
+            blocks.forEach(function (block) {
+                block.setAttribute('dir', direction);
+                if (direction === 'auto') {
+                    block.style.removeProperty('text-align');
+                    block.style.removeProperty('unicode-bidi');
+                } else {
+                    block.style.textAlign = direction === 'ltr' ? 'left' : 'right';
+                    block.style.unicodeBidi = 'plaintext';
+                }
+            });
+
+            handleContentInput();
+            showToast(direction === 'ltr'
+                ? 'جهت متن انتخاب‌شده چپ‌به‌راست شد.'
+                : direction === 'rtl'
+                    ? 'جهت متن انتخاب‌شده راست‌به‌چپ شد.'
+                    : 'تشخیص خودکار جهت متن فعال شد.');
         }
 
         function insertSceneBreak() {
