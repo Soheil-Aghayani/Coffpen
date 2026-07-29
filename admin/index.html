@@ -414,6 +414,10 @@
             background-color: var(--bg-card);
         }
 
+        .alignment-select {
+            min-width: 112px;
+        }
+
         .toolbar-divider {
             height: 14px;
             width: 1px;
@@ -490,6 +494,102 @@
         .wysiwyg-editor ul, .wysiwyg-editor ol {
             padding-right: 25px;
             margin: 12px 0;
+        }
+
+        /* Theme-aware scrollbars */
+        html {
+            scrollbar-width: thin;
+            scrollbar-color: var(--text-muted) var(--bg-body);
+        }
+
+        *::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        *::-webkit-scrollbar-track {
+            background: var(--bg-body);
+        }
+
+        *::-webkit-scrollbar-thumb {
+            min-height: 42px;
+            background: linear-gradient(180deg, var(--text-accent), var(--text-muted));
+            border: 3px solid var(--bg-body);
+            border-radius: 999px;
+        }
+
+        *::-webkit-scrollbar-thumb:hover {
+            background: var(--text-accent);
+        }
+
+        .wysiwyg-editor {
+            scrollbar-color: var(--text-accent) var(--bg-card);
+        }
+
+        .wysiwyg-editor::-webkit-scrollbar {
+            width: 11px;
+        }
+
+        .wysiwyg-editor::-webkit-scrollbar-track {
+            margin: 8px 0;
+            background: var(--bg-card);
+        }
+
+        .wysiwyg-editor::-webkit-scrollbar-thumb {
+            background: var(--text-muted);
+            border-color: var(--bg-card);
+        }
+
+        .slug-input-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .slug-suggest-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 40px;
+            padding: 8px 14px;
+            border: 1px solid var(--border-color);
+            border-radius: 9px;
+            background: var(--bg-tag);
+            color: var(--text-main);
+            font-family: inherit;
+            font-size: 8pt;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+
+        .slug-suggest-btn:hover {
+            color: var(--text-accent);
+            border-color: var(--text-accent);
+            transform: translateY(-1px);
+        }
+
+        .slug-suggestion-hint {
+            display: block;
+            min-height: 20px;
+            margin-top: 6px;
+            color: var(--text-muted);
+            font-size: 7.75pt;
+            direction: rtl;
+        }
+
+        .slug-suggestion-hint code {
+            color: var(--text-accent);
+            direction: ltr;
+            unicode-bidi: isolate;
+        }
+
+        @media screen and (max-width: 620px) {
+            .slug-input-row {
+                grid-template-columns: 1fr;
+            }
         }
 
         /* Editor Tabs Bar & Live Preview Box */
@@ -748,12 +848,16 @@
                     <div id="writeTabSection">
                         <div class="form-group">
                             <label for="postTitle">عنوان نوشته:</label>
-                            <input type="text" id="postTitle" class="form-control" placeholder="مثلاً: داستان کوتاه در انتهای شب..." oninput="updateLiveStats()" required>
+                            <input type="text" id="postTitle" class="form-control" placeholder="مثلاً: داستان کوتاه در انتهای شب..." oninput="handleTitleInput()" required>
                         </div>
 
                         <div class="form-group">
                             <label for="postSlug">نام فایل (Slug):</label>
-                            <input type="text" id="postSlug" class="form-control" placeholder="مثلاً: my-new-story.html" required dir="ltr">
+                            <div class="slug-input-row">
+                                <input type="text" id="postSlug" class="form-control" placeholder="مثلاً: my-new-story.html" oninput="handleSlugManualInput()" required dir="ltr" autocomplete="off">
+                                <button type="button" class="slug-suggest-btn" onclick="suggestPostSlug(true)">پیشنهاد نام</button>
+                            </div>
+                            <span id="slugSuggestionHint" class="slug-suggestion-hint">عنوان نوشته را وارد کنید تا نام فایل پیشنهاد شود.</span>
                         </div>
 
                         <div class="form-group">
@@ -794,19 +898,14 @@
 
                                 <div class="toolbar-divider"></div>
 
-                                <!-- Group 3: Text Alignment Controls -->
-                                <button type="button" class="type-btn" onclick="execCmd('justifyRight')" title="راست‌چین">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="9" y2="12"/><line x1="21" y1="18" x2="7" y2="18"/></svg>
-                                </button>
-                                <button type="button" class="type-btn" onclick="execCmd('justifyCenter')" title="وسط‌چین">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="18" y1="18" x2="6" y2="18"/></svg>
-                                </button>
-                                <button type="button" class="type-btn" onclick="execCmd('justifyLeft')" title="چپ‌چین">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="15" y1="12" x2="3" y2="12"/><line x1="17" y1="18" x2="3" y2="18"/></svg>
-                                </button>
-                                <button type="button" class="type-btn" onclick="execCmd('justifyFull')" title="هم‌ترازی دوطرفه (Justify)">
-                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"><line x1="21" y1="6" x2="3" y2="6"/><line x1="21" y1="12" x2="3" y2="12"/><line x1="21" y1="18" x2="3" y2="18"/></svg>
-                                </button>
+                                <!-- Group 3: Text Alignment -->
+                                <select class="type-select alignment-select" onchange="changeTextAlignment(this.value); this.selectedIndex=0;" title="تراز متن">
+                                    <option value="" disabled selected>تراز متن ▾</option>
+                                    <option value="justifyRight">راست‌چین</option>
+                                    <option value="justifyLeft">چپ‌چین</option>
+                                    <option value="justifyCenter">وسط‌چین</option>
+                                    <option value="justifyFull">هم‌تراز دوطرفه (Justify)</option>
+                                </select>
 
                                 <div class="toolbar-divider"></div>
 
@@ -1043,7 +1142,31 @@
             });
         }
 
+        var savedEditorRange = null;
+        var slugWasManuallyEdited = false;
+
+        document.addEventListener('selectionchange', function () {
+            var editor = document.getElementById('postContent');
+            var selection = window.getSelection();
+            if (!editor || !selection || !selection.rangeCount) return;
+            if (editor.contains(selection.anchorNode)) {
+                savedEditorRange = selection.getRangeAt(0).cloneRange();
+            }
+        });
+
+        function restoreEditorSelection() {
+            var editor = document.getElementById('postContent');
+            if (!editor) return;
+            editor.focus();
+            if (savedEditorRange) {
+                var selection = window.getSelection();
+                selection.removeAllRanges();
+                selection.addRange(savedEditorRange);
+            }
+        }
+
         function execCmd(command, value) {
+            restoreEditorSelection();
             document.execCommand(command, false, value || null);
             var editor = document.getElementById('postContent');
             if (editor) editor.focus();
@@ -1053,6 +1176,91 @@
         function changeFormatBlock(tag) {
             if (!tag) return;
             execCmd('formatBlock', '<' + tag + '>');
+        }
+
+        function changeTextAlignment(command) {
+            if (!command) return;
+            execCmd(command);
+        }
+
+        function handleTitleInput() {
+            updateLiveStats();
+            suggestPostSlug(false);
+        }
+
+        function handleSlugManualInput() {
+            slugWasManuallyEdited = Boolean(document.getElementById('postSlug').value.trim());
+            updateSlugHint(document.getElementById('postSlug').value.trim());
+        }
+
+        function updateSlugHint(slug) {
+            var hint = document.getElementById('slugSuggestionHint');
+            if (!hint) return;
+            hint.innerHTML = slug
+                ? 'نام پیشنهادی فایل: <code>' + slug.replace(/[&<>"']/g, function (char) {
+                    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char];
+                }) + '</code>'
+                : 'عنوان نوشته را وارد کنید تا نام فایل پیشنهاد شود.';
+        }
+
+        function createSlugFromTitle(title) {
+            var normalized = String(title || '')
+                .trim()
+                .toLowerCase()
+                .replace(/ي/g, 'ی')
+                .replace(/ك/g, 'ک')
+                .replace(/[ًٌٍَُِّْـ]/g, '');
+
+            var persianMap = {
+                'آ': 'a', 'ا': 'a', 'ب': 'b', 'پ': 'p', 'ت': 't', 'ث': 's',
+                'ج': 'j', 'چ': 'ch', 'ح': 'h', 'خ': 'kh', 'د': 'd', 'ذ': 'z',
+                'ر': 'r', 'ز': 'z', 'ژ': 'zh', 'س': 's', 'ش': 'sh', 'ص': 's',
+                'ض': 'z', 'ط': 't', 'ظ': 'z', 'ع': 'a', 'غ': 'gh', 'ف': 'f',
+                'ق': 'gh', 'ک': 'k', 'گ': 'g', 'ل': 'l', 'م': 'm', 'ن': 'n',
+                'و': 'v', 'ه': 'h', 'ی': 'y', 'ئ': 'y', 'ؤ': 'v', 'ء': ''
+            };
+
+            var transliterated = Array.from(normalized).map(function (char) {
+                return Object.prototype.hasOwnProperty.call(persianMap, char) ? persianMap[char] : char;
+            }).join('');
+
+            var slug = transliterated
+                .replace(/&/g, '-and-')
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-+|-+$/g, '')
+                .replace(/-{2,}/g, '-')
+                .slice(0, 72)
+                .replace(/-+$/g, '');
+
+            if (!slug) {
+                var now = new Date();
+                slug = 'post-' + now.getFullYear() + '-' +
+                    String(now.getMonth() + 1).padStart(2, '0') + '-' +
+                    String(now.getDate()).padStart(2, '0');
+            }
+
+            return slug + '.html';
+        }
+
+        function suggestPostSlug(force) {
+            var titleInput = document.getElementById('postTitle');
+            var slugInput = document.getElementById('postSlug');
+            if (!titleInput || !slugInput) return;
+
+            var title = titleInput.value.trim();
+            if (!title) {
+                if (force) showToast('ابتدا عنوان نوشته را وارد کنید.');
+                updateSlugHint('');
+                return;
+            }
+
+            var suggestion = createSlugFromTitle(title);
+            updateSlugHint(suggestion);
+
+            if (force || !slugWasManuallyEdited || !slugInput.value.trim()) {
+                slugInput.value = suggestion;
+                slugWasManuallyEdited = false;
+            }
         }
 
         function changeListFormat(type) {
