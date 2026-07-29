@@ -257,15 +257,52 @@ function escapeHtml(str) {
     });
 }
 
+function initLiveHero() {
+    const dateElement = document.getElementById('heroPersianDate');
+    const clockElement = document.getElementById('heroClock');
+    const countElement = document.getElementById('heroPostCount');
+
+    if (!dateElement && !clockElement && !countElement) return;
+
+    const updateHeroTime = function () {
+        const now = new Date();
+
+        if (dateElement) {
+            dateElement.textContent = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+                weekday: 'long',
+                day: 'numeric',
+                month: 'long'
+            }).format(now);
+        }
+
+        if (clockElement) {
+            clockElement.textContent = new Intl.DateTimeFormat('fa-IR', {
+                hour: '2-digit',
+                minute: '2-digit'
+            }).format(now);
+        }
+    };
+
+    if (countElement) {
+        const publishedPosts = document.querySelectorAll('.post-preview').length;
+        countElement.textContent = publishedPosts.toLocaleString('fa-IR');
+    }
+
+    updateHeroTime();
+    window.setInterval(updateHeroTime, 30000);
+}
+
 // Initialize Everything on Load
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', function () {
         initTheme();
         initSidebar();
         initContextMenu();
+        initLiveHero();
     });
 } else {
     initTheme();
     initSidebar();
     initContextMenu();
+    initLiveHero();
 }
