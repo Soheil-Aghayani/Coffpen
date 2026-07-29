@@ -15,7 +15,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css?v=20260729-11">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260730-1">
 </head>
 
 <body>
@@ -37,7 +37,36 @@
             </div>
         </header>
 
-        <div class="headerImage"></div>
+        <section class="headerImage about-banner" aria-labelledby="about-banner-title">
+            <div class="about-banner-copy">
+                <span class="about-banner-kicker">پشت سیاه و قلم</span>
+                <h2 id="about-banner-title">میان کد، طراحی و روایت؛ جایی برای ساختن و نوشتن.</h2>
+                <p>این فضا تقاطع دو دنیای من است: تجربه‌های دیجیتالی که باید خوب کار کنند و داستان‌هایی که باید چیزی در ذهن باقی بگذارند.</p>
+                <div class="about-banner-topics" aria-label="حوزه‌های فعالیت">
+                    <span>توسعه وب</span>
+                    <span>طراحی UI/UX</span>
+                    <span>داستان و یادداشت</span>
+                </div>
+                <div class="about-banner-actions">
+                    <a href="index.html#latest-posts-heading">خواندن نوشته‌ها ↓</a>
+                    <a href="https://soheil-aghayani.github.io/Portfolio/" target="_blank" rel="noopener">دیدن پورتفولیو ↗</a>
+                </div>
+            </div>
+            <div class="about-banner-stats" aria-label="آمار سیاه و قلم">
+                <div>
+                    <strong id="aboutPostCount">۰</strong>
+                    <span>نوشته</span>
+                </div>
+                <div>
+                    <strong id="aboutSeriesCount">۰</strong>
+                    <span>مجموعه</span>
+                </div>
+                <div>
+                    <strong id="aboutWordCount">۰</strong>
+                    <span>کلمه منتشرشده</span>
+                </div>
+            </div>
+        </section>
 
         <main id="main-content">
             <!-- Animated Hero Author Header -->
@@ -212,6 +241,21 @@
         <span>آدرس ایمیل با موفقیت کپی شد!</span>
     </div>
 
+    <script>
+        document.write('<script src="posts/posts-data.js?v=' + Date.now() + '"><\/script>');
+    </script>
+    <script>
+        (function updateAboutBannerStats() {
+            var posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
+            var series = new Set(posts.map(function (post) { return post.series || ''; }).filter(Boolean));
+            var words = posts.reduce(function (total, post) {
+                return total + (Number(post.wordCount) || 0);
+            }, 0);
+            document.getElementById('aboutPostCount').textContent = posts.length.toLocaleString('fa-IR');
+            document.getElementById('aboutSeriesCount').textContent = series.size.toLocaleString('fa-IR');
+            document.getElementById('aboutWordCount').textContent = words.toLocaleString('fa-IR');
+        })();
+    </script>
     <script src="assets/js/main.js?v=20260729-10"></script>
 </body>
 
