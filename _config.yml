@@ -1,8 +1,8 @@
 # Site Configuration for Coffpen Blog
 title: کاف پـن
 description: یادداشت‌ها، داستان‌ها و نوشته‌های کاف پن
-url: "https://coffpen.github.io" # Update with your GitHub username: https://<username>.github.io
-baseurl: "" # Keep empty if deploying to username.github.io, or set to "/repo-name" if in a project repo
+url: "https://soheil-aghayani.github.io"
+baseurl: "/Coffpen"
 
 author:
   name: کاف پن
@@ -11,7 +11,7 @@ author:
   avatar: https://s6.uupload.ir/files/untitled-2_3s5m.jpg
 
 # Header Banner
-header_image: https://s6.uupload.ir/files/untitled-2_3s5m.jpg
+header_image: /assets/images/social-preview.jpg
 
 # Build settings
 markdown: kramdown
