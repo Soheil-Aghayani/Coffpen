@@ -47,6 +47,19 @@ function englishDigits(value) {
         .replace(/[٠-٩]/g, digit => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)));
 }
 
+function normalizePostImage(value) {
+    const source = String(value || '')
+        .replace(/&amp;/gi, '&')
+        .replace(/&#39;/gi, "'")
+        .trim();
+    if (!source) return '';
+    if (/^(?:https?:|data:|blob:)/i.test(source)) return source;
+    return source
+        .replace(/^\/+Coffpen\//i, '')
+        .replace(/^(?:\.\.\/)+/, '')
+        .replace(/^\.\//, '');
+}
+
 function metadataFromFilename(filename) {
     const base = path.basename(filename, '.html');
     const readable = base.replace(/[-_]+/g, ' ').replace(/\s+/g, ' ').trim();
@@ -105,6 +118,10 @@ function parsePost(filename) {
     const tags = tagsText
         ? tagsText.split(/[,،]/).map(tag => tag.trim()).filter(Boolean).slice(0, 8)
         : [];
+    const contentTypeText = firstMatch(html, [
+        /<meta[^>]+name=["'](?:coffpen:content-type|content-type)["'][^>]+content=["']([^"']*)["']/i
+    ]).toLowerCase();
+    const contentType = contentTypeText === 'note' ? 'note' : 'story';
 
     const seriesLink = html.match(/[?&]series=([^"'&#]+)/i);
     let series = fallback.series;
@@ -120,9 +137,13 @@ function parsePost(filename) {
         /class=["'][^"']*(?:post-episode-link|preview-episode-link)[^"']*["'][^>]*>\s*قسمت\s*([۰-۹٠-٩0-9]+)/i
     ]);
     const episode = englishDigits(episodeText || fallback.episode);
-    const bodyText = firstMatch(html, [
+    const storyBodyMatch = html.match(
         /<div[^>]*class=["'][^"']*story-body[^"']*["'][^>]*>([\s\S]*?)<\/div>\s*<\/article>/i
-    ]);
+    );
+    const storyBodyHtml = storyBodyMatch ? storyBodyMatch[1] : '';
+    const bodyText = stripHtml(storyBodyHtml);
+    const storyImageMatch = storyBodyHtml.match(/<img[^>]+src=["']([^"']+)["']/i);
+    const image = storyImageMatch ? normalizePostImage(storyImageMatch[1]) : '';
     const wordCount = bodyText ? bodyText.split(/\s+/).filter(Boolean).length : 0;
     if (!description && bodyText) {
         description = bodyText.length > 190
@@ -137,8 +158,10 @@ function parsePost(filename) {
         description: description || (html.trim() ? 'برای خواندن داستان، صفحهٔ نوشته را باز کنید.' : 'فایل نوشته ایجاد شده اما هنوز محتوایی داخل آن نیست.'),
         author,
         tags,
+        contentType,
         series,
         episode,
+        image,
         wordCount,
         date: getPostDate(filename, stat.mtime),
         empty: !html.trim()

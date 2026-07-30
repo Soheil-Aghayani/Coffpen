@@ -335,14 +335,41 @@ function escapeHtml(str) {
     });
 }
 
+function formatRelativePublicationTime(value) {
+    const publishedAt = new Date(value).getTime();
+    if (!Number.isFinite(publishedAt)) return 'به‌تازگی';
+    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - publishedAt) / 1000));
+    if (elapsedSeconds < 60) return 'چند لحظه پیش';
+    const minutes = Math.floor(elapsedSeconds / 60);
+    if (minutes < 60) return minutes.toLocaleString('fa-IR') + ' دقیقه پیش';
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours.toLocaleString('fa-IR') + ' ساعت پیش';
+    const days = Math.floor(hours / 24);
+    if (days < 30) return days.toLocaleString('fa-IR') + ' روز پیش';
+    const months = Math.floor(days / 30);
+    if (months < 12) return months.toLocaleString('fa-IR') + ' ماه پیش';
+    return Math.floor(months / 12).toLocaleString('fa-IR') + ' سال پیش';
+}
+
+function postContentType(post) {
+    return post && post.contentType === 'note' ? 'note' : 'story';
+}
+
 function initLiveHero() {
+    const weekdayElement = document.getElementById('heroWeekday');
     const clockElement = document.getElementById('heroClock');
     const countElement = document.getElementById('heroPostCount');
 
-    if (!clockElement && !countElement) return;
+    if (!weekdayElement && !clockElement && !countElement) return;
 
     const updateHeroTime = function () {
         const now = new Date();
+
+        if (weekdayElement) {
+            weekdayElement.textContent = new Intl.DateTimeFormat('fa-IR', {
+                weekday: 'long'
+            }).format(now);
+        }
 
         if (clockElement) {
             clockElement.textContent = new Intl.DateTimeFormat('fa-IR', {
@@ -372,6 +399,7 @@ function initPostRegistry() {
     const searchInput = document.getElementById('postSearch');
     const kindInput = document.getElementById('postKindFilter');
     const seriesInput = document.getElementById('postSeriesFilter');
+    const postListTitle = document.getElementById('postListTitle');
     const resetButton = document.getElementById('postFilterReset');
     const advancedToggle = document.getElementById('postAdvancedToggle');
     const advancedFilters = document.getElementById('postAdvancedFilters');
@@ -394,9 +422,9 @@ function initPostRegistry() {
     const params = new URLSearchParams(window.location.search);
     const requestedSeries = params.get('series') || 'all';
     const requestedTag = params.get('tag') || '';
-    const requestedKind = params.get('kind') || 'all';
+    const requestedKind = params.get('kind') || 'story';
     const requestedSearch = params.get('q') || '';
-    const hasRequestedAdvancedFilters = requestedSeries !== 'all' || Boolean(requestedTag) || requestedKind !== 'all';
+    const hasRequestedAdvancedFilters = requestedSeries !== 'all' || Boolean(requestedTag) || requestedKind !== 'story';
     const seriesNames = Array.from(new Set(posts.map(function (post) {
         return post.series || '';
     }).filter(Boolean))).sort(function (first, second) {
@@ -411,7 +439,9 @@ function initPostRegistry() {
         seriesInput.value = seriesNames.includes(requestedSeries) ? requestedSeries : 'all';
     }
     if (kindInput) {
-        kindInput.value = ['all', 'series', 'standalone'].includes(requestedKind) ? requestedKind : 'all';
+        kindInput.value = ['story', 'standalone', 'series', 'note', 'all'].includes(requestedKind)
+            ? requestedKind
+            : 'story';
         if (seriesInput && seriesInput.value !== 'all') kindInput.value = 'series';
     }
     if (searchInput) searchInput.value = requestedSearch;
@@ -486,10 +516,10 @@ function initPostRegistry() {
     function updateLibraryUrl() {
         const nextParams = new URLSearchParams();
         const search = searchInput ? searchInput.value.trim() : '';
-        const kind = kindInput ? kindInput.value : 'all';
+        const kind = kindInput ? kindInput.value : 'story';
         const series = seriesInput ? seriesInput.value : 'all';
         if (search) nextParams.set('q', search);
-        if (kind !== 'all') nextParams.set('kind', kind);
+        if (kind !== 'story') nextParams.set('kind', kind);
         if (series !== 'all') nextParams.set('series', series);
         if (requestedTag) nextParams.set('tag', requestedTag);
         const query = nextParams.toString();
@@ -519,9 +549,9 @@ function initPostRegistry() {
     function updateFilterStatus() {
         if (!filterStatus) return;
         const search = searchInput ? searchInput.value.trim() : '';
-        const kind = kindInput ? kindInput.value : 'all';
+        const kind = kindInput ? kindInput.value : 'story';
         const series = seriesInput ? seriesInput.value : 'all';
-        const hasActiveFilter = Boolean(search || requestedTag || kind !== 'all' || series !== 'all');
+        const hasActiveFilter = Boolean(search || requestedTag || kind !== 'story' || series !== 'all');
         if (!hasActiveFilter) {
             filterStatus.textContent = '';
             return;
@@ -547,13 +577,18 @@ function initPostRegistry() {
 
     function applyLibraryFilters() {
         const query = normalizeLibraryText(searchInput ? searchInput.value : '');
-        const kind = kindInput ? kindInput.value : 'all';
+        const kind = kindInput ? kindInput.value : 'story';
         const series = seriesInput ? seriesInput.value : 'all';
         const tag = normalizeLibraryText(requestedTag);
+        const noteShelf = document.getElementById('noteShelf');
 
         filteredPosts = posts.filter(function (post) {
+            const contentType = postContentType(post);
+            if (kind === 'story' && contentType !== 'story') return false;
+            if (kind === 'story' && !query && series === 'all' && post.series) return false;
             if (kind === 'series' && !post.series) return false;
-            if (kind === 'standalone' && post.series) return false;
+            if (kind === 'standalone' && (post.series || contentType !== 'story')) return false;
+            if (kind === 'note' && contentType !== 'note') return false;
             if (series !== 'all' && post.series !== series) return false;
 
             const postTags = Array.isArray(post.tags) ? post.tags : [];
@@ -576,7 +611,21 @@ function initPostRegistry() {
         renderedCount = 0;
         postList.hidden = false;
         if (emptyState) emptyState.hidden = true;
-        if (seriesInput) seriesInput.disabled = kind === 'standalone';
+        if (noteShelf) {
+            noteShelf.hidden = Boolean(query || requestedTag || kind !== 'story' || series !== 'all');
+        }
+        if (seriesInput) seriesInput.disabled = kind === 'standalone' || kind === 'note';
+        if (postListTitle) {
+            postListTitle.textContent = query
+                ? 'نتایج جست‌وجو'
+                : {
+                    story: 'داستان‌های مستقل',
+                    standalone: 'داستان‌های مستقل',
+                    series: 'قسمت‌های پلی‌لیست‌ها',
+                    note: 'دل‌نوشته‌ها',
+                    all: 'همهٔ نوشته‌ها'
+                }[kind] || 'داستان‌ها';
+        }
         updateLibraryUrl();
         renderNextBatch();
     }
@@ -596,7 +645,7 @@ function initPostRegistry() {
     }
     if (kindInput) {
         kindInput.addEventListener('change', function () {
-            if (kindInput.value === 'standalone' && seriesInput) seriesInput.value = 'all';
+            if (['standalone', 'note'].includes(kindInput.value) && seriesInput) seriesInput.value = 'all';
             applyLibraryFilters();
         });
     }
@@ -614,7 +663,7 @@ function initPostRegistry() {
     if (resetButton) {
         resetButton.addEventListener('click', function () {
             if (searchInput) searchInput.value = '';
-            if (kindInput) kindInput.value = 'all';
+            if (kindInput) kindInput.value = 'story';
             if (seriesInput) {
                 seriesInput.value = 'all';
                 seriesInput.disabled = false;
@@ -648,25 +697,70 @@ function initSeriesHub() {
         return result;
     }, {});
 
-    const seriesNames = Object.keys(groups);
-    if (!seriesNames.length) {
+    const seriesUpdates = Object.keys(groups).map(function (name) {
+        const recentFirst = groups[name].slice().sort(function (a, b) {
+            return new Date(b.date) - new Date(a.date);
+        });
+        return {
+            name,
+            posts: recentFirst,
+            latest: recentFirst[0],
+            cover: recentFirst.find(function (post) { return post.image; })
+        };
+    }).sort(function (a, b) {
+        return new Date(b.latest.date) - new Date(a.latest.date);
+    });
+
+    if (!seriesUpdates.length) {
         hub.hidden = true;
         return;
     }
 
-    list.innerHTML = seriesNames.map(function (name) {
-        const episodes = groups[name].slice().sort(function (a, b) {
-            return Number(a.episode || 0) - Number(b.episode || 0);
-        });
-        const latest = episodes[episodes.length - 1];
-        return '<a class="series-hub-card" href="index.html?series=' + encodeURIComponent(name) + '#latest-posts-heading">' +
-            '<span class="series-hub-icon" aria-hidden="true">' + readerIcon('layers') + '</span>' +
-            '<span class="series-hub-copy"><strong>' + escapeHtml(name) + '</strong>' +
-                '<small>' + episodes.length.toLocaleString('fa-IR') + ' قسمت منتشرشده</small></span>' +
-            '<span class="series-hub-latest">تا قسمت ' + Number(latest.episode || episodes.length).toLocaleString('fa-IR') + '</span>' +
+    list.innerHTML = seriesUpdates.map(function (update) {
+        const latest = update.latest;
+        const episodeNumber = Number(latest.episode || update.posts.length).toLocaleString('fa-IR');
+        const coverMarkup = update.cover && update.cover.image
+            ? '<img src="' + escapeHtml(update.cover.image) + '" alt="" loading="lazy" decoding="async">'
+            : '<span class="series-update-cover-fallback" aria-hidden="true">' + readerIcon('layers') + '</span>';
+        return '<a class="series-hub-card" href="index.html?series=' + encodeURIComponent(update.name) + '#latest-posts-heading">' +
+            '<span class="series-update-cover">' + coverMarkup + '</span>' +
+            '<span class="series-hub-copy"><strong>' + escapeHtml(update.name) + '</strong>' +
+                '<span class="series-update-episode">قسمت ' + episodeNumber + ' · ' + escapeHtml(latest.title) + '</span>' +
+                '<span class="series-update-summary">' + escapeHtml(latest.description) + '</span>' +
+                '<small>' + update.posts.length.toLocaleString('fa-IR') + ' قسمت منتشرشده</small></span>' +
+            '<span class="series-hub-latest">' +
+                '<span class="series-update-badge">قسمت جدید ' + episodeNumber + '</span>' +
+                '<span class="series-update-time">' + formatRelativePublicationTime(latest.date) + '</span>' +
+            '</span>' +
         '</a>';
     }).join('');
     hub.hidden = false;
+}
+
+function initNoteShelf() {
+    const shelf = document.getElementById('noteShelf');
+    const list = document.getElementById('noteShelfList');
+    if (!shelf || !list) return;
+
+    const notes = (Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [])
+        .filter(function (post) { return postContentType(post) === 'note'; })
+        .sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
+
+    if (!notes.length) {
+        shelf.hidden = true;
+        return;
+    }
+
+    list.innerHTML = notes.map(function (post) {
+        const minutes = Math.max(1, Math.ceil(Number(post.wordCount || 0) / 180));
+        return '<a class="note-shelf-card" href="' + escapeHtml(post.url) + '">' +
+            '<span class="note-shelf-icon" aria-hidden="true">' + readerIcon('book') + '</span>' +
+            '<span class="note-shelf-copy"><strong>' + escapeHtml(post.title) + '</strong>' +
+                '<small>' + escapeHtml(post.description) + '</small></span>' +
+            '<span class="note-shelf-readtime">' + minutes.toLocaleString('fa-IR') + ' دقیقه</span>' +
+        '</a>';
+    }).join('');
+    shelf.hidden = false;
 }
 
 function initStoryPlaylist() {
@@ -1511,6 +1605,7 @@ function initializeCoffpenPage() {
     initTheme();
     initSidebar();
     initContextMenu();
+    initNoteShelf();
     initPostRegistry();
     initSeriesHub();
     initLiveHero();

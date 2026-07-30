@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../assets/css/style.css?v=20260730-6">
+    <link rel="stylesheet" href="../assets/css/style.css?v=20260730-10">
 
     <style>
         body {
@@ -1032,7 +1032,7 @@
         }
 
         .post-discovery-fields {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: minmax(140px, 0.55fr) repeat(2, minmax(0, 1fr));
             margin-bottom: 18px;
         }
 
@@ -1443,8 +1443,10 @@
                     </label>
                     <select id="adminPostKindFilter" class="admin-post-filter" onchange="handleAdminPostFilterChange()" aria-label="نوع نوشته">
                         <option value="all">همه نوع‌ها</option>
-                        <option value="series">فقط مجموعه‌ها</option>
-                        <option value="standalone">فقط مستقل‌ها</option>
+                        <option value="story">داستان‌ها</option>
+                        <option value="series">قسمت‌های پلی‌لیست</option>
+                        <option value="standalone">داستان‌های مستقل</option>
+                        <option value="note">دل‌نوشته‌ها</option>
                         <option value="empty">بدون محتوا</option>
                     </select>
                     <select id="adminPostSeriesFilter" class="admin-post-filter" onchange="handleAdminPostFilterChange()" aria-label="مجموعه">
@@ -1509,6 +1511,14 @@
                         </div>
 
                         <div class="series-fields-grid post-discovery-fields">
+                            <div class="form-group">
+                                <label for="postContentType">نوع نوشته</label>
+                                <select id="postContentType" class="form-control series-picker" onchange="saveAdminDraft()">
+                                    <option value="story">داستان</option>
+                                    <option value="note">دل‌نوشته</option>
+                                </select>
+                                <span class="slug-suggestion-hint">برای جداسازی روشن نوشته‌ها در صفحهٔ اصلی.</span>
+                            </div>
                             <div class="form-group">
                                 <label for="postSummary">خلاصهٔ کوتاه <span style="font-weight:400;">(اختیاری)</span></label>
                                 <textarea id="postSummary" class="form-control" rows="3" maxlength="240" placeholder="دو جمله کوتاه برای معرفی نوشته در صفحهٔ اصلی…" oninput="saveAdminDraft()"></textarea>
@@ -1771,7 +1781,7 @@
     <script>
         document.write('<script src="../posts/posts-data.js?v=' + Date.now() + '"><\/script>');
     </script>
-    <script src="../assets/js/main.js?v=20260730-6"></script>
+    <script src="../assets/js/main.js?v=20260730-10"></script>
 
     <script>
         var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
@@ -1831,8 +1841,11 @@
 
             var filtered = indexedPosts.filter(function (entry) {
                 var post = entry.post;
+                var contentType = post.contentType === 'note' ? 'note' : 'story';
+                if (kind === 'story' && contentType !== 'story') return false;
                 if (kind === 'series' && !post.series) return false;
-                if (kind === 'standalone' && post.series) return false;
+                if (kind === 'standalone' && (post.series || contentType !== 'story')) return false;
+                if (kind === 'note' && contentType !== 'note') return false;
                 if (kind === 'empty' && !post.empty) return false;
                 if (series !== 'all' && post.series !== series) return false;
                 if (!query) return true;
@@ -1891,7 +1904,9 @@
                 var post = entry.post;
                 var index = entry.index;
                 var episode = post.episode ? 'قسمت ' + toPersianDigits(post.episode) : '';
-                var status = post.empty ? 'بدون محتوا' : episode;
+                var status = post.empty
+                    ? 'بدون محتوا'
+                    : (post.contentType === 'note' ? 'دل‌نوشته' : episode);
                 var date = post.date ? new Date(post.date).toLocaleDateString('fa-IR') : '—';
                 var postUrl = '../' + String(post.url || '');
 
@@ -2277,6 +2292,7 @@
                 document.getElementById('postSlug').value = '';
                 document.getElementById('postSummary').value = '';
                 document.getElementById('postTags').value = '';
+                document.getElementById('postContentType').value = 'story';
                 document.getElementById('postHasSeries').checked = false;
                 document.getElementById('postSeries').value = '';
                 document.getElementById('postSeriesNew').value = '';
@@ -3213,6 +3229,7 @@
                 content: draftEditor.innerHTML,
                 summary: document.getElementById('postSummary').value,
                 tags: document.getElementById('postTags').value,
+                contentType: document.getElementById('postContentType').value,
                 series: meta,
                 editingFilename: editingPostFilename,
                 savedAt: Date.now()
@@ -3241,6 +3258,7 @@
                 document.getElementById('postContent').innerHTML = draft.content || '';
                 document.getElementById('postSummary').value = draft.summary || '';
                 document.getElementById('postTags').value = draft.tags || '';
+                document.getElementById('postContentType').value = draft.contentType === 'note' ? 'note' : 'story';
                 document.getElementById('postHasSeries').checked = Boolean(draft.series && draft.series.enabled);
                 setSeriesSelection(draft.series ? draft.series.name || '' : '', false);
                 document.getElementById('postEpisode').value = draft.series && draft.series.episode ? toPersianDigits(draft.series.episode) : '';
@@ -3301,6 +3319,7 @@
             var parsedBody = parsed && parsed.querySelector('.story-body');
             var parsedSummary = parsed && parsed.querySelector('meta[name="description"]');
             var parsedTags = parsed && parsed.querySelector('meta[name="keywords"]');
+            var parsedContentType = parsed && parsed.querySelector('meta[name="coffpen:content-type"], meta[name="content-type"]');
             var title = parsedTitle ? parsedTitle.textContent.trim() : post.title;
 
             editingPostFilename = post.filename || '';
@@ -3312,6 +3331,10 @@
             document.getElementById('postTags').value = parsedTags
                 ? parsedTags.getAttribute('content') || ''
                 : Array.isArray(post.tags) ? post.tags.join('، ') : '';
+            document.getElementById('postContentType').value =
+                (parsedContentType ? parsedContentType.getAttribute('content') : post.contentType) === 'note'
+                    ? 'note'
+                    : 'story';
 
             var seriesToggle = document.getElementById('postHasSeries');
             seriesToggle.checked = Boolean(post.series);
@@ -3369,6 +3392,9 @@
             closeImageTools();
             var storyHtml = editor ? editor.innerHTML.trim() : '';
             var seriesMeta = getSeriesMeta();
+            var contentType = seriesMeta.enabled
+                ? 'story'
+                : (document.getElementById('postContentType').value === 'note' ? 'note' : 'story');
             var plainStoryText = editor ? (editor.innerText || editor.textContent || '').replace(/\s+/g, ' ').trim() : '';
             var summary = document.getElementById('postSummary').value.trim();
             var tags = document.getElementById('postTags').value
@@ -3421,7 +3447,9 @@
 
             template = template.replace(' &bull; ۱۴۰۵/۰۵/۰۷', '');
 
-            var discoveryMeta = '    <meta name="description" content="' + escapeAdminText(summary) + '">\n';
+            var discoveryMeta =
+                '    <meta name="description" content="' + escapeAdminText(summary) + '">\n' +
+                '    <meta name="coffpen:content-type" content="' + contentType + '">\n';
             if (tags.length) {
                 discoveryMeta += '    <meta name="keywords" content="' + escapeAdminText(tags.join('، ')) + '">\n';
             }
@@ -3443,10 +3471,10 @@
             template = template.replace('    <title>', discoveryMeta + '    <title>');
             template = template.replace(
                 '    <script src="../assets/js/main.js"',
-                '    <script src="../posts/posts-data.js?v=20260730-6"><\/script>\n    <script src="../assets/js/main.js"'
+                '    <script src="../posts/posts-data.js?v=20260730-10"><\/script>\n    <script src="../assets/js/main.js"'
             );
-            template = template.replace('../assets/css/style.css"', '../assets/css/style.css?v=20260730-6"');
-            template = template.replace('../assets/js/main.js"', '../assets/js/main.js?v=20260730-6"');
+            template = template.replace('../assets/css/style.css"', '../assets/css/style.css?v=20260730-10"');
+            template = template.replace('../assets/js/main.js"', '../assets/js/main.js?v=20260730-10"');
 
             if (seriesMeta.enabled) {
                 var episodeHref = '../index.html?series=' + encodeURIComponent(seriesMeta.name) + '#latest-posts-heading';

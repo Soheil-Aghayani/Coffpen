@@ -29,7 +29,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css?v=20260730-8">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260730-10">
 </head>
 <body>
     <div class="blackthemeBox">
@@ -52,6 +52,8 @@
                 <h2 id="site-hero-title">جایی برای کلمات، داستان‌ها و چیزهایی که نباید فراموش شوند.</h2>
                 <p>یک دفتر شخصی و آرام؛ دور از هیاهوی شبکه‌های اجتماعی.</p>
                 <div class="site-hero-meta">
+                    <span id="heroWeekday">امروز</span>
+                    <span class="site-hero-separator" aria-hidden="true"></span>
                     <span id="heroClock">--:--</span>
                 </div>
             </div>
@@ -66,7 +68,10 @@
 
             <section id="seriesHub" class="series-hub" aria-labelledby="series-hub-title" hidden>
                 <div class="series-hub-heading">
-                    <p id="series-hub-title" class="eyebrow">پلی‌لیست‌ها</p>
+                    <div>
+                        <p class="eyebrow">تازه‌ترین قسمت‌ها</p>
+                        <h2 id="series-hub-title">پلی‌لیست‌ها</h2>
+                    </div>
                 </div>
                 <div id="seriesHubList" class="series-hub-list"></div>
             </section>
@@ -98,9 +103,11 @@
                     <label>
                         <span>نوع نوشته</span>
                         <select id="postKindFilter">
+                            <option value="story">داستان‌ها</option>
+                            <option value="standalone">داستان‌های مستقل</option>
+                            <option value="series">قسمت‌های پلی‌لیست‌ها</option>
+                            <option value="note">دل‌نوشته‌ها</option>
                             <option value="all">همهٔ نوشته‌ها</option>
-                            <option value="series">فقط مجموعه‌ها</option>
-                            <option value="standalone">فقط داستان‌های مستقل</option>
                         </select>
                     </label>
                     <label>
@@ -113,12 +120,28 @@
                 </div>
             </section>
 
+            <div class="content-section-heading">
+                <div>
+                    <p class="eyebrow">برای یک نفس خواندن</p>
+                    <h2 id="postListTitle">داستان‌های مستقل</h2>
+                </div>
+            </div>
             <section id="postList" class="post-list" aria-label="فهرست نوشته‌ها" hidden></section>
             <div id="postLoadSentinel" class="post-load-sentinel" hidden>
                 <span class="post-load-spinner" aria-hidden="true"></span>
                 <span id="postLoadStatus">در حال آماده‌کردن نوشته‌های بعدی…</span>
                 <button type="button" id="postLoadMore">نمایش نوشته‌های بیشتر</button>
             </div>
+
+            <section id="noteShelf" class="note-shelf" aria-labelledby="note-shelf-title" hidden>
+                <div class="content-section-heading">
+                    <div>
+                        <p class="eyebrow">شخصی‌تر و بی‌واسطه‌تر</p>
+                        <h2 id="note-shelf-title">دل‌نوشته‌ها</h2>
+                    </div>
+                </div>
+                <div id="noteShelfList" class="note-shelf-list"></div>
+            </section>
 
             <section class="empty-posts" aria-labelledby="empty-posts-heading">
                 <span class="empty-posts-icon" aria-hidden="true">✦</span>
@@ -135,6 +158,6 @@
     <script>
         document.write('<script src="posts/posts-data.js?v=' + Date.now() + '"><\/script>');
     </script>
-    <script src="assets/js/main.js?v=20260730-9"></script>
+    <script src="assets/js/main.js?v=20260730-10"></script>
 </body>
 </html>
