@@ -41,6 +41,69 @@ function getSiteBaseUrl() {
     return mainScript ? new URL('../../', mainScript.src) : new URL('./', window.location.href);
 }
 
+function buildSidebarContent(baseUrl) {
+    const posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
+    const readingPost = posts.map(function (post) {
+        return { post: post, progress: getPostReadingRecord(post) };
+    }).filter(function (item) {
+        const percent = Number(item.progress.percent) || 0;
+        return percent > 0 && percent < 0.9;
+    }).sort(function (first, second) {
+        return Number(second.progress.updatedAt || 0) - Number(first.progress.updatedAt || 0);
+    })[0] || null;
+
+    const homeUrl = new URL('index.html', baseUrl).href;
+    const latestUrl = new URL('index.html#latest-posts-heading', baseUrl).href;
+    const standaloneUrl = new URL('index.html?kind=standalone#latest-posts-heading', baseUrl).href;
+    const playlistsUrl = new URL('index.html#seriesHub', baseUrl).href;
+    const notesUrl = new URL('index.html?kind=note#latest-posts-heading', baseUrl).href;
+    const aboutUrl = new URL('about.html', baseUrl).href;
+    const adminUrl = new URL('admin/index.html', baseUrl).href;
+
+    const continueMarkup = readingPost
+        ? '<div class="blackthemeSideBox sidebar-continue-box">' +
+            '<h6>' + readerIcon('book-open') + '<span>ادامه مطالعه</span></h6>' +
+            '<a class="sidebar-continue-card" href="' + new URL(readingPost.post.url, baseUrl).href + '">' +
+                '<span class="sidebar-continue-icon">' + readerIcon('bookmark') + '</span>' +
+                '<span class="sidebar-continue-copy"><strong>' + escapeHtml(readingPost.post.title) + '</strong>' +
+                    '<span class="sidebar-progress-track"><i style="width:' +
+                    Math.round(Math.min(1, Number(readingPost.progress.percent) || 0) * 100) + '%"></i></span></span>' +
+                '<b>' + Math.round((Number(readingPost.progress.percent) || 0) * 100).toLocaleString('fa-IR') + '٪</b>' +
+            '</a>' +
+        '</div>'
+        : '';
+
+    return '<div class="sidebar-header">' +
+            '<span class="sidebar-title">منوی وبلاگ</span>' +
+            '<button type="button" class="sidebar-close-btn" title="بستن منو" aria-label="بستن منو">' +
+                '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" ' +
+                'stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"></path></svg>' +
+            '</button>' +
+        '</div>' +
+        continueMarkup +
+        '<div class="blackthemeSideBox">' +
+            '<h6>' + readerIcon('list') + '<span>بخش‌های سایت</span></h6>' +
+            '<ul class="sidebar-links-list sidebar-primary-links">' +
+                '<li><a href="' + homeUrl + '">' + readerIcon('home') + '<span>صفحه اصلی</span></a></li>' +
+                '<li><a href="' + latestUrl + '">' + readerIcon('clock') + '<span>تازه‌ترین نوشته‌ها</span></a></li>' +
+                '<li><a href="' + playlistsUrl + '">' + readerIcon('layers') + '<span>پلی‌لیست‌ها</span></a></li>' +
+                '<li><a href="' + standaloneUrl + '">' + readerIcon('book-open') + '<span>داستان‌های مستقل</span></a></li>' +
+                '<li><a href="' + notesUrl + '">' + readerIcon('edit') + '<span>دل‌نوشته‌ها</span></a></li>' +
+                '<li><a href="' + aboutUrl + '">' + readerIcon('user') + '<span>درباره نویسنده</span></a></li>' +
+            '</ul>' +
+        '</div>' +
+        '<div class="blackthemeSideBox sidebar-secondary-links">' +
+            '<h6>' + readerIcon('link') + '<span>ابزارها و پیوندها</span></h6>' +
+            '<ul class="sidebar-links-list">' +
+                '<li><a href="' + adminUrl + '">' + readerIcon('edit') + '<span>پنل مدیریت نوشته‌ها</span></a></li>' +
+                '<li><a href="https://soheil-aghayani.github.io/Portfolio/" target="_blank" rel="noopener">' +
+                    readerIcon('globe') + '<span>پورتفولیو</span></a></li>' +
+                '<li><a href="https://github.com/soheil-aghayani" target="_blank" rel="noopener">' +
+                    readerIcon('github') + '<span>گیت‌هاب</span></a></li>' +
+            '</ul>' +
+        '</div>';
+}
+
 function ensureGlobalSidebar() {
     const navList = document.querySelector('.blackthemeBox > header nav ul');
     const adminActions = document.querySelector('.admin-header-actions');
@@ -67,53 +130,24 @@ function ensureGlobalSidebar() {
         }
     }
 
-    if (document.querySelector('.blackthemeSidebar')) return;
+    const existingMenu = document.getElementById('blackthemeMenu');
+    if (navList && existingMenu && existingMenu.closest('li')) {
+        existingMenu.closest('li').classList.add('global-menu-item');
+    }
 
     const baseUrl = getSiteBaseUrl();
-    const aboutUrl = new URL('about.html', baseUrl).href;
-    const adminUrl = new URL('admin/index.html', baseUrl).href;
-    const avatarUrl = new URL('assets/images/author-avatar.jpg', baseUrl).href;
-
-    document.body.insertAdjacentHTML('beforeend',
-        '<div class="blackthemeOverlay"></div>' +
-        '<aside class="blackthemeSidebar" aria-label="منوی وبلاگ" aria-hidden="true">' +
-            '<div class="sidebar-header">' +
-                '<span class="sidebar-title">منوی وبلاگ</span>' +
-                '<button type="button" class="sidebar-close-btn" title="بستن منو" aria-label="بستن منو">' +
-                    '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" ' +
-                    'stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"></path></svg>' +
-                '</button>' +
-            '</div>' +
-            '<div class="blackthemeSideBox">' +
-                '<h6>' + readerIcon('palette') + '<span>پوسته و رنگ‌بندی</span></h6>' +
-                '<div class="theme-selector-grid">' +
-                    '<button type="button" class="theme-opt-btn" data-theme-val="dark"><span class="theme-dot theme-dot-dark"></span><span>تاریک</span></button>' +
-                    '<button type="button" class="theme-opt-btn" data-theme-val="light"><span class="theme-dot theme-dot-light"></span><span>روشن</span></button>' +
-                    '<button type="button" class="theme-opt-btn" data-theme-val="sepia"><span class="theme-dot theme-dot-sepia"></span><span>سپیا</span></button>' +
-                    '<button type="button" class="theme-opt-btn" data-theme-val="forest"><span class="theme-dot theme-dot-forest"></span><span>زمرد</span></button>' +
-                    '<button type="button" class="theme-opt-btn" data-theme-val="midnight"><span class="theme-dot theme-dot-midnight"></span><span>نیلی</span></button>' +
-                    '<button type="button" class="theme-opt-btn" data-theme-val="rose"><span class="theme-dot theme-dot-rose"></span><span>رز</span></button>' +
-                '</div>' +
-            '</div>' +
-            '<div class="blackthemeSideBox">' +
-                '<h6>' + readerIcon('user') + '<span>نویسنده</span></h6>' +
-                '<a class="sidebar-author-card" href="' + aboutUrl + '">' +
-                    '<img src="' + avatarUrl + '" alt="" class="sidebar-author-img">' +
-                    '<div><strong>سهیل آقایانی (کاف پـن)</strong><p>توسعه‌دهنده وب و طراح؛ نویسنده داستان‌ها و یادداشت‌های کوتاه.</p></div>' +
-                '</a>' +
-            '</div>' +
-            '<div class="blackthemeSideBox">' +
-                '<h6>' + readerIcon('link') + '<span>پیوندها</span></h6>' +
-                '<ul class="sidebar-links-list">' +
-                    '<li><a href="https://soheil-aghayani.github.io/Portfolio/" target="_blank" rel="noopener">' +
-                        readerIcon('globe') + '<span>پورتفولیو (Soheil Aghayani)</span></a></li>' +
-                    '<li><a href="https://github.com/soheil-aghayani" target="_blank" rel="noopener">' +
-                        readerIcon('github') + '<span>گیت‌هاب</span></a></li>' +
-                    '<li><a href="' + adminUrl + '">' + readerIcon('edit') + '<span>پنل مدیریت نوشته‌ها</span></a></li>' +
-                '</ul>' +
-            '</div>' +
-        '</aside>'
-    );
+    if (!document.querySelector('.blackthemeOverlay')) {
+        document.body.insertAdjacentHTML('beforeend', '<div class="blackthemeOverlay"></div>');
+    }
+    let sidebar = document.querySelector('.blackthemeSidebar');
+    if (!sidebar) {
+        sidebar = document.createElement('aside');
+        sidebar.className = 'blackthemeSidebar';
+        sidebar.setAttribute('aria-label', 'منوی وبلاگ');
+        sidebar.setAttribute('aria-hidden', 'true');
+        document.body.appendChild(sidebar);
+    }
+    sidebar.innerHTML = buildSidebarContent(baseUrl);
 }
 
 // Sidebar Drawer
@@ -442,12 +476,15 @@ function readingProgressKey(pathname) {
 }
 
 function getPostReadingProgress(post) {
+    return Math.min(1, Math.max(0, Number(getPostReadingRecord(post).percent) || 0));
+}
+
+function getPostReadingRecord(post) {
     try {
         const pathname = new URL(post.url, window.location.href).pathname;
-        const saved = JSON.parse(localStorage.getItem(readingProgressKey(pathname)) || '{}');
-        return Math.min(1, Math.max(0, Number(saved.percent) || 0));
+        return JSON.parse(localStorage.getItem(readingProgressKey(pathname)) || '{}');
     } catch (error) {
-        return 0;
+        return {};
     }
 }
 
@@ -1736,6 +1773,7 @@ function readerIcon(name) {
         link: '<path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/>',
         palette: '<path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H12a1.5 1.5 0 0 1 0-3h2.8A6.2 6.2 0 0 0 21 7.8C21 5.1 17 3 12 3z"/><circle cx="7.5" cy="9" r=".8" fill="currentColor"/><circle cx="11" cy="6.8" r=".8" fill="currentColor"/><circle cx="15" cy="7.5" r=".8" fill="currentColor"/>',
         user: '<circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/>',
+        home: '<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
         globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>',
         github: '<path d="M9 19c-4 1.3-4-2-6-2.5M15 22v-3.5a3 3 0 0 0-.8-2.3c2.7-.3 5.6-1.4 5.6-6.1A4.8 4.8 0 0 0 18.5 7a4.5 4.5 0 0 0-.1-3.3S17.4 3.4 15 5a11.5 11.5 0 0 0-6 0C6.6 3.4 5.6 3.7 5.6 3.7A4.5 4.5 0 0 0 5.5 7a4.8 4.8 0 0 0-1.3 3.1c0 4.7 2.9 5.8 5.6 6.1A3 3 0 0 0 9 18.5V22"/>',
         edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',

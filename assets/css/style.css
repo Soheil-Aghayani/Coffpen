@@ -234,7 +234,13 @@ header h2 {
 }
 
 /* Header Navigation Bar */
+.blackthemeBox > header nav {
+    width: 100%;
+    flex: 0 0 100%;
+}
+
 nav ul {
+    width: 100%;
     list-style-type: none;
     margin: 0;
     padding: 0;
@@ -246,6 +252,10 @@ nav ul {
 
 nav ul li {
     margin: 0;
+}
+
+.blackthemeBox > header nav .global-menu-item {
+    margin-inline-start: auto;
 }
 
 nav ul li a, .theme-toggle-btn {
@@ -2418,6 +2428,89 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 
 .sidebar-links-list li a:hover svg {
     color: var(--text-accent);
+}
+
+.sidebar-primary-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.sidebar-primary-links li a {
+    min-height: 72px;
+    align-items: flex-start;
+    flex-direction: column;
+    justify-content: center;
+    gap: 7px;
+}
+
+.sidebar-primary-links li a svg {
+    color: var(--text-accent);
+}
+
+.sidebar-secondary-links {
+    padding-top: 4px;
+    border-top: 1px solid var(--border-subtle);
+}
+
+.sidebar-continue-card {
+    display: grid;
+    grid-template-columns: 34px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid color-mix(in srgb, var(--text-accent) 40%, var(--border-color));
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--text-accent) 8%, var(--bg-card));
+    color: var(--text-main);
+    text-decoration: none;
+}
+
+.sidebar-continue-card:hover {
+    border-color: var(--text-accent);
+    color: var(--text-main) !important;
+}
+
+.sidebar-continue-icon {
+    display: grid;
+    width: 34px;
+    height: 34px;
+    place-items: center;
+    border-radius: 10px;
+    background: var(--bg-tag);
+    color: var(--text-accent);
+}
+
+.sidebar-continue-copy {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.sidebar-continue-copy strong {
+    overflow: hidden;
+    font-size: 8.5pt;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.sidebar-continue-card > b {
+    color: var(--text-accent);
+    font-size: 7.5pt;
+}
+
+.sidebar-progress-track {
+    height: 3px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: var(--border-color);
+}
+
+.sidebar-progress-track i {
+    display: block;
+    height: 100%;
+    border-radius: inherit;
+    background: var(--text-accent);
 }
 
 /* Toast Alert */
