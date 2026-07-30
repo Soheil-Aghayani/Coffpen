@@ -1301,7 +1301,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 
 .post-library-searchbar {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) 40px 40px;
+    grid-template-columns: auto minmax(0, 1fr) 40px;
     align-items: center;
     gap: 4px;
     min-height: 46px;
@@ -1384,10 +1384,6 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 
 .post-advanced-toggle[aria-expanded="true"] svg {
     transform: rotate(180deg);
-}
-
-.post-filter-reset {
-    color: var(--text-accent);
 }
 
 .post-library-advanced {
@@ -1518,7 +1514,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     }
 
     .post-library-searchbar {
-        grid-template-columns: auto minmax(0, 1fr) 38px 38px;
+        grid-template-columns: auto minmax(0, 1fr) 38px;
         min-height: 44px;
         padding-right: 6px;
     }

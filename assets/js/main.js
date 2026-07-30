@@ -422,7 +422,6 @@ function initPostRegistry() {
     const seriesOrderInput = document.getElementById('postSeriesOrder');
     const seriesOrderControl = document.getElementById('postSeriesOrderControl');
     const postListTitle = document.getElementById('postListTitle');
-    const resetButton = document.getElementById('postFilterReset');
     const advancedToggle = document.getElementById('postAdvancedToggle');
     const advancedFilters = document.getElementById('postAdvancedFilters');
     const filterStatus = document.getElementById('postFilterStatus');
@@ -696,19 +695,6 @@ function initPostRegistry() {
     if (advancedToggle && advancedFilters) {
         advancedToggle.addEventListener('click', function () {
             setAdvancedFiltersOpen(advancedFilters.hidden);
-        });
-    }
-    if (resetButton) {
-        resetButton.addEventListener('click', function () {
-            if (searchInput) searchInput.value = '';
-            if (kindInput) kindInput.value = 'story';
-            if (seriesInput) {
-                seriesInput.value = 'all';
-                seriesInput.disabled = false;
-            }
-            if (seriesOrderInput) seriesOrderInput.value = 'desc';
-            window.history.replaceState(null, '', window.location.pathname + '#latest-posts-heading');
-            window.location.reload();
         });
     }
     if (loadMoreButton) loadMoreButton.addEventListener('click', renderNextBatch);
