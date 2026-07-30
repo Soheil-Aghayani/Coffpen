@@ -34,30 +34,128 @@ function cycleTheme() {
     setTheme(THEMES[nextIndex]);
 }
 
+function getSiteBaseUrl() {
+    const mainScript = Array.from(document.scripts).find(function (script) {
+        return /\/assets\/js\/main\.js(?:\?|$)/.test(script.src);
+    });
+    return mainScript ? new URL('../../', mainScript.src) : new URL('./', window.location.href);
+}
+
+function ensureGlobalSidebar() {
+    const navList = document.querySelector('.blackthemeBox > header nav ul');
+    const adminActions = document.querySelector('.admin-header-actions');
+    if (!document.getElementById('blackthemeMenu') && (navList || adminActions)) {
+        const menuButtonMarkup =
+            '<button type="button" id="blackthemeMenu" class="theme-toggle-btn global-menu-toggle" ' +
+            'title="منوی اصلی" aria-label="باز کردن منوی وبلاگ">' +
+                '<svg aria-hidden="true" viewBox="0 0 24 24" width="20" height="20" fill="none" ' +
+                'stroke="currentColor" stroke-width="1.75" stroke-linecap="round">' +
+                    '<path d="M4 7h16M4 12h16M4 17h16"></path>' +
+                '</svg>' +
+            '</button>';
+        if (navList) {
+            const menuItem = document.createElement('li');
+            menuItem.className = 'global-menu-item';
+            menuItem.innerHTML = menuButtonMarkup;
+            navList.appendChild(menuItem);
+        } else {
+            const holder = document.createElement('span');
+            holder.className = 'global-admin-menu-item';
+            holder.innerHTML = menuButtonMarkup;
+            holder.querySelector('button').classList.add('admin-icon-btn');
+            adminActions.appendChild(holder);
+        }
+    }
+
+    if (document.querySelector('.blackthemeSidebar')) return;
+
+    const baseUrl = getSiteBaseUrl();
+    const aboutUrl = new URL('about.html', baseUrl).href;
+    const adminUrl = new URL('admin/index.html', baseUrl).href;
+    const avatarUrl = new URL('assets/images/author-avatar.jpg', baseUrl).href;
+
+    document.body.insertAdjacentHTML('beforeend',
+        '<div class="blackthemeOverlay"></div>' +
+        '<aside class="blackthemeSidebar" aria-label="منوی وبلاگ" aria-hidden="true">' +
+            '<div class="sidebar-header">' +
+                '<span class="sidebar-title">منوی وبلاگ</span>' +
+                '<button type="button" class="sidebar-close-btn" title="بستن منو" aria-label="بستن منو">' +
+                    '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" ' +
+                    'stroke="currentColor" stroke-width="2"><path d="m6 6 12 12M18 6 6 18"></path></svg>' +
+                '</button>' +
+            '</div>' +
+            '<div class="blackthemeSideBox">' +
+                '<h6>' + readerIcon('palette') + '<span>پوسته و رنگ‌بندی</span></h6>' +
+                '<div class="theme-selector-grid">' +
+                    '<button type="button" class="theme-opt-btn" data-theme-val="dark"><span class="theme-dot theme-dot-dark"></span><span>تاریک</span></button>' +
+                    '<button type="button" class="theme-opt-btn" data-theme-val="light"><span class="theme-dot theme-dot-light"></span><span>روشن</span></button>' +
+                    '<button type="button" class="theme-opt-btn" data-theme-val="sepia"><span class="theme-dot theme-dot-sepia"></span><span>سپیا</span></button>' +
+                    '<button type="button" class="theme-opt-btn" data-theme-val="forest"><span class="theme-dot theme-dot-forest"></span><span>زمرد</span></button>' +
+                    '<button type="button" class="theme-opt-btn" data-theme-val="midnight"><span class="theme-dot theme-dot-midnight"></span><span>نیلی</span></button>' +
+                    '<button type="button" class="theme-opt-btn" data-theme-val="rose"><span class="theme-dot theme-dot-rose"></span><span>رز</span></button>' +
+                '</div>' +
+            '</div>' +
+            '<div class="blackthemeSideBox">' +
+                '<h6>' + readerIcon('user') + '<span>نویسنده</span></h6>' +
+                '<a class="sidebar-author-card" href="' + aboutUrl + '">' +
+                    '<img src="' + avatarUrl + '" alt="" class="sidebar-author-img">' +
+                    '<div><strong>سهیل آقایانی (کاف پـن)</strong><p>توسعه‌دهنده وب و طراح؛ نویسنده داستان‌ها و یادداشت‌های کوتاه.</p></div>' +
+                '</a>' +
+            '</div>' +
+            '<div class="blackthemeSideBox">' +
+                '<h6>' + readerIcon('link') + '<span>پیوندها</span></h6>' +
+                '<ul class="sidebar-links-list">' +
+                    '<li><a href="https://soheil-aghayani.github.io/Portfolio/" target="_blank" rel="noopener">' +
+                        readerIcon('globe') + '<span>پورتفولیو (Soheil Aghayani)</span></a></li>' +
+                    '<li><a href="https://github.com/soheil-aghayani" target="_blank" rel="noopener">' +
+                        readerIcon('github') + '<span>گیت‌هاب</span></a></li>' +
+                    '<li><a href="' + adminUrl + '">' + readerIcon('edit') + '<span>پنل مدیریت نوشته‌ها</span></a></li>' +
+                '</ul>' +
+            '</div>' +
+        '</aside>'
+    );
+}
+
 // Sidebar Drawer
 function initSidebar() {
+    ensureGlobalSidebar();
     const menuBtn = document.getElementById('blackthemeMenu');
     const sidebar = document.querySelector('.blackthemeSidebar');
     const overlay = document.querySelector('.blackthemeOverlay');
+    const closeButton = sidebar ? sidebar.querySelector('.sidebar-close-btn') : null;
 
     if (menuBtn && sidebar && overlay) {
+        sidebar.setAttribute('aria-hidden', sidebar.classList.contains('set') ? 'false' : 'true');
+        menuBtn.setAttribute('aria-expanded', sidebar.classList.contains('set') ? 'true' : 'false');
         menuBtn.onclick = function (e) {
             e.preventDefault();
-            sidebar.classList.toggle('set');
-            overlay.classList.toggle('set');
+            const shouldOpen = !sidebar.classList.contains('set');
+            sidebar.classList.toggle('set', shouldOpen);
+            overlay.classList.toggle('set', shouldOpen);
+            sidebar.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
+            menuBtn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
         };
 
         overlay.onclick = function () {
             closeSidebar();
         };
+        if (closeButton) closeButton.onclick = closeSidebar;
+        sidebar.querySelectorAll('.theme-opt-btn').forEach(function (button) {
+            button.onclick = function () {
+                setTheme(button.dataset.themeVal);
+            };
+        });
     }
 }
 
 function closeSidebar() {
     const sidebar = document.querySelector('.blackthemeSidebar');
     const overlay = document.querySelector('.blackthemeOverlay');
+    const menuBtn = document.getElementById('blackthemeMenu');
     if (sidebar) sidebar.classList.remove('set');
+    if (sidebar) sidebar.setAttribute('aria-hidden', 'true');
     if (overlay) overlay.classList.remove('set');
+    if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
 }
 
 
@@ -761,9 +859,7 @@ function initSeriesHub() {
         return '<a class="series-hub-card" href="index.html?series=' + encodeURIComponent(update.name) + '#latest-posts-heading">' +
             '<span class="series-update-cover">' + coverMarkup +
                 readingStateMarkup(playlistReadingState, 'series-read-state') + '</span>' +
-            '<span class="series-hub-copy"><strong>' + escapeHtml(update.name) + '</strong>' +
-                '<span class="series-update-episode">قسمت ' + episodeNumber + ' · ' + escapeHtml(latest.title) + '</span>' +
-                '<small>' + update.posts.length.toLocaleString('fa-IR') + ' قسمت منتشرشده</small></span>' +
+            '<span class="series-hub-copy"><strong>' + escapeHtml(update.name) + '</strong></span>' +
             '<span class="series-hub-latest">' +
                 '<span class="series-update-badge">قسمت جدید ' + episodeNumber + '</span>' +
             '</span>' +
@@ -1638,6 +1734,11 @@ function readerIcon(name) {
         message: '<path d="M21 11.5a8.4 8.4 0 0 1-9 8.5 9.4 9.4 0 0 1-4-.9L3 21l1.8-4.7A8.5 8.5 0 1 1 21 11.5z"/><path d="M8.5 9.5c1 2.5 2.5 4 5 5"/>',
         send: '<path d="m22 2-7 20-4-9-9-4z"/><path d="M22 2 11 13"/>',
         link: '<path d="M10 13a5 5 0 0 0 7.1.1l2-2a5 5 0 0 0-7.1-7.1l-1.1 1.1"/><path d="M14 11a5 5 0 0 0-7.1-.1l-2 2A5 5 0 0 0 12 20l1.1-1.1"/>',
+        palette: '<path d="M12 3a9 9 0 1 0 0 18h1.5a2 2 0 0 0 0-4H12a1.5 1.5 0 0 1 0-3h2.8A6.2 6.2 0 0 0 21 7.8C21 5.1 17 3 12 3z"/><circle cx="7.5" cy="9" r=".8" fill="currentColor"/><circle cx="11" cy="6.8" r=".8" fill="currentColor"/><circle cx="15" cy="7.5" r=".8" fill="currentColor"/>',
+        user: '<circle cx="12" cy="7" r="4"/><path d="M5 21v-2a7 7 0 0 1 14 0v2"/>',
+        globe: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a15 15 0 0 1 0 18M12 3a15 15 0 0 0 0 18"/>',
+        github: '<path d="M9 19c-4 1.3-4-2-6-2.5M15 22v-3.5a3 3 0 0 0-.8-2.3c2.7-.3 5.6-1.4 5.6-6.1A4.8 4.8 0 0 0 18.5 7a4.5 4.5 0 0 0-.1-3.3S17.4 3.4 15 5a11.5 11.5 0 0 0-6 0C6.6 3.4 5.6 3.7 5.6 3.7A4.5 4.5 0 0 0 5.5 7a4.8 4.8 0 0 0-1.3 3.1c0 4.7 2.9 5.8 5.6 6.1A3 3 0 0 0 9 18.5V22"/>',
+        edit: '<path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/>',
         x: '<path d="M6 6l12 12M18 6 6 18"/>',
         'chevron-right': '<path d="m9 18 6-6-6-6"/>',
         'chevron-left': '<path d="m15 18-6-6 6-6"/>'

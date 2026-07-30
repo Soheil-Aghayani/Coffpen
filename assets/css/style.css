@@ -267,6 +267,10 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     transform: translateY(-1px);
 }
 
+.global-admin-menu-item {
+    display: inline-flex;
+}
+
 /* Live editorial hero */
 .headerImage {
     margin: -5px -45px 35px -45px;
@@ -590,8 +594,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     line-height: 1.9;
 }
 
-.about-banner-topics,
-.about-banner-actions {
+.about-banner-topics {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
@@ -609,18 +612,6 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     background: rgba(127, 127, 127, 0.07);
     color: var(--text-muted);
     font-size: 7.25pt;
-}
-
-.about-banner-actions {
-    margin-top: 13px;
-    gap: 16px;
-}
-
-.about-banner-actions a {
-    color: var(--text-accent);
-    font-size: 8pt;
-    font-weight: 700;
-    text-decoration: none;
 }
 
 .about-banner-stats {
@@ -993,21 +984,9 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     font-size: 1.08em;
 }
 
-.series-update-episode {
-    margin-top: 7px;
-    color: var(--text-main);
-    font-size: 9pt;
-    font-weight: 600;
-}
-
-.series-hub-copy small,
 .series-hub-latest {
     color: var(--text-muted);
     font-size: 7.5pt;
-}
-
-.series-hub-copy small {
-    margin-top: 6px;
 }
 
 .series-hub-latest {
@@ -1240,14 +1219,6 @@ nav ul li a:hover, .theme-toggle-btn:hover {
         font-size: 9pt;
     }
 
-    .series-update-episode {
-        margin-top: 4px;
-        overflow: hidden;
-        font-size: 7.4pt;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-    }
-
     .series-hub-latest {
         padding: 0 10px 10px;
     }
@@ -1258,10 +1229,6 @@ nav ul li a:hover, .theme-toggle-btn:hover {
         overflow: hidden;
         font-size: 6.6pt;
         text-overflow: ellipsis;
-    }
-
-    .series-hub-copy small {
-        font-size: 6.7pt;
     }
 
     .note-shelf {
@@ -2384,6 +2351,8 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     border: 1px solid var(--border-color);
     border-radius: 12px;
     padding: 12px 14px;
+    color: var(--text-main);
+    text-decoration: none;
 }
 
 .sidebar-author-img {
