@@ -921,6 +921,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 
 .series-hub-card {
     display: flex;
+    height: 100%;
     min-width: 0;
     flex-direction: column;
     overflow: hidden;
@@ -999,21 +1000,14 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     font-weight: 600;
 }
 
-.series-update-summary {
-    display: -webkit-box;
-    overflow: hidden;
-    margin-top: 5px;
-    color: var(--text-muted);
-    font-size: 8pt;
-    line-height: 1.7;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-}
-
 .series-hub-copy small,
 .series-hub-latest {
     color: var(--text-muted);
     font-size: 7.5pt;
+}
+
+.series-hub-copy small {
+    margin-top: 6px;
 }
 
 .series-hub-latest {
@@ -1206,10 +1200,6 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     .series-hub-list {
         grid-auto-columns: calc((100% - 10px) / 2);
         gap: 10px;
-    }
-
-    .series-update-summary {
-        display: none;
     }
 
     .note-shelf-list {

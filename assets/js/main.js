@@ -777,7 +777,6 @@ function initSeriesHub() {
                 readingStateMarkup(playlistReadingState, 'series-read-state') + '</span>' +
             '<span class="series-hub-copy"><strong>' + escapeHtml(update.name) + '</strong>' +
                 '<span class="series-update-episode">قسمت ' + episodeNumber + ' · ' + escapeHtml(latest.title) + '</span>' +
-                '<span class="series-update-summary">' + escapeHtml(latest.description) + '</span>' +
                 '<small>' + update.posts.length.toLocaleString('fa-IR') + ' قسمت منتشرشده</small></span>' +
             '<span class="series-hub-latest">' +
                 '<span class="series-update-badge">قسمت جدید ' + episodeNumber + '</span>' +
