@@ -29,7 +29,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css?v=20260730-3">
+    <link rel="stylesheet" href="assets/css/style.css?v=20260730-6">
 </head>
 <body>
     <div class="blackthemeBox">
@@ -82,7 +82,44 @@
                 <div id="seriesHubList" class="series-hub-list"></div>
             </section>
 
+            <section class="post-library-controls" aria-labelledby="post-library-title">
+                <div class="post-library-heading">
+                    <div>
+                        <p class="eyebrow">کتابخانهٔ نوشته‌ها</p>
+                        <h2 id="post-library-title">داستان موردنظرت را پیدا کن</h2>
+                    </div>
+                    <p>میان مجموعه‌ها و داستان‌های مستقل جست‌وجو و فیلتر کن.</p>
+                </div>
+                <div class="post-library-fields">
+                    <label class="post-search-field">
+                        <span>جست‌وجو</span>
+                        <input type="search" id="postSearch" placeholder="عنوان، خلاصه یا برچسب…" autocomplete="off">
+                    </label>
+                    <label>
+                        <span>نوع نوشته</span>
+                        <select id="postKindFilter">
+                            <option value="all">همهٔ نوشته‌ها</option>
+                            <option value="series">فقط مجموعه‌ها</option>
+                            <option value="standalone">فقط داستان‌های مستقل</option>
+                        </select>
+                    </label>
+                    <label>
+                        <span>مجموعه</span>
+                        <select id="postSeriesFilter">
+                            <option value="all">همهٔ مجموعه‌ها</option>
+                        </select>
+                    </label>
+                    <button type="button" id="postFilterReset" class="post-filter-reset">پاک‌کردن فیلترها</button>
+                </div>
+                <div id="postFilterStatus" class="post-filter-status" aria-live="polite"></div>
+            </section>
+
             <section id="postList" class="post-list" aria-label="فهرست نوشته‌ها" hidden></section>
+            <div id="postLoadSentinel" class="post-load-sentinel" hidden>
+                <span class="post-load-spinner" aria-hidden="true"></span>
+                <span id="postLoadStatus">در حال آماده‌کردن نوشته‌های بعدی…</span>
+                <button type="button" id="postLoadMore">نمایش نوشته‌های بیشتر</button>
+            </div>
 
             <section class="empty-posts" aria-labelledby="empty-posts-heading">
                 <span class="empty-posts-icon" aria-hidden="true">✦</span>
@@ -99,6 +136,6 @@
     <script>
         document.write('<script src="posts/posts-data.js?v=' + Date.now() + '"><\/script>');
     </script>
-    <script src="assets/js/main.js?v=20260730-3"></script>
+    <script src="assets/js/main.js?v=20260730-6"></script>
 </body>
 </html>

@@ -17,7 +17,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../assets/css/style.css?v=20260729-11">
+    <link rel="stylesheet" href="../assets/css/style.css?v=20260730-6">
 
     <style>
         body {
@@ -1771,7 +1771,7 @@
     <script>
         document.write('<script src="../posts/posts-data.js?v=' + Date.now() + '"><\/script>');
     </script>
-    <script src="../assets/js/main.js?v=20260729-10"></script>
+    <script src="../assets/js/main.js?v=20260730-6"></script>
 
     <script>
         var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
@@ -3419,6 +3419,8 @@
                 ''
             );
 
+            template = template.replace(' &bull; ۱۴۰۵/۰۵/۰۷', '');
+
             var discoveryMeta = '    <meta name="description" content="' + escapeAdminText(summary) + '">\n';
             if (tags.length) {
                 discoveryMeta += '    <meta name="keywords" content="' + escapeAdminText(tags.join('، ')) + '">\n';
@@ -3441,10 +3443,10 @@
             template = template.replace('    <title>', discoveryMeta + '    <title>');
             template = template.replace(
                 '    <script src="../assets/js/main.js"',
-                '    <script src="../posts/posts-data.js?v=20260730-5"><\/script>\n    <script src="../assets/js/main.js"'
+                '    <script src="../posts/posts-data.js?v=20260730-6"><\/script>\n    <script src="../assets/js/main.js"'
             );
-            template = template.replace('../assets/css/style.css"', '../assets/css/style.css?v=20260730-5"');
-            template = template.replace('../assets/js/main.js"', '../assets/js/main.js?v=20260730-5"');
+            template = template.replace('../assets/css/style.css"', '../assets/css/style.css?v=20260730-6"');
+            template = template.replace('../assets/js/main.js"', '../assets/js/main.js?v=20260730-6"');
 
             if (seriesMeta.enabled) {
                 var episodeHref = '../index.html?series=' + encodeURIComponent(seriesMeta.name) + '#latest-posts-heading';

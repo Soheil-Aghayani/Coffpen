@@ -362,7 +362,9 @@ function initLiveHero() {
     };
 
     if (countElement) {
-        const publishedPosts = document.querySelectorAll('.post-preview').length;
+        const publishedPosts = Array.isArray(window.COFFPEN_POSTS)
+            ? window.COFFPEN_POSTS.length
+            : document.querySelectorAll('.post-preview').length;
         countElement.textContent = publishedPosts.toLocaleString('fa-IR');
     }
 
@@ -376,14 +378,62 @@ function initPostRegistry() {
 
     const posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
     const emptyState = document.querySelector('.empty-posts');
+    const searchInput = document.getElementById('postSearch');
+    const kindInput = document.getElementById('postKindFilter');
+    const seriesInput = document.getElementById('postSeriesFilter');
+    const resetButton = document.getElementById('postFilterReset');
+    const filterStatus = document.getElementById('postFilterStatus');
+    const sentinel = document.getElementById('postLoadSentinel');
+    const loadStatus = document.getElementById('postLoadStatus');
+    const loadMoreButton = document.getElementById('postLoadMore');
+    const batchSize = 6;
+    let filteredPosts = [];
+    let renderedCount = 0;
+    let searchTimer = null;
 
     if (!posts.length) {
         postList.hidden = true;
+        if (sentinel) sentinel.hidden = true;
         if (emptyState) emptyState.hidden = false;
         return;
     }
 
-    postList.innerHTML = posts.map(function (post) {
+    const params = new URLSearchParams(window.location.search);
+    const requestedSeries = params.get('series') || 'all';
+    const requestedTag = params.get('tag') || '';
+    const requestedKind = params.get('kind') || 'all';
+    const requestedSearch = params.get('q') || '';
+    const seriesNames = Array.from(new Set(posts.map(function (post) {
+        return post.series || '';
+    }).filter(Boolean))).sort(function (first, second) {
+        return first.localeCompare(second, 'fa');
+    });
+
+    if (seriesInput) {
+        seriesInput.innerHTML = '<option value="all">همهٔ مجموعه‌ها</option>' +
+            seriesNames.map(function (name) {
+                return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
+            }).join('');
+        seriesInput.value = seriesNames.includes(requestedSeries) ? requestedSeries : 'all';
+    }
+    if (kindInput) {
+        kindInput.value = ['all', 'series', 'standalone'].includes(requestedKind) ? requestedKind : 'all';
+        if (seriesInput && seriesInput.value !== 'all') kindInput.value = 'series';
+    }
+    if (searchInput) searchInput.value = requestedSearch;
+
+    function normalizeLibraryText(value) {
+        return String(value || '')
+            .normalize('NFKC')
+            .toLowerCase()
+            .replace(/ي/g, 'ی')
+            .replace(/ك/g, 'ک')
+            .replace(/[\u200c\u200d]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+    }
+
+    function renderPostCard(post) {
         const seriesAttribute = post.series ? ' data-series="' + escapeHtml(post.series) + '"' : '';
         const tagsAttribute = Array.isArray(post.tags) && post.tags.length
             ? ' data-tags="' + escapeHtml(post.tags.join('|')) + '"'
@@ -410,7 +460,8 @@ function initPostRegistry() {
         return '<article class="blackthemePostBox post-preview"' + seriesAttribute + tagsAttribute + '>' +
             '<div class="blackthemePostInfo">' +
                 '<div class="blackthemePostInfoMain">' +
-                    '<div class="blackthemePostInfoImg"><img src="assets/images/author-avatar.jpg" alt="' + escapeHtml(post.author) + '" class="author-avatar-img"></div>' +
+                    '<div class="blackthemePostInfoImg"><img src="assets/images/author-avatar.jpg" alt="' + escapeHtml(post.author) +
+                        '" class="author-avatar-img" loading="lazy" decoding="async"></div>' +
                     '<div class="blackthemePostInfoContent">' +
                         '<div class="post-title-row">' +
                             '<h2 class="blackthemePostBoxTitle"><a href="' + escapeHtml(post.url) + '">' + escapeHtml(post.title) + '</a></h2>' +
@@ -430,7 +481,97 @@ function initPostRegistry() {
                 '</div>' +
             '</div>' +
         '</article>';
-    }).join('');
+    }
+
+    function updateLibraryUrl() {
+        const nextParams = new URLSearchParams();
+        const search = searchInput ? searchInput.value.trim() : '';
+        const kind = kindInput ? kindInput.value : 'all';
+        const series = seriesInput ? seriesInput.value : 'all';
+        if (search) nextParams.set('q', search);
+        if (kind !== 'all') nextParams.set('kind', kind);
+        if (series !== 'all') nextParams.set('series', series);
+        if (requestedTag) nextParams.set('tag', requestedTag);
+        const query = nextParams.toString();
+        window.history.replaceState(null, '', window.location.pathname + (query ? '?' + query : '') + window.location.hash);
+    }
+
+    function updateLoadState() {
+        const remaining = filteredPosts.length - renderedCount;
+        if (!sentinel || !loadStatus || !loadMoreButton) return;
+
+        if (!filteredPosts.length) {
+            sentinel.hidden = false;
+            sentinel.classList.add('empty');
+            loadStatus.textContent = 'نوشته‌ای با این فیلترها پیدا نشد.';
+            loadMoreButton.hidden = true;
+            return;
+        }
+
+        sentinel.classList.remove('empty');
+        sentinel.hidden = remaining <= 0;
+        loadStatus.textContent = remaining > 0
+            ? remaining.toLocaleString('fa-IR') + ' نوشتهٔ دیگر در ادامه'
+            : '';
+        loadMoreButton.hidden = remaining <= 0;
+    }
+
+    function updateFilterStatus() {
+        if (!filterStatus) return;
+        const visible = Math.min(renderedCount, filteredPosts.length);
+        let message = 'نمایش ' + visible.toLocaleString('fa-IR') + ' از ' +
+            filteredPosts.length.toLocaleString('fa-IR') + ' نوشته';
+        if (requestedTag) message += ' با برچسب «' + requestedTag + '»';
+        filterStatus.textContent = message;
+    }
+
+    function renderNextBatch() {
+        if (renderedCount >= filteredPosts.length) {
+            updateLoadState();
+            return;
+        }
+        const nextPosts = filteredPosts.slice(renderedCount, renderedCount + batchSize);
+        postList.insertAdjacentHTML('beforeend', nextPosts.map(renderPostCard).join(''));
+        renderedCount += nextPosts.length;
+        updateFilterStatus();
+        updateLoadState();
+    }
+
+    function applyLibraryFilters() {
+        const query = normalizeLibraryText(searchInput ? searchInput.value : '');
+        const kind = kindInput ? kindInput.value : 'all';
+        const series = seriesInput ? seriesInput.value : 'all';
+        const tag = normalizeLibraryText(requestedTag);
+
+        filteredPosts = posts.filter(function (post) {
+            if (kind === 'series' && !post.series) return false;
+            if (kind === 'standalone' && post.series) return false;
+            if (series !== 'all' && post.series !== series) return false;
+
+            const postTags = Array.isArray(post.tags) ? post.tags : [];
+            if (tag && !postTags.some(function (postTag) {
+                return normalizeLibraryText(postTag) === tag;
+            })) return false;
+
+            if (!query) return true;
+            const haystack = normalizeLibraryText([
+                post.title,
+                post.description,
+                post.author,
+                post.series,
+                postTags.join(' ')
+            ].join(' '));
+            return haystack.includes(query);
+        });
+
+        postList.innerHTML = '';
+        renderedCount = 0;
+        postList.hidden = false;
+        if (emptyState) emptyState.hidden = true;
+        if (seriesInput) seriesInput.disabled = kind === 'standalone';
+        updateLibraryUrl();
+        renderNextBatch();
+    }
 
     postList.addEventListener('click', function (event) {
         const shareButton = event.target.closest('.post-preview-share');
@@ -439,8 +580,46 @@ function initPostRegistry() {
         handleSmartShare(event, shareButton.dataset.shareTitle + ' | سیاه و قلم', shareUrl);
     });
 
-    postList.hidden = false;
-    if (emptyState) emptyState.hidden = true;
+    if (searchInput) {
+        searchInput.addEventListener('input', function () {
+            window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(applyLibraryFilters, 180);
+        });
+    }
+    if (kindInput) {
+        kindInput.addEventListener('change', function () {
+            if (kindInput.value === 'standalone' && seriesInput) seriesInput.value = 'all';
+            applyLibraryFilters();
+        });
+    }
+    if (seriesInput) {
+        seriesInput.addEventListener('change', function () {
+            if (seriesInput.value !== 'all' && kindInput) kindInput.value = 'series';
+            applyLibraryFilters();
+        });
+    }
+    if (resetButton) {
+        resetButton.addEventListener('click', function () {
+            if (searchInput) searchInput.value = '';
+            if (kindInput) kindInput.value = 'all';
+            if (seriesInput) {
+                seriesInput.value = 'all';
+                seriesInput.disabled = false;
+            }
+            window.history.replaceState(null, '', window.location.pathname + '#latest-posts-heading');
+            window.location.reload();
+        });
+    }
+    if (loadMoreButton) loadMoreButton.addEventListener('click', renderNextBatch);
+
+    if ('IntersectionObserver' in window && sentinel) {
+        const loadObserver = new IntersectionObserver(function (entries) {
+            if (entries.some(function (entry) { return entry.isIntersecting; })) renderNextBatch();
+        }, { rootMargin: '600px 0px' });
+        loadObserver.observe(sentinel);
+    }
+
+    applyLibraryFilters();
 }
 
 function initSeriesHub() {
@@ -633,6 +812,7 @@ function initStoryHero() {
 }
 
 function initSeriesFilter() {
+    if (document.querySelector('.post-library-controls')) return;
     const params = new URLSearchParams(window.location.search);
     const requestedSeries = params.get('series');
     const requestedTag = params.get('tag');
