@@ -1047,6 +1047,34 @@
             font-size: 7.75pt;
         }
 
+        .series-mini-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            margin-bottom: 5px;
+        }
+
+        .series-mini-label label {
+            margin-bottom: 0;
+        }
+
+        .episode-auto-button {
+            padding: 2px 7px;
+            border: 0;
+            border-radius: 999px;
+            background: var(--bg-tag);
+            color: var(--text-accent);
+            font-family: inherit;
+            font-size: 6.75pt;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .episode-auto-button.manual {
+            color: var(--text-muted);
+        }
+
         .series-picker {
             min-height: 42px;
             padding-left: 42px;
@@ -1558,7 +1586,11 @@
                                             </div>
                                         </div>
                                         <div class="series-mini-field">
-                                            <label for="postEpisode">شماره این قسمت</label>
+                                            <div class="series-mini-label">
+                                                <label for="postEpisode">شماره این قسمت</label>
+                                                <button type="button" id="episodeAutoButton" class="episode-auto-button"
+                                                    onclick="useAutomaticEpisodeNumber()">خودکار</button>
+                                            </div>
                                             <input type="text" id="postEpisode" class="form-control" inputmode="numeric" pattern="[۰-۹0-9]*" maxlength="4" placeholder="مثلاً ۳" oninput="handleEpisodeInput(this)" disabled>
                                         </div>
                                         <div class="series-mini-field">
@@ -1790,6 +1822,7 @@
         var ADMIN_DRAFT_KEY = 'coffpen_admin_story_draft';
         var editingPostFilename = '';
         var editingPostHandle = null;
+        var episodeWasManuallyEdited = false;
         var repoImageItems = [];
         var repoImageAction = 'insert';
         var adminPostPage = 1;
@@ -2301,6 +2334,7 @@
                 editingPostFilename = '';
                 editingPostHandle = null;
                 slugWasManuallyEdited = false;
+                episodeWasManuallyEdited = false;
                 toggleSeriesFields();
                 updateSlugHint('');
                 document.getElementById('editorCardTitle').innerHTML =
@@ -2415,7 +2449,8 @@
                 isNew: selectedValue === '__new__' && !exactMatch,
                 nearMatch: selectedValue === '__new__' && !exactMatch ? findNearSeriesName(enteredName) : '',
                 episode: episodeInput ? toEnglishDigits(episodeInput.value).replace(/\D/g, '') : '',
-                total: totalInput ? toEnglishDigits(totalInput.value).replace(/\D/g, '') : ''
+                total: totalInput ? toEnglishDigits(totalInput.value).replace(/\D/g, '') : '',
+                episodeManuallyEdited: episodeWasManuallyEdited
             };
         }
 
@@ -2576,6 +2611,7 @@
             if (episodeInput) episodeInput.required = meta.enabled;
             if (newNameInput) newNameInput.disabled = !meta.enabled || !seriesSelect || seriesSelect.value !== '__new__';
             updateNewSeriesField();
+            updateEpisodeAutoButton(meta.episode);
             updateSeriesSummary();
 
             if (meta.enabled && seriesSelect) {
@@ -2602,12 +2638,56 @@
             summary.textContent = 'نحوه نمایش: ' + buildSeriesLabel(getSeriesMeta());
         }
 
+        function getNextEpisodeNumber(seriesName) {
+            var identity = normalizeSeriesIdentity(seriesName);
+            if (!identity) return 1;
+            var episodes = (Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [])
+                .filter(function (post) {
+                    return normalizeSeriesIdentity(post.series) === identity &&
+                        (!editingPostFilename || post.filename !== editingPostFilename);
+                })
+                .map(function (post) { return Number(post.episode || 0); })
+                .filter(function (episode) { return Number.isFinite(episode) && episode > 0; });
+            return (episodes.length ? Math.max.apply(Math, episodes) : 0) + 1;
+        }
+
+        function updateEpisodeAutoButton(suggestedEpisode) {
+            var button = document.getElementById('episodeAutoButton');
+            if (!button) return;
+            button.classList.toggle('manual', episodeWasManuallyEdited);
+            button.textContent = episodeWasManuallyEdited
+                ? 'بازگشت به خودکار'
+                : 'خودکار' + (suggestedEpisode ? ': ' + toPersianDigits(suggestedEpisode) : '');
+        }
+
+        function applyAutomaticEpisodeNumber(force) {
+            if (force) episodeWasManuallyEdited = false;
+            var meta = getSeriesMeta();
+            var input = document.getElementById('postEpisode');
+            if (!input || !meta.enabled || !meta.name || episodeWasManuallyEdited) {
+                updateEpisodeAutoButton();
+                return;
+            }
+            var suggestedEpisode = getNextEpisodeNumber(meta.name);
+            input.value = toPersianDigits(suggestedEpisode);
+            updateEpisodeAutoButton(suggestedEpisode);
+        }
+
+        function useAutomaticEpisodeNumber() {
+            applyAutomaticEpisodeNumber(true);
+            updateSeriesSummary();
+            refreshSlugForIdentityChange();
+            updateGitCommand();
+            saveAdminDraft();
+        }
+
         function handleSeriesSelection(shouldFocus) {
             if (document.getElementById('postSeries').value === '__standalone__') {
                 clearSeriesSelection(true);
                 return;
             }
             updateNewSeriesField();
+            applyAutomaticEpisodeNumber(false);
             updateSeriesSummary();
             refreshSlugForIdentityChange();
             updateGitCommand();
@@ -2629,6 +2709,8 @@
             if (newNameInput) newNameInput.value = '';
             if (episodeInput) episodeInput.value = '';
             if (totalInput) totalInput.value = '';
+            episodeWasManuallyEdited = false;
+            updateEpisodeAutoButton();
             toggleSeriesFields();
 
             if (notify) showToast('پلی‌لیست لغو شد؛ این نوشته به‌صورت مستقل منتشر می‌شود.');
@@ -2643,6 +2725,7 @@
                 return;
             }
             updateSeriesNearMatch();
+            applyAutomaticEpisodeNumber(false);
             updateSeriesSummary();
             refreshSlugForIdentityChange();
             updateGitCommand();
@@ -2652,6 +2735,10 @@
         function handleEpisodeInput(input) {
             var englishDigits = toEnglishDigits(input.value).replace(/\D/g, '').slice(0, 4);
             input.value = toPersianDigits(englishDigits);
+            if (input.id === 'postEpisode') {
+                episodeWasManuallyEdited = true;
+                updateEpisodeAutoButton();
+            }
             updateSeriesSummary();
             refreshSlugForIdentityChange();
             updateGitCommand();
@@ -3263,6 +3350,10 @@
                 setSeriesSelection(draft.series ? draft.series.name || '' : '', false);
                 document.getElementById('postEpisode').value = draft.series && draft.series.episode ? toPersianDigits(draft.series.episode) : '';
                 document.getElementById('postEpisodeTotal').value = draft.series && draft.series.total ? toPersianDigits(draft.series.total) : '';
+                episodeWasManuallyEdited = Boolean(
+                    draft.series && draft.series.episode &&
+                    draft.series.episodeManuallyEdited !== false
+                );
                 slugWasManuallyEdited = Boolean(draft.slug);
                 toggleSeriesFields();
                 updateSlugHint(draft.slug || '');
@@ -3341,6 +3432,7 @@
             setSeriesSelection(post.series || '', false);
             document.getElementById('postEpisode').value = post.episode ? toPersianDigits(post.episode) : '';
             document.getElementById('postEpisodeTotal').value = '';
+            episodeWasManuallyEdited = Boolean(post.episode);
             slugWasManuallyEdited = true;
             toggleSeriesFields();
 

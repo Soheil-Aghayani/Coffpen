@@ -399,6 +399,8 @@ function initPostRegistry() {
     const searchInput = document.getElementById('postSearch');
     const kindInput = document.getElementById('postKindFilter');
     const seriesInput = document.getElementById('postSeriesFilter');
+    const seriesOrderInput = document.getElementById('postSeriesOrder');
+    const seriesOrderControl = document.getElementById('postSeriesOrderControl');
     const postListTitle = document.getElementById('postListTitle');
     const resetButton = document.getElementById('postFilterReset');
     const advancedToggle = document.getElementById('postAdvancedToggle');
@@ -424,6 +426,7 @@ function initPostRegistry() {
     const requestedTag = params.get('tag') || '';
     const requestedKind = params.get('kind') || 'story';
     const requestedSearch = params.get('q') || '';
+    const requestedOrder = params.get('order') === 'asc' ? 'asc' : 'desc';
     const hasRequestedAdvancedFilters = requestedSeries !== 'all' || Boolean(requestedTag) || requestedKind !== 'story';
     const seriesNames = Array.from(new Set(posts.map(function (post) {
         return post.series || '';
@@ -445,6 +448,7 @@ function initPostRegistry() {
         if (seriesInput && seriesInput.value !== 'all') kindInput.value = 'series';
     }
     if (searchInput) searchInput.value = requestedSearch;
+    if (seriesOrderInput) seriesOrderInput.value = requestedOrder;
 
     function setAdvancedFiltersOpen(shouldOpen) {
         if (!advancedToggle || !advancedFilters) return;
@@ -518,9 +522,11 @@ function initPostRegistry() {
         const search = searchInput ? searchInput.value.trim() : '';
         const kind = kindInput ? kindInput.value : 'story';
         const series = seriesInput ? seriesInput.value : 'all';
+        const order = seriesOrderInput ? seriesOrderInput.value : 'desc';
         if (search) nextParams.set('q', search);
         if (kind !== 'story') nextParams.set('kind', kind);
         if (series !== 'all') nextParams.set('series', series);
+        if (series !== 'all' && order === 'asc') nextParams.set('order', 'asc');
         if (requestedTag) nextParams.set('tag', requestedTag);
         const query = nextParams.toString();
         window.history.replaceState(null, '', window.location.pathname + (query ? '?' + query : '') + window.location.hash);
@@ -606,6 +612,14 @@ function initPostRegistry() {
             ].join(' '));
             return haystack.includes(query);
         });
+        if (series !== 'all') {
+            const direction = seriesOrderInput && seriesOrderInput.value === 'asc' ? 1 : -1;
+            filteredPosts.sort(function (first, second) {
+                const episodeDifference = Number(first.episode || 0) - Number(second.episode || 0);
+                if (episodeDifference) return episodeDifference * direction;
+                return (new Date(first.date || 0) - new Date(second.date || 0)) * direction;
+            });
+        }
 
         postList.innerHTML = '';
         renderedCount = 0;
@@ -615,6 +629,7 @@ function initPostRegistry() {
             noteShelf.hidden = Boolean(query || requestedTag || kind !== 'story' || series !== 'all');
         }
         if (seriesInput) seriesInput.disabled = kind === 'standalone' || kind === 'note';
+        if (seriesOrderControl) seriesOrderControl.hidden = series === 'all';
         if (postListTitle) {
             postListTitle.textContent = query
                 ? 'نتایج جست‌وجو'
@@ -655,6 +670,7 @@ function initPostRegistry() {
             applyLibraryFilters();
         });
     }
+    if (seriesOrderInput) seriesOrderInput.addEventListener('change', applyLibraryFilters);
     if (advancedToggle && advancedFilters) {
         advancedToggle.addEventListener('click', function () {
             setAdvancedFiltersOpen(advancedFilters.hidden);
@@ -668,6 +684,7 @@ function initPostRegistry() {
                 seriesInput.value = 'all';
                 seriesInput.disabled = false;
             }
+            if (seriesOrderInput) seriesOrderInput.value = 'desc';
             window.history.replaceState(null, '', window.location.pathname + '#latest-posts-heading');
             window.location.reload();
         });

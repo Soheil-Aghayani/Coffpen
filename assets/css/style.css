@@ -998,6 +998,36 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     font-size: 1.25em;
 }
 
+.series-order-control {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--text-muted);
+    font-size: 7.5pt;
+}
+
+.series-order-control[hidden] {
+    display: none;
+}
+
+.series-order-control select {
+    min-height: 38px;
+    padding: 7px 11px;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-box);
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 8pt;
+    outline: none;
+    cursor: pointer;
+}
+
+.series-order-control select:focus {
+    border-color: var(--text-accent);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-accent) 12%, transparent);
+}
+
 .note-shelf {
     margin: 22px 0 42px;
     padding: clamp(16px, 3vw, 24px);
@@ -1449,6 +1479,22 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     .post-filter-status {
         margin-top: 5px;
         font-size: 7.25pt;
+    }
+
+    .content-section-heading {
+        align-items: center;
+        gap: 10px;
+    }
+
+    .series-order-control > span {
+        display: none;
+    }
+
+    .series-order-control select {
+        max-width: 145px;
+        min-height: 36px;
+        padding: 6px 8px;
+        font-size: 7.5pt;
     }
 }
 
