@@ -688,6 +688,10 @@ function initSeriesHub() {
     const hub = document.getElementById('seriesHub');
     const list = document.getElementById('seriesHubList');
     if (!hub || !list) return;
+    if (new URLSearchParams(window.location.search).get('series')) {
+        hub.hidden = true;
+        return;
+    }
 
     const posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
     const groups = posts.reduce(function (result, post) {
@@ -979,6 +983,7 @@ function initLongformReader() {
     const story = document.querySelector('.story-body');
     if (!story || story.dataset.readerReady === 'true') return;
     story.dataset.readerReady = 'true';
+    normalizeLooseStoryContent(story);
     story.querySelectorAll('[style*="font-size"]').forEach(function (element) {
         element.style.removeProperty('font-size');
     });
@@ -1487,6 +1492,39 @@ function initLongformReader() {
             });
         }
     }
+}
+
+function normalizeLooseStoryContent(story) {
+    const blockTags = new Set([
+        'ADDRESS', 'ASIDE', 'BLOCKQUOTE', 'DIV', 'FIGCAPTION', 'FIGURE', 'H1', 'H2', 'H3', 'H4',
+        'H5', 'H6', 'HR', 'IMG', 'LI', 'OL', 'P', 'PRE', 'SECTION', 'TABLE', 'UL', 'VIDEO'
+    ]);
+    const nodes = Array.from(story.childNodes);
+    let paragraph = null;
+
+    function ensureParagraph() {
+        if (paragraph) return paragraph;
+        paragraph = document.createElement('p');
+        story.insertBefore(paragraph, currentNode || null);
+        return paragraph;
+    }
+
+    let currentNode = null;
+    nodes.forEach(function (node) {
+        currentNode = node;
+        const isBlock = node.nodeType === Node.ELEMENT_NODE && blockTags.has(node.tagName);
+        if (isBlock) {
+            paragraph = null;
+            return;
+        }
+
+        if (node.nodeType === Node.TEXT_NODE && !node.textContent.trim() && !paragraph) {
+            node.remove();
+            return;
+        }
+
+        ensureParagraph().appendChild(node);
+    });
 }
 
 function readerButton(action, icon, label, extraClass) {
