@@ -382,6 +382,8 @@ function initPostRegistry() {
     const kindInput = document.getElementById('postKindFilter');
     const seriesInput = document.getElementById('postSeriesFilter');
     const resetButton = document.getElementById('postFilterReset');
+    const advancedToggle = document.getElementById('postAdvancedToggle');
+    const advancedFilters = document.getElementById('postAdvancedFilters');
     const filterStatus = document.getElementById('postFilterStatus');
     const sentinel = document.getElementById('postLoadSentinel');
     const loadStatus = document.getElementById('postLoadStatus');
@@ -403,6 +405,7 @@ function initPostRegistry() {
     const requestedTag = params.get('tag') || '';
     const requestedKind = params.get('kind') || 'all';
     const requestedSearch = params.get('q') || '';
+    const hasRequestedAdvancedFilters = requestedSeries !== 'all' || Boolean(requestedTag) || requestedKind !== 'all';
     const seriesNames = Array.from(new Set(posts.map(function (post) {
         return post.series || '';
     }).filter(Boolean))).sort(function (first, second) {
@@ -421,6 +424,18 @@ function initPostRegistry() {
         if (seriesInput && seriesInput.value !== 'all') kindInput.value = 'series';
     }
     if (searchInput) searchInput.value = requestedSearch;
+
+    function setAdvancedFiltersOpen(shouldOpen) {
+        if (!advancedToggle || !advancedFilters) return;
+        advancedFilters.hidden = !shouldOpen;
+        advancedToggle.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        advancedToggle.setAttribute(
+            'aria-label',
+            shouldOpen ? 'بستن فیلترهای پیشرفته' : 'باز کردن فیلترهای پیشرفته'
+        );
+    }
+
+    setAdvancedFiltersOpen(hasRequestedAdvancedFilters);
 
     function normalizeLibraryText(value) {
         return String(value || '')
@@ -518,6 +533,14 @@ function initPostRegistry() {
 
     function updateFilterStatus() {
         if (!filterStatus) return;
+        const search = searchInput ? searchInput.value.trim() : '';
+        const kind = kindInput ? kindInput.value : 'all';
+        const series = seriesInput ? seriesInput.value : 'all';
+        const hasActiveFilter = Boolean(search || requestedTag || kind !== 'all' || series !== 'all');
+        if (!hasActiveFilter) {
+            filterStatus.textContent = '';
+            return;
+        }
         const visible = Math.min(renderedCount, filteredPosts.length);
         let message = 'نمایش ' + visible.toLocaleString('fa-IR') + ' از ' +
             filteredPosts.length.toLocaleString('fa-IR') + ' نوشته';
@@ -596,6 +619,11 @@ function initPostRegistry() {
         seriesInput.addEventListener('change', function () {
             if (seriesInput.value !== 'all' && kindInput) kindInput.value = 'series';
             applyLibraryFilters();
+        });
+    }
+    if (advancedToggle && advancedFilters) {
+        advancedToggle.addEventListener('click', function () {
+            setAdvancedFiltersOpen(advancedFilters.hidden);
         });
     }
     if (resetButton) {
