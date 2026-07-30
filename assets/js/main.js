@@ -336,22 +336,13 @@ function escapeHtml(str) {
 }
 
 function initLiveHero() {
-    const dateElement = document.getElementById('heroPersianDate');
     const clockElement = document.getElementById('heroClock');
     const countElement = document.getElementById('heroPostCount');
 
-    if (!dateElement && !clockElement && !countElement) return;
+    if (!clockElement && !countElement) return;
 
     const updateHeroTime = function () {
         const now = new Date();
-
-        if (dateElement) {
-            dateElement.textContent = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-                weekday: 'long',
-                day: 'numeric',
-                month: 'long'
-            }).format(now);
-        }
 
         if (clockElement) {
             clockElement.textContent = new Intl.DateTimeFormat('fa-IR', {
@@ -466,12 +457,6 @@ function initPostRegistry() {
                 return '<a href="index.html?tag=' + encodeURIComponent(tag) + '#latest-posts-heading">#' + escapeHtml(tag) + '</a>';
             }).join('') + '</div>'
             : '';
-        const date = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
-            year: 'numeric',
-            month: '2-digit',
-            day: '2-digit'
-        }).format(new Date(post.date));
-
         return '<article class="blackthemePostBox post-preview"' + seriesAttribute + tagsAttribute + '>' +
             '<div class="blackthemePostInfo">' +
                 '<div class="blackthemePostInfoMain">' +
@@ -482,7 +467,7 @@ function initPostRegistry() {
                             '<h2 class="blackthemePostBoxTitle"><a href="' + escapeHtml(post.url) + '">' + escapeHtml(post.title) + '</a></h2>' +
                             episode +
                         '</div>' +
-                        '<span class="blackthemeDate"><b>' + escapeHtml(post.author) + '</b> &bull; <time datetime="' + escapeHtml(post.date) + '">' + date + '</time></span>' +
+                        '<span class="blackthemeDate"><b>' + escapeHtml(post.author) + '</b></span>' +
                     '</div>' +
                 '</div>' +
             '</div>' +
