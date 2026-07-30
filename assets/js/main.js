@@ -719,14 +719,15 @@ function initSeriesHub() {
     }, {});
 
     const seriesUpdates = Object.keys(groups).map(function (name) {
-        const recentFirst = groups[name].slice().sort(function (a, b) {
-            return new Date(b.date) - new Date(a.date);
+        const latestEpisodeFirst = groups[name].slice().sort(function (a, b) {
+            const episodeDifference = Number(b.episode || 0) - Number(a.episode || 0);
+            return episodeDifference || (new Date(b.date) - new Date(a.date));
         });
         return {
             name,
-            posts: recentFirst,
-            latest: recentFirst[0],
-            cover: recentFirst.find(function (post) { return post.image; })
+            posts: latestEpisodeFirst,
+            latest: latestEpisodeFirst[0],
+            cover: latestEpisodeFirst.find(function (post) { return post.image; })
         };
     }).sort(function (a, b) {
         return new Date(b.latest.date) - new Date(a.latest.date);
