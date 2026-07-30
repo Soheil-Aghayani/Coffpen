@@ -239,6 +239,12 @@ header h2 {
     flex: 0 0 100%;
 }
 
+.blackthemeBox > header .blackthemeInfo {
+    width: 100%;
+    flex: 0 0 100%;
+    text-align: right;
+}
+
 nav ul {
     width: 100%;
     list-style-type: none;
