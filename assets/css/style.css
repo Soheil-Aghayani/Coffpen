@@ -846,23 +846,91 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     font-size: 1.35em;
 }
 
-.series-hub-list {
+.series-carousel-controls {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+}
+
+.series-carousel-controls[hidden] {
+    display: none;
+}
+
+.series-carousel-controls button {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-box);
+    color: var(--text-muted);
+    cursor: pointer;
+}
+
+.series-carousel-controls button:hover,
+.series-carousel-controls button:focus-visible {
+    border-color: var(--text-accent);
+    color: var(--text-accent);
+    outline: none;
+}
+
+.series-carousel-controls button:disabled {
+    opacity: 0.35;
+    cursor: default;
+}
+
+.series-carousel-controls svg {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.series-hub-list {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% - 36px) / 4);
     gap: 12px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-behavior: smooth;
+    scroll-snap-type: inline mandatory;
+    scroll-padding-inline: 1px;
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in srgb, var(--text-accent) 55%, transparent) transparent;
+    touch-action: pan-x pan-y;
+    padding-bottom: 8px;
+}
+
+.series-hub-list::-webkit-scrollbar {
+    height: 6px;
+}
+
+.series-hub-list::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.series-hub-list::-webkit-scrollbar-thumb {
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--text-accent) 55%, transparent);
 }
 
 .series-hub-card {
-    display: grid;
-    grid-template-columns: 112px minmax(0, 1fr) auto;
-    align-items: stretch;
-    min-height: 138px;
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
     overflow: hidden;
     border: 1px solid var(--border-subtle);
     border-radius: 16px;
     background: var(--bg-box);
     color: var(--text-main);
     text-decoration: none;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
     transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -875,7 +943,10 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 
 .series-update-cover {
     position: relative;
-    min-height: 138px;
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 4 / 5;
+    flex: 0 0 auto;
     overflow: hidden;
     background:
         linear-gradient(145deg, color-mix(in srgb, var(--text-accent) 22%, var(--bg-tag)), var(--bg-card));
@@ -909,9 +980,9 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 .series-hub-copy {
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    flex: 1 1 auto;
     min-width: 0;
-    padding: 18px 20px;
+    padding: 13px 13px 9px;
 }
 
 .series-hub-copy > strong {
@@ -934,9 +1005,9 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     margin-top: 5px;
     color: var(--text-muted);
     font-size: 8pt;
-    line-height: 1.85;
+    line-height: 1.7;
     -webkit-box-orient: vertical;
-    -webkit-line-clamp: 1;
+    -webkit-line-clamp: 2;
 }
 
 .series-hub-copy small,
@@ -947,13 +1018,11 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 
 .series-hub-latest {
     display: flex;
-    min-width: 138px;
-    flex-direction: column;
-    align-items: flex-end;
-    justify-content: center;
-    gap: 8px;
-    padding: 18px;
-    border-right: 1px solid var(--border-subtle);
+    min-width: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 7px;
+    padding: 0 13px 13px;
 }
 
 .series-update-badge {
@@ -978,10 +1047,39 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     box-shadow: 0 0 0 4px color-mix(in srgb, currentColor 12%, transparent);
 }
 
-.series-update-time {
+.series-read-state,
+.post-read-state {
+    display: inline-grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    flex: 0 0 auto;
+    border: 1px solid color-mix(in srgb, currentColor 28%, transparent);
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--bg-card) 82%, transparent);
     color: var(--text-muted);
-    font-size: 7.5pt;
-    white-space: nowrap;
+}
+
+.series-read-state {
+    position: absolute;
+    top: 9px;
+    left: 9px;
+    z-index: 2;
+    backdrop-filter: blur(8px);
+}
+
+.series-read-state svg,
+.post-read-state svg {
+    width: 15px;
+    height: 15px;
+}
+
+.read-state-started {
+    color: var(--text-accent);
+}
+
+.read-state-read {
+    color: #4aa77a;
 }
 
 .content-section-heading {
@@ -1105,29 +1203,9 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 }
 
 @media screen and (max-width: 700px) {
-    .series-hub-card {
-        grid-template-columns: 92px minmax(0, 1fr);
-        min-height: 116px;
-    }
-
-    .series-update-cover {
-        min-height: 116px;
-    }
-
-    .series-hub-copy {
-        padding: 14px;
-    }
-
-    .series-hub-latest {
-        grid-column: 2;
-        min-width: 0;
-        flex-direction: row;
-        align-items: center;
-        justify-content: flex-start;
-        flex-wrap: wrap;
-        gap: 7px 10px;
-        padding: 0 14px 13px;
-        border-right: 0;
+    .series-hub-list {
+        grid-auto-columns: calc((100% - 10px) / 2);
+        gap: 10px;
     }
 
     .series-update-summary {
@@ -1156,31 +1234,44 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     }
 
     .series-hub-card {
-        grid-template-columns: 82px minmax(0, 1fr);
-        min-height: 108px;
         border-radius: 13px;
     }
 
-    .series-update-cover {
-        min-height: 108px;
+    .series-carousel-controls button {
+        width: 34px;
+        height: 34px;
     }
 
     .series-hub-copy {
-        padding: 12px;
+        padding: 10px 10px 7px;
+    }
+
+    .series-hub-copy > strong {
+        font-size: 9pt;
     }
 
     .series-update-episode {
         margin-top: 4px;
-        font-size: 8pt;
+        overflow: hidden;
+        font-size: 7.4pt;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     .series-hub-latest {
-        padding: 0 12px 11px;
+        padding: 0 10px 10px;
     }
 
-    .series-update-badge,
-    .series-update-time {
-        font-size: 6.9pt;
+    .series-update-badge {
+        max-width: 100%;
+        padding: 4px 7px;
+        overflow: hidden;
+        font-size: 6.6pt;
+        text-overflow: ellipsis;
+    }
+
+    .series-hub-copy small {
+        font-size: 6.7pt;
     }
 
     .note-shelf {
@@ -2487,7 +2578,8 @@ footer {
 
 .story-playlist-list a {
     display: grid;
-    grid-template-columns: 72px minmax(0, 1fr);
+    grid-template-columns: 72px minmax(0, 1fr) auto;
+    align-items: center;
     gap: 10px;
     padding: 9px 11px;
     border-radius: 9px;

@@ -335,24 +335,44 @@ function escapeHtml(str) {
     });
 }
 
-function formatRelativePublicationTime(value) {
-    const publishedAt = new Date(value).getTime();
-    if (!Number.isFinite(publishedAt)) return 'به‌تازگی';
-    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - publishedAt) / 1000));
-    if (elapsedSeconds < 60) return 'چند لحظه پیش';
-    const minutes = Math.floor(elapsedSeconds / 60);
-    if (minutes < 60) return minutes.toLocaleString('fa-IR') + ' دقیقه پیش';
-    const hours = Math.floor(minutes / 60);
-    if (hours < 24) return hours.toLocaleString('fa-IR') + ' ساعت پیش';
-    const days = Math.floor(hours / 24);
-    if (days < 30) return days.toLocaleString('fa-IR') + ' روز پیش';
-    const months = Math.floor(days / 30);
-    if (months < 12) return months.toLocaleString('fa-IR') + ' ماه پیش';
-    return Math.floor(months / 12).toLocaleString('fa-IR') + ' سال پیش';
-}
-
 function postContentType(post) {
     return post && post.contentType === 'note' ? 'note' : 'story';
+}
+
+function readingProgressKey(pathname) {
+    return 'coffpen_read_progress_' + pathname;
+}
+
+function getPostReadingProgress(post) {
+    try {
+        const pathname = new URL(post.url, window.location.href).pathname;
+        const saved = JSON.parse(localStorage.getItem(readingProgressKey(pathname)) || '{}');
+        return Math.min(1, Math.max(0, Number(saved.percent) || 0));
+    } catch (error) {
+        return 0;
+    }
+}
+
+function getReadingState(progress) {
+    if (progress >= 0.9) return 'read';
+    if (progress > 0) return 'started';
+    return 'unread';
+}
+
+function readingStateMarkup(state, className) {
+    const labels = {
+        unread: 'خوانده‌نشده',
+        started: 'درحال‌خواندن',
+        read: 'خوانده‌شده'
+    };
+    const icons = {
+        unread: 'circle',
+        started: 'book-open',
+        read: 'check-circle'
+    };
+    const safeState = labels[state] ? state : 'unread';
+    return '<span class="' + className + ' read-state-' + safeState + '" role="img" aria-label="' +
+        labels[safeState] + '" title="' + labels[safeState] + '">' + readerIcon(icons[safeState]) + '</span>';
 }
 
 function initLiveHero() {
@@ -491,6 +511,7 @@ function initPostRegistry() {
                 return '<a href="index.html?tag=' + encodeURIComponent(tag) + '#latest-posts-heading">#' + escapeHtml(tag) + '</a>';
             }).join('') + '</div>'
             : '';
+        const readingState = getReadingState(getPostReadingProgress(post));
         return '<article class="blackthemePostBox post-preview"' + seriesAttribute + tagsAttribute + '>' +
             '<div class="blackthemePostInfo">' +
                 '<div class="blackthemePostInfoMain">' +
@@ -509,6 +530,7 @@ function initPostRegistry() {
             '<div class="post-action-bar">' +
                 '<div class="blackthemeCont"><a href="' + escapeHtml(post.url) + '">ادامه نوشته &larr;</a></div>' +
                 '<div class="post-preview-actions">' + emptyBadge +
+                    readingStateMarkup(readingState, 'post-read-state') +
                     '<button type="button" class="share-icon-btn post-preview-share" data-share-title="' + escapeHtml(post.title) +
                         '" data-share-url="' + escapeHtml(post.url) + '" aria-label="اشتراک‌گذاری «' + escapeHtml(post.title) +
                         '»" title="اشتراک‌گذاری نوشته">' + readerIcon('share') + '</button>' +
@@ -741,22 +763,44 @@ function initSeriesHub() {
     list.innerHTML = seriesUpdates.map(function (update) {
         const latest = update.latest;
         const episodeNumber = Number(latest.episode || update.posts.length).toLocaleString('fa-IR');
+        const episodeProgress = update.posts.map(getPostReadingProgress);
+        const playlistReadingState = episodeProgress.length && episodeProgress.every(function (progress) {
+            return progress >= 0.9;
+        })
+            ? 'read'
+            : (episodeProgress.some(function (progress) { return progress > 0; }) ? 'started' : 'unread');
         const coverMarkup = update.cover && update.cover.image
             ? '<img src="' + escapeHtml(update.cover.image) + '" alt="" loading="lazy" decoding="async">'
             : '<span class="series-update-cover-fallback" aria-hidden="true">' + readerIcon('layers') + '</span>';
         return '<a class="series-hub-card" href="index.html?series=' + encodeURIComponent(update.name) + '#latest-posts-heading">' +
-            '<span class="series-update-cover">' + coverMarkup + '</span>' +
+            '<span class="series-update-cover">' + coverMarkup +
+                readingStateMarkup(playlistReadingState, 'series-read-state') + '</span>' +
             '<span class="series-hub-copy"><strong>' + escapeHtml(update.name) + '</strong>' +
                 '<span class="series-update-episode">قسمت ' + episodeNumber + ' · ' + escapeHtml(latest.title) + '</span>' +
                 '<span class="series-update-summary">' + escapeHtml(latest.description) + '</span>' +
                 '<small>' + update.posts.length.toLocaleString('fa-IR') + ' قسمت منتشرشده</small></span>' +
             '<span class="series-hub-latest">' +
                 '<span class="series-update-badge">قسمت جدید ' + episodeNumber + '</span>' +
-                '<span class="series-update-time">' + formatRelativePublicationTime(latest.date) + '</span>' +
             '</span>' +
         '</a>';
     }).join('');
     hub.hidden = false;
+
+    const carouselControls = hub.querySelector('.series-carousel-controls');
+    function updateCarouselControls() {
+        if (!carouselControls) return;
+        carouselControls.hidden = list.scrollWidth <= list.clientWidth + 2;
+    }
+    if (carouselControls) {
+        carouselControls.addEventListener('click', function (event) {
+            const button = event.target.closest('[data-series-scroll]');
+            if (!button) return;
+            const direction = button.dataset.seriesScroll === 'next' ? -1 : 1;
+            list.scrollBy({ left: direction * list.clientWidth * 0.78, behavior: 'smooth' });
+        });
+    }
+    window.requestAnimationFrame(updateCarouselControls);
+    window.addEventListener('resize', updateCarouselControls, { passive: true });
 }
 
 function initNoteShelf() {
@@ -823,9 +867,11 @@ function initStoryPlaylist() {
         '<div class="story-playlist-list" hidden>' +
             episodes.map(function (post) {
                 const active = post.filename === current.filename;
+                const readingState = getReadingState(getPostReadingProgress(post));
                 return '<a href="../' + escapeHtml(post.url) + '"' + (active ? ' class="active" aria-current="page"' : '') + '>' +
                     '<span>قسمت ' + Number(post.episode || 0).toLocaleString('fa-IR') + '</span>' +
                     '<strong>' + escapeHtml(post.title) + '</strong>' +
+                    readingStateMarkup(readingState, 'post-read-state') +
                 '</a>';
             }).join('') +
         '</div>' +
@@ -1009,6 +1055,7 @@ function initLongformReader() {
     const plainText = (story.innerText || story.textContent || '').trim();
     const wordCount = plainText ? plainText.split(/\s+/).filter(Boolean).length : 0;
     const storageKey = 'coffpen_reader_' + window.location.pathname;
+    const progressStorageKey = readingProgressKey(window.location.pathname);
     const prefsKey = 'coffpen_reader_preferences';
     const savedPosition = readReaderStorage(storageKey, {});
     const prefs = Object.assign({
@@ -1020,6 +1067,13 @@ function initLongformReader() {
         focus: false,
         rememberPosition: false
     }, readReaderStorage(prefsKey, {}));
+    const initialReadingProgress = readReaderStorage(progressStorageKey, {});
+    if (!Number(initialReadingProgress.percent)) {
+        writeReaderStorage(progressStorageKey, {
+            percent: 0.01,
+            updatedAt: Date.now()
+        });
+    }
 
     const toolbar = document.createElement('div');
     toolbar.className = 'reader-toolbar';
@@ -1333,7 +1387,7 @@ function initLongformReader() {
         counter.textContent = 'صفحه ' + (currentPage + 1).toLocaleString('fa-IR') + ' از ' + pages.length.toLocaleString('fa-IR');
         book.querySelector('[data-page-action="prev"]').disabled = currentPage === 0;
         book.querySelector('[data-page-action="next"]').disabled = currentPage === pages.length - 1;
-        updateBookProgress();
+        updateBookProgress(animate);
         saveReaderPosition();
     }
 
@@ -1342,21 +1396,34 @@ function initLongformReader() {
         return Number(pages[currentPage].dataset.startBlock || 0);
     }
 
-    function updateScrollProgress() {
+    function updateScrollProgress(trackStatus) {
         if (prefs.mode !== 'scroll') return;
         const rect = story.getBoundingClientRect();
         const total = Math.max(1, story.scrollHeight - window.innerHeight * 0.6);
         const read = Math.max(0, -rect.top + window.innerHeight * 0.25);
         const percent = Math.min(1, read / total);
         progress.querySelector('span').style.transform = 'scaleX(' + percent + ')';
+        if (trackStatus) {
+            trackReadingProgress(percent, {
+                mode: 'scroll',
+                block: getCurrentReaderBlock(story)
+            });
+        }
         window.dispatchEvent(new CustomEvent('coffpen:reader-progress', {
             detail: { percent: percent, mode: 'scroll' }
         }));
     }
 
-    function updateBookProgress() {
+    function updateBookProgress(trackStatus) {
         const percent = pages.length ? (currentPage + 1) / pages.length : 0;
         progress.querySelector('span').style.transform = 'scaleX(' + percent + ')';
+        if (trackStatus) {
+            trackReadingProgress(percent, {
+                mode: 'book',
+                block: getCurrentBookBlock(),
+                page: currentPage
+            });
+        }
         window.dispatchEvent(new CustomEvent('coffpen:reader-progress', {
             detail: {
                 percent: percent,
@@ -1364,6 +1431,15 @@ function initLongformReader() {
                 page: currentPage + 1,
                 totalPages: pages.length
             }
+        }));
+    }
+
+    function trackReadingProgress(percent, position) {
+        const previous = readReaderStorage(progressStorageKey, {});
+        const highestPercent = Math.max(Number(previous.percent) || 0, Number(percent) || 0, 0.01);
+        writeReaderStorage(progressStorageKey, Object.assign({}, previous, position || {}, {
+            percent: Math.min(1, highestPercent),
+            updatedAt: Date.now()
         }));
     }
 
@@ -1481,7 +1557,7 @@ function initLongformReader() {
 
     window.addEventListener('scroll', function () {
         if (prefs.mode !== 'scroll') return;
-        updateScrollProgress();
+        updateScrollProgress(true);
         window.clearTimeout(scrollTimer);
         scrollTimer = window.setTimeout(saveReaderPosition, 180);
     }, { passive: true });
@@ -1560,6 +1636,9 @@ function readerIcon(name) {
     const icons = {
         clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
         book: '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11a2 2 0 0 1 2 2v16a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v18a2 2 0 0 1 2-2h2.5a2.5 2.5 0 0 1 2.5 2.5z"/>',
+        'book-open': '<path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H11a2 2 0 0 1 2 2v16a2 2 0 0 0-2-2H6.5A2.5 2.5 0 0 0 4 21.5z"/><path d="M20 5.5A2.5 2.5 0 0 0 17.5 3H13v18a2 2 0 0 1 2-2h2.5a2.5 2.5 0 0 1 2.5 2.5z"/>',
+        circle: '<circle cx="12" cy="12" r="8"/>',
+        'check-circle': '<circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.6L16.5 9"/>',
         bookmark: '<path d="M6 3h12v18l-6-4-6 4z"/>',
         layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
         focus: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
