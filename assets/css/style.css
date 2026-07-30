@@ -1095,6 +1095,10 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     font-size: 7.75pt;
 }
 
+.post-filter-status:empty {
+    display: none;
+}
+
 .post-load-sentinel {
     display: flex;
     align-items: center;
