@@ -561,7 +561,9 @@ function initStoryHero() {
         : descriptionMeta && descriptionMeta.content
             ? descriptionMeta.content
             : plainText.slice(0, 180) + (plainText.length > 180 ? '…' : '');
-    const wordCount = Number(current && current.wordCount) || (plainText ? plainText.split(/\s+/).filter(Boolean).length : 0);
+    const wordCount = plainText
+        ? plainText.split(/\s+/).filter(Boolean).length
+        : Number(current && current.wordCount) || 0;
     const readMinutes = Math.max(1, Math.ceil(wordCount / 180));
     const series = current && current.series ? current.series : '';
     const episode = Number(current && current.episode) || 0;
@@ -696,7 +698,6 @@ function initLongformReader() {
 
     const plainText = (story.innerText || story.textContent || '').trim();
     const wordCount = plainText ? plainText.split(/\s+/).filter(Boolean).length : 0;
-    const readMinutes = Math.max(1, Math.ceil(wordCount / 180));
     const storageKey = 'coffpen_reader_' + window.location.pathname;
     const prefsKey = 'coffpen_reader_preferences';
     const savedPosition = readReaderStorage(storageKey, {});
@@ -714,9 +715,6 @@ function initLongformReader() {
     toolbar.className = 'reader-toolbar';
     toolbar.setAttribute('aria-label', 'ابزارهای مطالعه');
     toolbar.innerHTML =
-        '<div class="reader-stat" title="زمان تقریبی مطالعه">' +
-            readerIcon('clock') + '<span>' + readMinutes.toLocaleString('fa-IR') + ' دقیقه</span>' +
-        '</div>' +
         '<div class="reader-actions">' +
             readerButton('share', 'share', 'اشتراک‌گذاری نوشته') +
             readerButton('mode', 'book', 'حالت ورق‌زدن') +
