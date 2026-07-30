@@ -1258,8 +1258,14 @@ function initLongformReader() {
                             }
                         }
 
-                        piece.textContent = remaining.slice(0, best).join(' ');
-                        remaining = remaining.slice(best);
+                        const trailingWords = remaining.length - best;
+                        const minimumFinalPageWords = 24;
+                        const balancedBest = trailingWords > 0 && trailingWords < minimumFinalPageWords &&
+                            best > minimumFinalPageWords
+                            ? best - (minimumFinalPageWords - trailingWords)
+                            : best;
+                        piece.textContent = remaining.slice(0, balancedBest).join(' ');
+                        remaining = remaining.slice(balancedBest);
                         if (remaining.length) page = createPage();
                     }
                 } else {
