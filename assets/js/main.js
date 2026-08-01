@@ -257,7 +257,7 @@ function loadNotificationConfig() {
 
     notificationConfigPromise = new Promise(function (resolve) {
         const script = document.createElement('script');
-        script.src = new URL('assets/js/firebase-config.js?v=20260801-1', getSiteBaseUrl()).href;
+        script.src = new URL('assets/js/firebase-config.js?v=20260801-2', getSiteBaseUrl()).href;
         script.onload = function () {
             resolve(window.COFFPEN_NOTIFICATIONS || { enabled: false });
         };
@@ -325,10 +325,22 @@ async function initPaperboyNotifications() {
         // Showing once per page is still preferable when session storage is blocked.
     }
 
+    preloadPaperboySprites();
     const mode = previewMode === 'return' || (!previewMode && state.declines > 0) ? 'return' : 'first';
     window.setTimeout(function () {
         showPaperboy(mode);
     }, previewMode ? 600 : PAPERBOY_FIRST_DELAY);
+}
+
+function getPaperboySpriteUrl(state) {
+    return new URL('assets/images/paperboy-' + state + '.webp?v=20260801-2', getSiteBaseUrl()).href;
+}
+
+function preloadPaperboySprites() {
+    ['walk', 'idle'].forEach(function (state) {
+        const image = new Image();
+        image.src = getPaperboySpriteUrl(state);
+    });
 }
 
 async function handleNotificationMenuAction() {
@@ -361,7 +373,7 @@ function createPaperboy() {
     notifier.innerHTML =
         '<div class="paperboy-wall" aria-hidden="true"></div>' +
         '<div class="paperboy-character" aria-hidden="true">' +
-            '<img src="' + new URL('assets/images/paperboy.png', getSiteBaseUrl()).href + '" alt="">' +
+            '<span class="paperboy-sprite"></span>' +
         '</div>' +
         '<div class="paperboy-speech">' +
             '<span class="paperboy-kicker">خبررسان سیاه و قلم</span>' +
@@ -373,11 +385,15 @@ function createPaperboy() {
 }
 
 function showPaperboy(mode) {
+    preloadPaperboySprites();
     const notifier = createPaperboy();
     renderPaperboyDialogue(notifier, mode);
     window.requestAnimationFrame(function () {
         window.requestAnimationFrame(function () {
             notifier.classList.add('is-visible');
+            notifier.paperboyIdleTimer = window.setTimeout(function () {
+                if (!notifier.classList.contains('is-leaving')) notifier.classList.add('is-idle');
+            }, 1050);
         });
     });
 }
@@ -599,12 +615,14 @@ async function disableStoryNotifications(notifier) {
 
 function dismissPaperboy(notifier, happy) {
     if (!notifier || notifier.classList.contains('is-leaving')) return;
+    window.clearTimeout(notifier.paperboyIdleTimer);
     notifier.classList.toggle('is-happy', Boolean(happy));
+    notifier.classList.remove('is-idle');
     notifier.classList.add('is-leaving');
     notifier.classList.remove('is-visible');
     window.setTimeout(function () {
         notifier.remove();
-    }, 1200);
+    }, 1450);
 }
 
 

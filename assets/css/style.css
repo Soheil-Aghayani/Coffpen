@@ -2590,13 +2590,19 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     will-change: transform;
 }
 
-.paperboy-character img {
+.paperboy-sprite {
     display: block;
     width: 100%;
-    height: auto;
+    aspect-ratio: 2 / 3;
+    background-image: url("../images/paperboy-walk.webp?v=20260801-2");
+    background-position: 0 0;
+    background-repeat: no-repeat;
+    background-size: 400% 100%;
     image-rendering: pixelated;
     filter: drop-shadow(8px 9px 9px rgba(0, 0, 0, 0.22));
     transform-origin: 50% 100%;
+    animation: paperboyWalkFrames 0.68s linear infinite;
+    will-change: background-position;
 }
 
 .paperboy-speech {
@@ -2696,8 +2702,9 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     transform: translateX(186px);
 }
 
-.paperboy-notifier.is-visible .paperboy-character img {
-    animation: paperboyIdle 2.6s steps(2, end) 1.1s infinite;
+.paperboy-notifier.is-idle .paperboy-sprite {
+    background-image: url("../images/paperboy-idle.webp?v=20260801-2");
+    animation: paperboyIdleFrames 3.8s linear infinite;
 }
 
 .paperboy-notifier.is-visible .paperboy-speech {
@@ -2705,8 +2712,8 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     transform: translateX(0) translateY(0) scale(1);
 }
 
-.paperboy-notifier.is-happy .paperboy-character img {
-    animation: paperboyHappy 0.55s steps(2, end) 2;
+.paperboy-notifier.is-happy.is-idle .paperboy-sprite {
+    animation-duration: 1.9s;
 }
 
 .paperboy-notifier.is-leaving .paperboy-speech {
@@ -2720,14 +2727,25 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     transition-delay: 0.18s;
 }
 
-@keyframes paperboyIdle {
-    0%, 100% { transform: translateY(0) rotate(0); }
-    50% { transform: translateY(-3px) rotate(-0.7deg); }
+.paperboy-notifier.is-leaving .paperboy-sprite {
+    background-image: url("../images/paperboy-walk.webp?v=20260801-2");
+    animation: paperboyWalkFrames 0.68s linear infinite;
+    transform: scaleX(-1);
 }
 
-@keyframes paperboyHappy {
-    0%, 100% { transform: translateY(0) rotate(0); }
-    50% { transform: translateY(-7px) rotate(1deg); }
+@keyframes paperboyWalkFrames {
+    0%, 24.99% { background-position: 0 0; }
+    25%, 49.99% { background-position: 33.333% 0; }
+    50%, 74.99% { background-position: 66.666% 0; }
+    75%, 100% { background-position: 100% 0; }
+}
+
+@keyframes paperboyIdleFrames {
+    0%, 39.99% { background-position: 0 0; }
+    40%, 54.99% { background-position: 33.333% 0; }
+    55%, 61.99% { background-position: 66.666% 0; }
+    62%, 84.99% { background-position: 100% 0; }
+    85%, 100% { background-position: 0 0; }
 }
 
 @keyframes paperboyThinking {
@@ -3485,7 +3503,7 @@ html[data-reader-theme="dark"] .reader-book-page {
     .headerImage::after,
     .site-hero-status-dot,
     .reader-book-page.turning,
-    .paperboy-character img,
+    .paperboy-sprite,
     .paperboy-thinking {
         animation: none !important;
     }
