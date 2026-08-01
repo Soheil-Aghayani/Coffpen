@@ -2594,14 +2594,14 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     display: block;
     width: 100%;
     aspect-ratio: 2 / 3;
-    background-image: url("../images/paperboy-walk.webp?v=20260801-2");
+    background-image: url("../images/paperboy-idle.webp?v=20260801-3");
     background-position: 0 0;
     background-repeat: no-repeat;
     background-size: 400% 100%;
     image-rendering: pixelated;
     filter: drop-shadow(8px 9px 9px rgba(0, 0, 0, 0.22));
     transform-origin: 50% 100%;
-    animation: paperboyWalkFrames 0.68s linear infinite;
+    animation: paperboyIdleFrames 3.8s linear infinite;
     will-change: background-position;
 }
 
@@ -2620,7 +2620,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     opacity: 0;
     transform: translateX(-22px) translateY(8px) scale(0.96);
     transform-origin: left bottom;
-    transition: opacity 0.35s ease 0.68s, transform 0.45s ease 0.68s;
+    transition: opacity 0.35s ease 1.12s, transform 0.45s ease 1.12s;
     pointer-events: auto;
 }
 
@@ -2702,17 +2702,12 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     transform: translateX(186px);
 }
 
-.paperboy-notifier.is-idle .paperboy-sprite {
-    background-image: url("../images/paperboy-idle.webp?v=20260801-2");
-    animation: paperboyIdleFrames 3.8s linear infinite;
-}
-
 .paperboy-notifier.is-visible .paperboy-speech {
     opacity: 1;
     transform: translateX(0) translateY(0) scale(1);
 }
 
-.paperboy-notifier.is-happy.is-idle .paperboy-sprite {
+.paperboy-notifier.is-happy .paperboy-sprite {
     animation-duration: 1.9s;
 }
 
@@ -2725,19 +2720,6 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 .paperboy-notifier.is-leaving .paperboy-character {
     transform: translateX(0);
     transition-delay: 0.18s;
-}
-
-.paperboy-notifier.is-leaving .paperboy-sprite {
-    background-image: url("../images/paperboy-walk.webp?v=20260801-2");
-    animation: paperboyWalkFrames 0.68s linear infinite;
-    transform: scaleX(-1);
-}
-
-@keyframes paperboyWalkFrames {
-    0%, 24.99% { background-position: 0 0; }
-    25%, 49.99% { background-position: 33.333% 0; }
-    50%, 74.99% { background-position: 66.666% 0; }
-    75%, 100% { background-position: 100% 0; }
 }
 
 @keyframes paperboyIdleFrames {

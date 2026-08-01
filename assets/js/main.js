@@ -13,6 +13,7 @@ const PAPERBOY_SNOOZE_DELAYS = [
 ];
 let notificationConfigPromise = null;
 let firebaseClientPromise = null;
+let paperboySpritePromise = null;
 
 // Theme Management
 function initTheme() {
@@ -257,7 +258,7 @@ function loadNotificationConfig() {
 
     notificationConfigPromise = new Promise(function (resolve) {
         const script = document.createElement('script');
-        script.src = new URL('assets/js/firebase-config.js?v=20260801-2', getSiteBaseUrl()).href;
+        script.src = new URL('assets/js/firebase-config.js?v=20260801-3', getSiteBaseUrl()).href;
         script.onload = function () {
             resolve(window.COFFPEN_NOTIFICATIONS || { enabled: false });
         };
@@ -325,22 +326,35 @@ async function initPaperboyNotifications() {
         // Showing once per page is still preferable when session storage is blocked.
     }
 
-    preloadPaperboySprites();
+    preloadPaperboySprite();
     const mode = previewMode === 'return' || (!previewMode && state.declines > 0) ? 'return' : 'first';
     window.setTimeout(function () {
         showPaperboy(mode);
     }, previewMode ? 600 : PAPERBOY_FIRST_DELAY);
 }
 
-function getPaperboySpriteUrl(state) {
-    return new URL('assets/images/paperboy-' + state + '.webp?v=20260801-2', getSiteBaseUrl()).href;
+function getPaperboySpriteUrl() {
+    return new URL('assets/images/paperboy-idle.webp?v=20260801-3', getSiteBaseUrl()).href;
 }
 
-function preloadPaperboySprites() {
-    ['walk', 'idle'].forEach(function (state) {
+function preloadPaperboySprite() {
+    if (paperboySpritePromise) return paperboySpritePromise;
+    paperboySpritePromise = new Promise(function (resolve) {
         const image = new Image();
-        image.src = getPaperboySpriteUrl(state);
+        let settled = false;
+        const finish = function () {
+            if (settled) return;
+            settled = true;
+            resolve();
+        };
+        image.onload = function () {
+            if (typeof image.decode === 'function') image.decode().catch(function () {}).then(finish);
+            else finish();
+        };
+        image.onerror = finish;
+        image.src = getPaperboySpriteUrl();
     });
+    return paperboySpritePromise;
 }
 
 async function handleNotificationMenuAction() {
@@ -384,16 +398,13 @@ function createPaperboy() {
     return notifier;
 }
 
-function showPaperboy(mode) {
-    preloadPaperboySprites();
+async function showPaperboy(mode) {
+    await preloadPaperboySprite();
     const notifier = createPaperboy();
     renderPaperboyDialogue(notifier, mode);
     window.requestAnimationFrame(function () {
         window.requestAnimationFrame(function () {
             notifier.classList.add('is-visible');
-            notifier.paperboyIdleTimer = window.setTimeout(function () {
-                if (!notifier.classList.contains('is-leaving')) notifier.classList.add('is-idle');
-            }, 1050);
         });
     });
 }
@@ -615,9 +626,7 @@ async function disableStoryNotifications(notifier) {
 
 function dismissPaperboy(notifier, happy) {
     if (!notifier || notifier.classList.contains('is-leaving')) return;
-    window.clearTimeout(notifier.paperboyIdleTimer);
     notifier.classList.toggle('is-happy', Boolean(happy));
-    notifier.classList.remove('is-idle');
     notifier.classList.add('is-leaving');
     notifier.classList.remove('is-visible');
     window.setTimeout(function () {
