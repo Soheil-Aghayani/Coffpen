@@ -13,7 +13,7 @@ const PAPERBOY_SNOOZE_DELAYS = [
 ];
 let notificationConfigPromise = null;
 let firebaseClientPromise = null;
-let paperboySpritePromise = null;
+let paperboyImagePromise = null;
 
 // Theme Management
 function initTheme() {
@@ -258,7 +258,7 @@ function loadNotificationConfig() {
 
     notificationConfigPromise = new Promise(function (resolve) {
         const script = document.createElement('script');
-        script.src = new URL('assets/js/firebase-config.js?v=20260801-3', getSiteBaseUrl()).href;
+        script.src = new URL('assets/js/firebase-config.js?v=20260801-4', getSiteBaseUrl()).href;
         script.onload = function () {
             resolve(window.COFFPEN_NOTIFICATIONS || { enabled: false });
         };
@@ -326,20 +326,20 @@ async function initPaperboyNotifications() {
         // Showing once per page is still preferable when session storage is blocked.
     }
 
-    preloadPaperboySprite();
+    preloadPaperboyImage();
     const mode = previewMode === 'return' || (!previewMode && state.declines > 0) ? 'return' : 'first';
     window.setTimeout(function () {
         showPaperboy(mode);
     }, previewMode ? 600 : PAPERBOY_FIRST_DELAY);
 }
 
-function getPaperboySpriteUrl() {
-    return new URL('assets/images/paperboy-idle.webp?v=20260801-3', getSiteBaseUrl()).href;
+function getPaperboyImageUrl() {
+    return new URL('assets/images/paperboy.webp?v=20260801-4', getSiteBaseUrl()).href;
 }
 
-function preloadPaperboySprite() {
-    if (paperboySpritePromise) return paperboySpritePromise;
-    paperboySpritePromise = new Promise(function (resolve) {
+function preloadPaperboyImage() {
+    if (paperboyImagePromise) return paperboyImagePromise;
+    paperboyImagePromise = new Promise(function (resolve) {
         const image = new Image();
         let settled = false;
         const finish = function () {
@@ -352,9 +352,9 @@ function preloadPaperboySprite() {
             else finish();
         };
         image.onerror = finish;
-        image.src = getPaperboySpriteUrl();
+        image.src = getPaperboyImageUrl();
     });
-    return paperboySpritePromise;
+    return paperboyImagePromise;
 }
 
 async function handleNotificationMenuAction() {
@@ -387,7 +387,7 @@ function createPaperboy() {
     notifier.innerHTML =
         '<div class="paperboy-wall" aria-hidden="true"></div>' +
         '<div class="paperboy-character" aria-hidden="true">' +
-            '<span class="paperboy-sprite"></span>' +
+            '<img class="paperboy-image" src="' + getPaperboyImageUrl() + '" alt="">' +
         '</div>' +
         '<div class="paperboy-speech">' +
             '<span class="paperboy-kicker">خبررسان سیاه و قلم</span>' +
@@ -399,7 +399,7 @@ function createPaperboy() {
 }
 
 async function showPaperboy(mode) {
-    await preloadPaperboySprite();
+    await preloadPaperboyImage();
     const notifier = createPaperboy();
     renderPaperboyDialogue(notifier, mode);
     window.requestAnimationFrame(function () {
