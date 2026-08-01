@@ -1,0 +1,21 @@
+{
+  "name": "سیاه و قلم",
+  "short_name": "سیاه و قلم",
+  "description": "داستان‌ها و نوشته‌های سهیل آقایانی",
+  "lang": "fa",
+  "dir": "rtl",
+  "id": "/Coffpen/",
+  "start_url": "/Coffpen/index.html",
+  "scope": "/Coffpen/",
+  "display": "standalone",
+  "background_color": "#17191f",
+  "theme_color": "#c94a72",
+  "icons": [
+    {
+      "src": "assets/images/favicon.png",
+      "sizes": "698x698",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

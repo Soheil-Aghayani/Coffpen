@@ -3,6 +3,7 @@
 <meta http-equiv="content-language" content="fa">
 <link rel="icon" type="image/png" href="{{ '/assets/images/favicon.png' | relative_url }}">
 <link rel="apple-touch-icon" href="{{ '/assets/images/favicon.png' | relative_url }}">
+<link rel="manifest" href="{{ '/manifest.webmanifest' | relative_url }}">
 
 <title>{% if page.title %}{{ page.title }} | {{ site.title }}{% else %}{{ site.title }} - {{ site.description }}{% endif %}</title>
 <meta name="description" content="{% if page.description %}{{ page.description }}{% elsif page.excerpt %}{{ page.excerpt | strip_html | strip_newlines | truncate: 160 }}{% else %}{{ site.description }}{% endif %}">

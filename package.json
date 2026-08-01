@@ -2,6 +2,7 @@
   "name": "coffpen-blog",
   "private": true,
   "scripts": {
+    "serve": "node scripts/serve-local.js",
     "sync": "node scripts/sync-posts.js",
     "watch": "node scripts/watch-posts.js"
   }

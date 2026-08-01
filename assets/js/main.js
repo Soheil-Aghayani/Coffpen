@@ -4,6 +4,15 @@
  */
 
 const THEMES = ['dark', 'light', 'sepia', 'forest', 'midnight', 'rose'];
+const PAPERBOY_STORAGE_KEY = 'coffpen_paperboy_notifications_v1';
+const PAPERBOY_SESSION_KEY = 'coffpen_paperboy_seen';
+const PAPERBOY_FIRST_DELAY = 8000;
+const PAPERBOY_SNOOZE_DELAYS = [
+    1000 * 60 * 60 * 24 * 21,
+    1000 * 60 * 60 * 24 * 60
+];
+let notificationConfigPromise = null;
+let firebaseClientPromise = null;
 
 // Theme Management
 function initTheme() {
@@ -92,6 +101,7 @@ function buildSidebarContent(baseUrl) {
                 '<li><a href="' + aboutUrl + '">' + readerIcon('user') + '<span>درباره نویسنده</span></a></li>' +
             '</ul>' +
         '</div>' +
+        buildNotificationSidebarMarkup() +
         '<div class="blackthemeSideBox sidebar-secondary-links">' +
             '<h6>' + readerIcon('link') + '<span>ابزارها و پیوندها</span></h6>' +
             '<ul class="sidebar-links-list">' +
@@ -102,6 +112,18 @@ function buildSidebarContent(baseUrl) {
                     readerIcon('github') + '<span>گیت‌هاب</span></a></li>' +
             '</ul>' +
         '</div>';
+}
+
+function buildNotificationSidebarMarkup() {
+    return '<div class="blackthemeSideBox sidebar-notification-box" data-notification-box hidden>' +
+        '<h6>' + readerIcon('bell') + '<span>خبررسان داستان‌ها</span></h6>' +
+        '<button type="button" class="sidebar-notification-control" data-notification-toggle>' +
+            '<span class="sidebar-notification-icon">' + readerIcon('bell') + '</span>' +
+            '<span class="sidebar-notification-copy"><strong>اعلان داستان‌های تازه</strong>' +
+                '<small data-notification-status>در حال بررسی…</small></span>' +
+            '<span class="sidebar-notification-switch" aria-hidden="true"><i></i></span>' +
+        '</button>' +
+    '</div>';
 }
 
 function ensureGlobalSidebar() {
@@ -157,6 +179,7 @@ function initSidebar() {
     const sidebar = document.querySelector('.blackthemeSidebar');
     const overlay = document.querySelector('.blackthemeOverlay');
     const closeButton = sidebar ? sidebar.querySelector('.sidebar-close-btn') : null;
+    const notificationButton = sidebar ? sidebar.querySelector('[data-notification-toggle]') : null;
 
     if (menuBtn && sidebar && overlay) {
         sidebar.setAttribute('aria-hidden', sidebar.classList.contains('set') ? 'false' : 'true');
@@ -174,6 +197,12 @@ function initSidebar() {
             closeSidebar();
         };
         if (closeButton) closeButton.onclick = closeSidebar;
+        if (notificationButton) {
+            notificationButton.onclick = function () {
+                closeSidebar();
+                handleNotificationMenuAction();
+            };
+        }
         sidebar.querySelectorAll('.theme-opt-btn').forEach(function (button) {
             button.onclick = function () {
                 setTheme(button.dataset.themeVal);
@@ -190,6 +219,392 @@ function closeSidebar() {
     if (sidebar) sidebar.setAttribute('aria-hidden', 'true');
     if (overlay) overlay.classList.remove('set');
     if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+}
+
+function getPaperboyPreviewMode() {
+    try {
+        return new URLSearchParams(window.location.search).get('paperboy-preview') || '';
+    } catch (error) {
+        return '';
+    }
+}
+
+function readPaperboyState() {
+    try {
+        return Object.assign({
+            declines: 0,
+            snoozeUntil: 0,
+            subscribed: false,
+            autoDisabled: false
+        }, JSON.parse(localStorage.getItem(PAPERBOY_STORAGE_KEY) || '{}'));
+    } catch (error) {
+        return { declines: 0, snoozeUntil: 0, subscribed: false, autoDisabled: false };
+    }
+}
+
+function writePaperboyState(nextState) {
+    try {
+        localStorage.setItem(PAPERBOY_STORAGE_KEY, JSON.stringify(nextState));
+    } catch (error) {
+        // The invitation still works for this visit when storage is unavailable.
+    }
+    refreshNotificationMenu();
+}
+
+function loadNotificationConfig() {
+    if (window.COFFPEN_NOTIFICATIONS) return Promise.resolve(window.COFFPEN_NOTIFICATIONS);
+    if (notificationConfigPromise) return notificationConfigPromise;
+
+    notificationConfigPromise = new Promise(function (resolve) {
+        const script = document.createElement('script');
+        script.src = new URL('assets/js/firebase-config.js?v=20260801-1', getSiteBaseUrl()).href;
+        script.onload = function () {
+            resolve(window.COFFPEN_NOTIFICATIONS || { enabled: false });
+        };
+        script.onerror = function () {
+            resolve({ enabled: false });
+        };
+        document.head.appendChild(script);
+    });
+    return notificationConfigPromise;
+}
+
+function isNotificationSupported() {
+    return 'Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window;
+}
+
+function refreshNotificationMenu() {
+    const box = document.querySelector('[data-notification-box]');
+    if (!box) return;
+
+    const config = window.COFFPEN_NOTIFICATIONS || {};
+    const preview = Boolean(getPaperboyPreviewMode());
+    const available = Boolean(config.enabled || preview);
+    box.hidden = !available;
+    if (!available) return;
+
+    const state = readPaperboyState();
+    const control = box.querySelector('[data-notification-toggle]');
+    const status = box.querySelector('[data-notification-status]');
+    const permission = 'Notification' in window ? Notification.permission : 'unsupported';
+    const active = permission === 'granted' && state.subscribed;
+
+    box.classList.toggle('is-active', active);
+    if (control) control.setAttribute('aria-pressed', active ? 'true' : 'false');
+    if (!status) return;
+
+    if (active) status.textContent = 'روشن است؛ خبرها را می‌آورد';
+    else if (!isNotificationSupported() && !preview) status.textContent = 'این مرورگر پشتیبانی نمی‌کند';
+    else if (permission === 'denied') status.textContent = 'در تنظیمات مرورگر مسدود شده';
+    else if (state.autoDisabled) status.textContent = 'خاموش است؛ هر وقت خواستید روشنش کنید';
+    else if (Number(state.snoozeUntil) > Date.now()) status.textContent = 'فعلاً مزاحم نمی‌شود';
+    else status.textContent = 'خاموش است';
+}
+
+async function initPaperboyNotifications() {
+    const previewMode = getPaperboyPreviewMode();
+    const isAdminPage = /\/admin(?:\/|$)/.test(window.location.pathname);
+    if (isAdminPage && !previewMode) return;
+
+    const config = await loadNotificationConfig();
+    refreshNotificationMenu();
+    if (!config.enabled && !previewMode) return;
+    if (!isNotificationSupported() && !previewMode) return;
+
+    const state = readPaperboyState();
+    const permission = 'Notification' in window ? Notification.permission : 'default';
+    if (permission === 'granted' && state.subscribed && !previewMode) return;
+    if (permission === 'denied' && !previewMode) return;
+    if (state.autoDisabled && !previewMode) return;
+    if (Number(state.snoozeUntil) > Date.now() && !previewMode) return;
+
+    try {
+        if (sessionStorage.getItem(PAPERBOY_SESSION_KEY) && !previewMode) return;
+        sessionStorage.setItem(PAPERBOY_SESSION_KEY, '1');
+    } catch (error) {
+        // Showing once per page is still preferable when session storage is blocked.
+    }
+
+    const mode = previewMode === 'return' || (!previewMode && state.declines > 0) ? 'return' : 'first';
+    window.setTimeout(function () {
+        showPaperboy(mode);
+    }, previewMode ? 600 : PAPERBOY_FIRST_DELAY);
+}
+
+async function handleNotificationMenuAction() {
+    const previewMode = getPaperboyPreviewMode();
+    const config = await loadNotificationConfig();
+    if (!config.enabled && !previewMode) return;
+
+    const state = readPaperboyState();
+    const permission = 'Notification' in window ? Notification.permission : 'unsupported';
+    if (!isNotificationSupported() && !previewMode) {
+        showPaperboy('unsupported');
+    } else if (permission === 'denied' && !previewMode) {
+        showPaperboy('blocked');
+    } else if (permission === 'granted' && state.subscribed) {
+        showPaperboy('manage');
+    } else {
+        showPaperboy(state.declines > 0 ? 'return' : 'first');
+    }
+}
+
+function createPaperboy() {
+    const current = document.querySelector('.paperboy-notifier');
+    if (current) current.remove();
+
+    const notifier = document.createElement('section');
+    notifier.className = 'paperboy-notifier';
+    notifier.setAttribute('role', 'dialog');
+    notifier.setAttribute('aria-label', 'خبررسان داستان‌های سیاه و قلم');
+    notifier.setAttribute('aria-live', 'polite');
+    notifier.innerHTML =
+        '<div class="paperboy-wall" aria-hidden="true"></div>' +
+        '<div class="paperboy-character" aria-hidden="true">' +
+            '<img src="' + new URL('assets/images/paperboy.png', getSiteBaseUrl()).href + '" alt="">' +
+        '</div>' +
+        '<div class="paperboy-speech">' +
+            '<span class="paperboy-kicker">خبررسان سیاه و قلم</span>' +
+            '<p data-paperboy-message></p>' +
+            '<div class="paperboy-actions" data-paperboy-actions></div>' +
+        '</div>';
+    document.body.appendChild(notifier);
+    return notifier;
+}
+
+function showPaperboy(mode) {
+    const notifier = createPaperboy();
+    renderPaperboyDialogue(notifier, mode);
+    window.requestAnimationFrame(function () {
+        window.requestAnimationFrame(function () {
+            notifier.classList.add('is-visible');
+        });
+    });
+}
+
+function renderPaperboyDialogue(notifier, mode) {
+    const message = notifier.querySelector('[data-paperboy-message]');
+    const actions = notifier.querySelector('[data-paperboy-actions]');
+    const dialogues = {
+        first: {
+            text: 'قربان… یک لحظه! اگر داستان تازه‌ای رسید، اجازه می‌دهید خبرتان کنم؟',
+            primary: ['enable', 'آره، خبرم کن'],
+            secondary: ['later', 'فعلاً نه']
+        },
+        return: {
+            text: 'سلام مجدد قربان! اگر علاقه‌مندید، این بار اجازه می‌دهید خبر داستان‌های تازه را برایتان بیاورم؟',
+            primary: ['enable', 'بله، این بار خبرم کن'],
+            secondary: ['later', 'فعلاً نه']
+        },
+        manage: {
+            text: 'خبررسانی روشن است، قربان. اگر بخواهید می‌توانم دیگر خبری نیاورم.',
+            primary: ['disable', 'اعلان‌ها را خاموش کن'],
+            secondary: ['stay', 'روشن بماند']
+        },
+        blocked: {
+            text: 'به‌نظر می‌رسد درِ اعلان‌ها از تنظیمات مرورگر بسته شده، قربان. اگر روزی بازش کردید، زنگولهٔ منو منتظرتان است.',
+            secondary: ['close', 'متوجه شدم']
+        },
+        unsupported: {
+            text: 'افسوس قربان؛ این مرورگر راهی برای رساندن روزنامه‌های من ندارد.',
+            secondary: ['close', 'متوجه شدم']
+        }
+    };
+    const dialogue = dialogues[mode] || dialogues.first;
+    message.textContent = dialogue.text;
+    actions.innerHTML = '';
+
+    [dialogue.primary, dialogue.secondary].filter(Boolean).forEach(function (definition, index) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.dataset.paperboyAction = definition[0];
+        button.textContent = definition[1];
+        if (index > 0 || !dialogue.primary) button.className = 'secondary';
+        button.addEventListener('click', function () {
+            handlePaperboyAction(notifier, button.dataset.paperboyAction);
+        });
+        actions.appendChild(button);
+    });
+}
+
+function setPaperboyMessage(notifier, text, busy) {
+    const message = notifier.querySelector('[data-paperboy-message]');
+    const actions = notifier.querySelector('[data-paperboy-actions]');
+    if (message) message.textContent = text;
+    if (actions && busy) actions.innerHTML = '<span class="paperboy-thinking">•••</span>';
+}
+
+function handlePaperboyAction(notifier, action) {
+    if (action === 'later') {
+        const state = readPaperboyState();
+        state.declines = Number(state.declines || 0) + 1;
+        const delay = PAPERBOY_SNOOZE_DELAYS[state.declines - 1];
+        if (delay) state.snoozeUntil = Date.now() + delay;
+        else {
+            state.snoozeUntil = 0;
+            state.autoDisabled = true;
+        }
+        writePaperboyState(state);
+        setPaperboyMessage(
+            notifier,
+            state.autoDisabled
+                ? 'حتماً قربان؛ دیگر خودم مزاحم نمی‌شوم. هر وقت خواستید، زنگولهٔ منو را صدا بزنید.'
+                : 'حتماً قربان؛ مزاحم نمی‌شوم. شاید مدتی دیگر دوباره سری زدم.',
+            true
+        );
+        window.setTimeout(function () { dismissPaperboy(notifier); }, 2600);
+        return;
+    }
+
+    if (action === 'enable') {
+        requestPaperboyPermission(notifier);
+        return;
+    }
+
+    if (action === 'disable') {
+        disableStoryNotifications(notifier);
+        return;
+    }
+
+    dismissPaperboy(notifier);
+}
+
+async function requestPaperboyPermission(notifier) {
+    const previewMode = getPaperboyPreviewMode();
+    if (previewMode) {
+        setPaperboyMessage(notifier, 'باعث افتخار است قربان! از این به بعد خبرهای تازه را خودم می‌آورم.', true);
+        window.setTimeout(function () { dismissPaperboy(notifier, true); }, 2300);
+        return;
+    }
+
+    const permissionRequest = Notification.requestPermission();
+    setPaperboyMessage(notifier, 'یک لحظه قربان… دارم کیف روزنامه‌ها را آماده می‌کنم.', true);
+
+    try {
+        const permission = await permissionRequest;
+        if (permission !== 'granted') {
+            setPaperboyMessage(notifier, 'اشکالی ندارد قربان. زنگولهٔ داخل منو هر وقت خواستید منتظرتان است.', true);
+            refreshNotificationMenu();
+            window.setTimeout(function () { dismissPaperboy(notifier); }, 2600);
+            return;
+        }
+
+        await enableStoryNotifications();
+        const state = readPaperboyState();
+        state.subscribed = true;
+        state.snoozeUntil = 0;
+        state.autoDisabled = false;
+        writePaperboyState(state);
+        setPaperboyMessage(notifier, 'باعث افتخار است قربان! از این به بعد خبرهای تازه را خودم می‌آورم.', true);
+        window.setTimeout(function () { dismissPaperboy(notifier, true); }, 2400);
+    } catch (error) {
+        console.error('Coffpen notification subscription failed:', error);
+        setPaperboyMessage(notifier, 'امروز راه خبررسانی کمی شلوغ است، قربان. لطفاً بعداً دوباره زنگولهٔ منو را امتحان کنید.', true);
+        window.setTimeout(function () { dismissPaperboy(notifier); }, 3200);
+    }
+}
+
+async function loadFirebaseClient() {
+    if (firebaseClientPromise) return firebaseClientPromise;
+    firebaseClientPromise = (async function () {
+        const config = await loadNotificationConfig();
+        if (!config.enabled || !config.firebaseConfig || !config.vapidKey) {
+            throw new Error('Firebase notifications are not configured.');
+        }
+
+        const version = config.sdkVersion || '12.16.0';
+        const base = 'https://www.gstatic.com/firebasejs/' + version + '/';
+        const modules = await Promise.all([
+            import(base + 'firebase-app.js'),
+            import(base + 'firebase-auth.js'),
+            import(base + 'firebase-firestore.js'),
+            import(base + 'firebase-messaging.js')
+        ]);
+        const appModule = modules[0];
+        const app = appModule.getApps().length
+            ? appModule.getApps()[0]
+            : appModule.initializeApp(config.firebaseConfig);
+        return {
+            app: app,
+            auth: modules[1],
+            firestore: modules[2],
+            messaging: modules[3],
+            settings: config
+        };
+    })();
+    return firebaseClientPromise;
+}
+
+async function getFirebaseUser(client) {
+    const auth = client.auth.getAuth(client.app);
+    if (auth.currentUser) return auth.currentUser;
+    return (await client.auth.signInAnonymously(auth)).user;
+}
+
+async function enableStoryNotifications() {
+    const client = await loadFirebaseClient();
+    if (!(await client.messaging.isSupported())) throw new Error('Messaging is not supported.');
+
+    const baseUrl = getSiteBaseUrl();
+    const registration = await navigator.serviceWorker.register(
+        new URL('firebase-messaging-sw.js', baseUrl).href,
+        { scope: baseUrl.pathname }
+    );
+    const messaging = client.messaging.getMessaging(client.app);
+    const token = await client.messaging.getToken(messaging, {
+        vapidKey: client.settings.vapidKey,
+        serviceWorkerRegistration: registration
+    });
+    if (!token) throw new Error('No messaging token was returned.');
+
+    const user = await getFirebaseUser(client);
+    const database = client.firestore.getFirestore(client.app);
+    const reference = client.firestore.doc(database, 'pushSubscriptions', user.uid);
+    const existing = await client.firestore.getDoc(reference);
+    await client.firestore.setDoc(reference, {
+        token: token,
+        active: true,
+        createdAt: existing.exists() && existing.data().createdAt
+            ? existing.data().createdAt
+            : client.firestore.serverTimestamp(),
+        updatedAt: client.firestore.serverTimestamp(),
+        locale: navigator.language || 'fa-IR'
+    });
+}
+
+async function disableStoryNotifications(notifier) {
+    setPaperboyMessage(notifier, 'بسیار خوب قربان… دفتر خبررسانی را می‌بندم.', true);
+    try {
+        const client = await loadFirebaseClient();
+        const user = await getFirebaseUser(client);
+        const database = client.firestore.getFirestore(client.app);
+        await client.firestore.deleteDoc(
+            client.firestore.doc(database, 'pushSubscriptions', user.uid)
+        );
+        if (await client.messaging.isSupported()) {
+            await client.messaging.deleteToken(client.messaging.getMessaging(client.app));
+        }
+        const state = readPaperboyState();
+        state.subscribed = false;
+        state.autoDisabled = true;
+        state.snoozeUntil = 0;
+        writePaperboyState(state);
+        setPaperboyMessage(notifier, 'انجام شد قربان. دیگر خبری نمی‌آورم؛ مگر اینکه دوباره صدایم کنید.', true);
+    } catch (error) {
+        console.error('Coffpen notification unsubscribe failed:', error);
+        setPaperboyMessage(notifier, 'نتوانستم دفتر را کامل ببندم، قربان. لطفاً کمی بعد دوباره امتحان کنید.', true);
+    }
+    window.setTimeout(function () { dismissPaperboy(notifier); }, 2700);
+}
+
+function dismissPaperboy(notifier, happy) {
+    if (!notifier || notifier.classList.contains('is-leaving')) return;
+    notifier.classList.toggle('is-happy', Boolean(happy));
+    notifier.classList.add('is-leaving');
+    notifier.classList.remove('is-visible');
+    window.setTimeout(function () {
+        notifier.remove();
+    }, 1200);
 }
 
 
@@ -1758,6 +2173,7 @@ function readerIcon(name) {
         circle: '<circle cx="12" cy="12" r="8"/>',
         'check-circle': '<circle cx="12" cy="12" r="9"/><path d="m8 12 2.6 2.6L16.5 9"/>',
         bookmark: '<path d="M6 3h12v18l-6-4-6 4z"/>',
+        bell: '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/><path d="M10 21h4"/>',
         layers: '<path d="m12 3 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 16 9 5 9-5"/>',
         focus: '<path d="M8 3H3v5M16 3h5v5M8 21H3v-5M16 21h5v-5"/>',
         list: '<path d="M9 6h11M9 12h11M9 18h11"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/>',
@@ -1869,6 +2285,7 @@ function writeReaderStorage(key, value) {
 function initializeCoffpenPage() {
     initTheme();
     initSidebar();
+    initPaperboyNotifications();
     initContextMenu();
     initNoteShelf();
     initPostRegistry();

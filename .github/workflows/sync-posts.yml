@@ -5,7 +5,21 @@ on:
     branches:
       - main
     paths:
-      - "posts/**/*.html"
+      - "posts/*.html"
+  workflow_dispatch:
+    inputs:
+      title:
+        description: "عنوان داستان برای اعلان دستی"
+        required: true
+        type: string
+      body:
+        description: "متن کوتاه اعلان"
+        required: false
+        type: string
+      url:
+        description: "نشانی داستان، کامل یا نسبت به ریشه سایت"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -15,9 +29,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: "20"
+      - name: Detect newly published story
+        id: new_story
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          file="$(git diff --name-only --diff-filter=A HEAD^ HEAD -- 'posts/*.html' | head -n 1)"
+          echo "file=$file" >> "$GITHUB_OUTPUT"
       - name: Generate shared post registry
         run: node scripts/sync-posts.js
       - name: Commit updated registry
@@ -30,3 +53,21 @@ jobs:
           git add posts/posts-data.js
           git commit -m "Sync published posts"
           git push
+      - name: Notify readers about the new story
+        if: github.event_name == 'push' && steps.new_story.outputs.file != ''
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          NEW_STORY_FILE: ${{ steps.new_story.outputs.file }}
+        run: node scripts/send-story-notification.js --file "$NEW_STORY_FILE" --wait
+      - name: Send a manual story notification
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          NOTIFICATION_TITLE: ${{ inputs.title }}
+          NOTIFICATION_BODY: ${{ inputs.body }}
+          NOTIFICATION_URL: ${{ inputs.url }}
+        run: >-
+          node scripts/send-story-notification.js
+          --title "$NOTIFICATION_TITLE"
+          --body "$NOTIFICATION_BODY"
+          --url "$NOTIFICATION_URL"
