@@ -996,6 +996,7 @@ function initPostRegistry() {
     const searchInput = document.getElementById('postSearch');
     const kindInput = document.getElementById('postKindFilter');
     const seriesInput = document.getElementById('postSeriesFilter');
+    const tagInput = document.getElementById('postTagFilter');
     const seriesOrderInput = document.getElementById('postSeriesOrder');
     const seriesOrderControl = document.getElementById('postSeriesOrderControl');
     const postListTitle = document.getElementById('postListTitle');
@@ -1029,6 +1030,16 @@ function initPostRegistry() {
     }).filter(Boolean))).sort(function (first, second) {
         return first.localeCompare(second, 'fa');
     });
+    const tagNames = Array.from(new Set(posts.reduce(function (result, post) {
+        const tags = Array.isArray(post.tags) ? post.tags : [];
+        tags.forEach(function (tag) {
+            const cleanTag = String(tag || '').trim().replace(/^#+/, '');
+            if (cleanTag && !result.includes(cleanTag)) result.push(cleanTag);
+        });
+        return result;
+    }, []))).sort(function (first, second) {
+        return first.localeCompare(second, 'fa');
+    });
 
     if (seriesInput) {
         seriesInput.innerHTML = '<option value="all">همهٔ مجموعه‌ها</option>' +
@@ -1036,6 +1047,17 @@ function initPostRegistry() {
                 return '<option value="' + escapeHtml(name) + '">' + escapeHtml(name) + '</option>';
             }).join('');
         seriesInput.value = seriesNames.includes(requestedSeries) ? requestedSeries : 'all';
+    }
+    if (tagInput) {
+        tagInput.innerHTML = '<option value="">همهٔ برچسب‌ها</option>' +
+            tagNames.map(function (tag) {
+                return '<option value="' + escapeHtml(tag) + '">' + escapeHtml(tag) + '</option>';
+            }).join('');
+        const matchingTag = tagNames.find(function (tag) {
+            return tag.toLocaleLowerCase() === activeTag.toLocaleLowerCase();
+        });
+        activeTag = matchingTag || '';
+        tagInput.value = activeTag;
     }
     if (kindInput) {
         kindInput.value = ['story', 'standalone', 'series', 'note', 'all'].includes(requestedKind)
@@ -1247,6 +1269,7 @@ function initPostRegistry() {
             event.preventDefault();
             const tagUrl = new URL(tagLink.href, window.location.href);
             activeTag = tagUrl.searchParams.get('tag') || '';
+            if (tagInput) tagInput.value = activeTag;
             if (searchInput) searchInput.value = '';
             if (kindInput) kindInput.value = 'all';
             if (seriesInput) seriesInput.value = 'all';
@@ -1258,6 +1281,22 @@ function initPostRegistry() {
         const shareUrl = new URL(shareButton.dataset.shareUrl, window.location.href).href;
         handleSmartShare(event, shareButton.dataset.shareTitle + ' | سیاه و قلم', shareUrl);
     });
+
+    const quickFilters = document.querySelector('.post-quick-filters');
+    if (quickFilters) {
+        quickFilters.addEventListener('click', function (event) {
+            const link = event.target.closest('a');
+            if (!link) return;
+            const linkUrl = new URL(link.href, window.location.href);
+            const nextKind = linkUrl.searchParams.get('kind') || 'story';
+            event.preventDefault();
+            activeTag = '';
+            if (tagInput) tagInput.value = '';
+            if (kindInput) kindInput.value = nextKind;
+            if (seriesInput) seriesInput.value = 'all';
+            applyLibraryFilters();
+        });
+    }
 
     if (searchInput) {
         searchInput.addEventListener('input', function () {
@@ -1274,6 +1313,12 @@ function initPostRegistry() {
     if (seriesInput) {
         seriesInput.addEventListener('change', function () {
             if (seriesInput.value !== 'all' && kindInput) kindInput.value = 'series';
+            applyLibraryFilters();
+        });
+    }
+    if (tagInput) {
+        tagInput.addEventListener('change', function () {
+            activeTag = tagInput.value;
             applyLibraryFilters();
         });
     }
@@ -1359,19 +1404,6 @@ function initSeriesHub() {
     function updateCarouselControls() {
         if (!carouselControls) return;
         carouselControls.hidden = list.scrollWidth <= list.clientWidth + 2;
-    }
-    const quickFilters = document.querySelector('.post-quick-filters');
-    if (quickFilters) {
-        quickFilters.addEventListener('click', function (event) {
-            const link = event.target.closest('a');
-            if (!link) return;
-            const linkUrl = new URL(link.href, window.location.href);
-            const nextKind = linkUrl.searchParams.get('kind') || 'story';
-            event.preventDefault();
-            if (kindInput) kindInput.value = nextKind;
-            if (seriesInput) seriesInput.value = 'all';
-            applyLibraryFilters();
-        });
     }
     if (carouselControls) {
         carouselControls.addEventListener('click', function (event) {
@@ -1823,6 +1855,14 @@ function initLongformReader() {
         });
     }
 
+    function scheduleBookRebuild() {
+        if (prefs.mode !== 'book' || !readerLayoutResolved) return;
+        window.clearTimeout(resizeTimer);
+        resizeTimer = window.setTimeout(function () {
+            if (prefs.mode === 'book') queueStableBookBuild(getCurrentBookBlock());
+        }, 120);
+    }
+
     function buildBookPages(targetBlock) {
         const stage = book.querySelector('.reader-book-stage');
         stage.innerHTML = '';
@@ -2119,11 +2159,17 @@ function initLongformReader() {
     }, { passive: true });
 
     window.addEventListener('resize', function () {
-        window.clearTimeout(resizeTimer);
-        resizeTimer = window.setTimeout(function () {
-            if (prefs.mode === 'book') queueStableBookBuild(getCurrentBookBlock());
-        }, 180);
+        scheduleBookRebuild();
     });
+
+    // The first navigation can finish before web fonts, decoded images, or the
+    // final stylesheet dimensions settle. Reflow once more after the browser's
+    // load/font lifecycle so a book page never remains stuck at an incomplete
+    // one-page measurement until the user refreshes.
+    window.addEventListener('load', scheduleBookRebuild, { once: true });
+    if (document.fonts && document.fonts.addEventListener) {
+        document.fonts.addEventListener('loadingdone', scheduleBookRebuild);
+    }
 
     if (prefs.rememberPosition) {
         maybeShowResumeNotice(savedPosition, story, function (block) {

@@ -117,7 +117,8 @@ function parsePost(filename) {
         /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']keywords["']/i
     ]);
     const tags = tagsText
-        ? tagsText.split(/[,،]/).map(tag => tag.trim()).filter(Boolean).slice(0, 8)
+        ? tagsText.split(/[,،\n]/).map(tag => tag.trim().replace(/^#+/, '')).filter(Boolean)
+            .filter((tag, index, list) => list.indexOf(tag) === index).slice(0, 8)
         : [];
     const contentTypeText = firstMatch(html, [
         /<meta[^>]+name=["'](?:coffpen:content-type|content-type)["'][^>]+content=["']([^"']*)["']/i

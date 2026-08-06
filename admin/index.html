@@ -18,7 +18,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap" rel="stylesheet">
 
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="../assets/css/style.css?v=20260801-4">
+    <link rel="stylesheet" href="../assets/css/style.css?v=20260807-1">
 
     <style>
         body {
@@ -1814,7 +1814,7 @@
     <script>
         document.write('<script src="../posts/posts-data.js?v=' + Date.now() + '"><\/script>');
     </script>
-    <script src="../assets/js/main.js?v=20260801-4"></script>
+    <script src="../assets/js/main.js?v=20260807-1"></script>
 
     <script>
         var AUTHORIZED_GITHUB_USER = 'soheil-aghayani';
@@ -3491,9 +3491,10 @@
             var plainStoryText = editor ? (editor.innerText || editor.textContent || '').replace(/\s+/g, ' ').trim() : '';
             var summary = document.getElementById('postSummary').value.trim();
             var tags = document.getElementById('postTags').value
-                .split(/[,،]/)
-                .map(function (tag) { return tag.trim(); })
+                .split(/[,،\n]/)
+                .map(function (tag) { return tag.trim().replace(/^#+/, ''); })
                 .filter(Boolean)
+                .filter(function (tag, index, list) { return list.indexOf(tag) === index; })
                 .slice(0, 8);
 
             if (!summary && plainStoryText) {
@@ -3564,10 +3565,10 @@
             template = template.replace('    <title>', discoveryMeta + '    <title>');
             template = template.replace(
                 '    <script src="../assets/js/main.js"',
-                '    <script src="../posts/posts-data.js?v=20260730-10"><\/script>\n    <script src="../assets/js/main.js"'
+                '    <script src="../posts/posts-data.js?v=20260807-1"><\/script>\n    <script src="../assets/js/main.js"'
             );
-            template = template.replace('../assets/css/style.css"', '../assets/css/style.css?v=20260801-4"');
-            template = template.replace('../assets/js/main.js"', '../assets/js/main.js?v=20260801-4"');
+            template = template.replace('../assets/css/style.css"', '../assets/css/style.css?v=20260807-1"');
+            template = template.replace('../assets/js/main.js"', '../assets/js/main.js?v=20260807-1"');
 
             if (seriesMeta.enabled) {
                 var episodeHref = '../index.html?series=' + encodeURIComponent(seriesMeta.name) + '#latest-posts-heading';
