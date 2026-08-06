@@ -113,7 +113,8 @@ function parsePost(filename) {
         /<span[^>]*class=["'][^"']*blackthemeDate[^"']*["'][^>]*>[\s\S]*?<b[^>]*>([\s\S]*?)<\/b>/i
     ]) || 'سهیل آقایانی';
     const tagsText = firstMatch(html, [
-        /<meta[^>]+name=["']keywords["'][^>]+content=["']([^"']*)["']/i
+        /<meta[^>]+name=["']keywords["'][^>]+content=["']([^"']*)["']/i,
+        /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']keywords["']/i
     ]);
     const tags = tagsText
         ? tagsText.split(/[,،]/).map(tag => tag.trim()).filter(Boolean).slice(0, 8)

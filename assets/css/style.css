@@ -1269,6 +1269,78 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     box-shadow: var(--shadow-box);
 }
 
+.post-quick-filters {
+    display: flex;
+    gap: 7px;
+    margin: 0 0 9px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.post-quick-filters::-webkit-scrollbar {
+    display: none;
+}
+
+.post-quick-filters a {
+    flex: 0 0 auto;
+    padding: 7px 11px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 999px;
+    background: var(--bg-box);
+    color: var(--text-muted);
+    font-size: 7.75pt;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+
+.post-quick-filters a:hover,
+.post-quick-filters a:focus-visible {
+    border-color: var(--text-accent);
+    background: var(--bg-tag);
+    color: var(--text-accent);
+}
+
+.post-preview-note {
+    position: relative;
+    margin-inline: 0;
+    padding: 18px 18px 15px;
+    border: 1px solid color-mix(in srgb, var(--text-accent) 34%, var(--border-color));
+    border-inline-start: 3px solid var(--text-accent);
+    border-radius: 16px;
+    background:
+        linear-gradient(135deg, color-mix(in srgb, var(--bg-tag) 48%, transparent), transparent 54%),
+        color-mix(in srgb, var(--bg-card) 84%, transparent);
+    box-shadow: 0 12px 30px color-mix(in srgb, var(--text-accent) 8%, transparent);
+}
+
+.post-preview-note .blackthemePostInfo {
+    margin-bottom: 12px;
+}
+
+.post-preview-note .blackthemePostText {
+    padding-inline: 8px;
+    font-size: 1.02em;
+    line-height: 2;
+}
+
+.post-preview-note .blackthemePostText {
+    color: color-mix(in srgb, var(--text-main) 88%, var(--text-accent));
+}
+
+.post-content-type-note {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
+    margin-inline-end: 9px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    background: var(--bg-tag);
+    color: var(--text-accent);
+    font-size: 7pt;
+    white-space: nowrap;
+}
+
 .post-library-title,
 .post-search-field {
     position: absolute;

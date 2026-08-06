@@ -1019,11 +1019,11 @@ function initPostRegistry() {
 
     const params = new URLSearchParams(window.location.search);
     const requestedSeries = params.get('series') || 'all';
-    const requestedTag = params.get('tag') || '';
+    let activeTag = params.get('tag') || '';
     const requestedKind = params.get('kind') || 'story';
     const requestedSearch = params.get('q') || '';
     const requestedOrder = params.get('order') === 'asc' ? 'asc' : 'desc';
-    const hasRequestedAdvancedFilters = requestedSeries !== 'all' || Boolean(requestedTag) || requestedKind !== 'story';
+    const hasRequestedAdvancedFilters = requestedSeries !== 'all' || Boolean(activeTag) || requestedKind !== 'story';
     const seriesNames = Array.from(new Set(posts.map(function (post) {
         return post.series || '';
     }).filter(Boolean))).sort(function (first, second) {
@@ -1070,6 +1070,8 @@ function initPostRegistry() {
     }
 
     function renderPostCard(post) {
+        const contentType = postContentType(post);
+        const contentTypeClass = contentType === 'note' ? ' post-preview-note' : '';
         const seriesAttribute = post.series ? ' data-series="' + escapeHtml(post.series) + '"' : '';
         const tagsAttribute = Array.isArray(post.tags) && post.tags.length
             ? ' data-tags="' + escapeHtml(post.tags.join('|')) + '"'
@@ -1088,13 +1090,14 @@ function initPostRegistry() {
             }).join('') + '</div>'
             : '';
         const readingState = getReadingState(getPostReadingProgress(post));
-        return '<article class="blackthemePostBox post-preview"' + seriesAttribute + tagsAttribute + '>' +
+        return '<article class="blackthemePostBox post-preview' + contentTypeClass + '"' + seriesAttribute + tagsAttribute + '>' +
             '<div class="blackthemePostInfo">' +
                 '<div class="blackthemePostInfoMain">' +
                     '<div class="blackthemePostInfoImg"><img src="assets/images/author-avatar.jpg" alt="' + escapeHtml(post.author) +
                         '" class="author-avatar-img" loading="lazy" decoding="async"></div>' +
                     '<div class="blackthemePostInfoContent">' +
                         '<div class="post-title-row">' +
+                            (contentType === 'note' ? '<span class="post-content-type-note">دل‌نوشته</span>' : '') +
                             '<h2 class="blackthemePostBoxTitle"><a href="' + escapeHtml(post.url) + '">' + escapeHtml(post.title) + '</a></h2>' +
                             episode +
                         '</div>' +
@@ -1125,7 +1128,7 @@ function initPostRegistry() {
         if (kind !== 'story') nextParams.set('kind', kind);
         if (series !== 'all') nextParams.set('series', series);
         if (series !== 'all' && order === 'asc') nextParams.set('order', 'asc');
-        if (requestedTag) nextParams.set('tag', requestedTag);
+        if (activeTag) nextParams.set('tag', activeTag);
         const query = nextParams.toString();
         window.history.replaceState(null, '', window.location.pathname + (query ? '?' + query : '') + window.location.hash);
     }
@@ -1155,7 +1158,7 @@ function initPostRegistry() {
         const search = searchInput ? searchInput.value.trim() : '';
         const kind = kindInput ? kindInput.value : 'story';
         const series = seriesInput ? seriesInput.value : 'all';
-        const hasActiveFilter = Boolean(search || requestedTag || kind !== 'story' || series !== 'all');
+        const hasActiveFilter = Boolean(search || activeTag || kind !== 'story' || series !== 'all');
         if (!hasActiveFilter) {
             filterStatus.textContent = '';
             return;
@@ -1163,7 +1166,7 @@ function initPostRegistry() {
         const visible = Math.min(renderedCount, filteredPosts.length);
         let message = 'نمایش ' + visible.toLocaleString('fa-IR') + ' از ' +
             filteredPosts.length.toLocaleString('fa-IR') + ' نوشته';
-        if (requestedTag) message += ' با برچسب «' + requestedTag + '»';
+        if (activeTag) message += ' با برچسب «' + activeTag + '»';
         filterStatus.textContent = message;
     }
 
@@ -1183,9 +1186,7 @@ function initPostRegistry() {
         const query = normalizeLibraryText(searchInput ? searchInput.value : '');
         const kind = kindInput ? kindInput.value : 'story';
         const series = seriesInput ? seriesInput.value : 'all';
-        const tag = normalizeLibraryText(requestedTag);
-        const noteShelf = document.getElementById('noteShelf');
-
+        const tag = normalizeLibraryText(activeTag);
         filteredPosts = posts.filter(function (post) {
             const contentType = postContentType(post);
             if (kind === 'story' && contentType !== 'story') return false;
@@ -1223,9 +1224,6 @@ function initPostRegistry() {
         renderedCount = 0;
         postList.hidden = false;
         if (emptyState) emptyState.hidden = true;
-        if (noteShelf) {
-            noteShelf.hidden = Boolean(query || requestedTag || kind !== 'story' || series !== 'all');
-        }
         if (seriesInput) seriesInput.disabled = kind === 'standalone' || kind === 'note';
         if (seriesOrderControl) seriesOrderControl.hidden = series === 'all';
         if (postListTitle) {
@@ -1244,6 +1242,17 @@ function initPostRegistry() {
     }
 
     postList.addEventListener('click', function (event) {
+        const tagLink = event.target.closest('.post-registry-tags a');
+        if (tagLink) {
+            event.preventDefault();
+            const tagUrl = new URL(tagLink.href, window.location.href);
+            activeTag = tagUrl.searchParams.get('tag') || '';
+            if (searchInput) searchInput.value = '';
+            if (kindInput) kindInput.value = 'all';
+            if (seriesInput) seriesInput.value = 'all';
+            applyLibraryFilters();
+            return;
+        }
         const shareButton = event.target.closest('.post-preview-share');
         if (!shareButton) return;
         const shareUrl = new URL(shareButton.dataset.shareUrl, window.location.href).href;
@@ -1351,6 +1360,19 @@ function initSeriesHub() {
         if (!carouselControls) return;
         carouselControls.hidden = list.scrollWidth <= list.clientWidth + 2;
     }
+    const quickFilters = document.querySelector('.post-quick-filters');
+    if (quickFilters) {
+        quickFilters.addEventListener('click', function (event) {
+            const link = event.target.closest('a');
+            if (!link) return;
+            const linkUrl = new URL(link.href, window.location.href);
+            const nextKind = linkUrl.searchParams.get('kind') || 'story';
+            event.preventDefault();
+            if (kindInput) kindInput.value = nextKind;
+            if (seriesInput) seriesInput.value = 'all';
+            applyLibraryFilters();
+        });
+    }
     if (carouselControls) {
         carouselControls.addEventListener('click', function (event) {
             const button = event.target.closest('[data-series-scroll]');
@@ -1361,34 +1383,6 @@ function initSeriesHub() {
     }
     window.requestAnimationFrame(updateCarouselControls);
     window.addEventListener('resize', updateCarouselControls, { passive: true });
-}
-
-function initNoteShelf() {
-    const shelf = document.getElementById('noteShelf');
-    const list = document.getElementById('noteShelfList');
-    if (!shelf || !list) return;
-
-    const notes = (Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [])
-        .filter(function (post) { return postContentType(post) === 'note'; })
-        .sort(function (a, b) { return new Date(b.date) - new Date(a.date); });
-
-    if (!notes.length) {
-        shelf.hidden = true;
-        return;
-    }
-
-    // Keep the shortcut shelf compact; the full note archive remains available
-    // through the “همهٔ دل‌نوشته‌ها” link and the existing infinite-scroll list.
-    list.innerHTML = notes.slice(0, 6).map(function (post) {
-        const minutes = Math.max(1, Math.ceil(Number(post.wordCount || 0) / 180));
-        return '<a class="note-shelf-card" href="' + escapeHtml(post.url) + '">' +
-            '<span class="note-shelf-icon" aria-hidden="true">' + readerIcon('book') + '</span>' +
-            '<span class="note-shelf-copy"><strong>' + escapeHtml(post.title) + '</strong>' +
-                '<small>' + escapeHtml(post.description) + '</small></span>' +
-            '<span class="note-shelf-readtime">' + minutes.toLocaleString('fa-IR') + ' دقیقه</span>' +
-        '</a>';
-    }).join('');
-    shelf.hidden = false;
 }
 
 function initStoryPlaylist() {
@@ -2316,7 +2310,6 @@ function initializeCoffpenPage() {
     initSidebar();
     initPaperboyNotifications();
     initContextMenu();
-    initNoteShelf();
     initPostRegistry();
     initSeriesHub();
     initLiveHero();
