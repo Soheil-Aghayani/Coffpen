@@ -1377,7 +1377,9 @@ function initNoteShelf() {
         return;
     }
 
-    list.innerHTML = notes.map(function (post) {
+    // Keep the shortcut shelf compact; the full note archive remains available
+    // through the “همهٔ دل‌نوشته‌ها” link and the existing infinite-scroll list.
+    list.innerHTML = notes.slice(0, 6).map(function (post) {
         const minutes = Math.max(1, Math.ceil(Number(post.wordCount || 0) / 180));
         return '<a class="note-shelf-card" href="' + escapeHtml(post.url) + '">' +
             '<span class="note-shelf-icon" aria-hidden="true">' + readerIcon('book') + '</span>' +
