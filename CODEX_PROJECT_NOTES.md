@@ -17,6 +17,7 @@
 - هر نوشتهٔ منتشرشده در `posts/*.html` منبع اصلی محتواست.
 - `posts/posts-data.js` و `posts/posts-data.min.js` فایل‌های تولیدشده‌اند؛ آن‌ها را دستی ویرایش نکن.
 - `scripts/sync-posts.js` فهرست نوشته‌ها، دادهٔ نوشته‌ها، sitemap، کارت‌های مجموعه در صفحهٔ اصلی و CSS درون‌خطی صفحهٔ اصلی را همگام می‌کند؛ هنگام sync برای هر نوشتهٔ `posts/*.html` بلوک idempotent متادیتای SEO، canonical، و JSON-LD از نوع `Article`/`BreadcrumbList` هم می‌سازد.
+- همان اسکریپت `archive.html` را نیز تولید می‌کند؛ این صفحه باید فهرست کامل و قابل‌خزش همهٔ نوشته‌ها، لینک مستقیم به هر `posts/*.html` و JSON-LD از نوع `CollectionPage`/`ItemList` داشته باشد. آن را دستی ویرایش نکن.
 - بلوک‌های قابل‌تولید SEO را دستی ویرایش نکن؛ نشانگرهای `Coffpen:post-seo:start` / `Coffpen:post-seo:end` باید فقط از طریق `scripts/sync-posts.js` به‌روز شوند. دادهٔ ساختاریافتهٔ صفحهٔ اصلی و لینک‌های شروع خواندن نیز بین نشانگرهای `Coffpen:structured-data` و `Coffpen:featured-posts` تولید می‌شوند.
 - نشانگرهای تولیدشدهٔ صفحهٔ اصلی را دست‌نخورده نگه دار:
   - `Coffpen:inline-style:start` / `Coffpen:inline-style:end`

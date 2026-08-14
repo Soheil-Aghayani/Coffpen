@@ -8,6 +8,7 @@ const outputFile = path.join(postsDirectory, 'posts-data.js');
 const minOutputFile = path.join(postsDirectory, 'posts-data.min.js');
 const siteUrl = 'https://soheil-aghayani.github.io/Coffpen';
 const sitemapFile = path.join(root, 'sitemap.xml');
+const archiveFile = path.join(root, 'archive.html');
 
 function loadExistingDates() {
     if (!fs.existsSync(outputFile)) return new Map();
@@ -412,7 +413,130 @@ function renderFeaturedPosts(list) {
     ).join('');
 }
 
+function renderArchivePage(list) {
+    const visiblePosts = list.filter(post => !post.empty);
+    const archiveCanonical = siteUrl + '/archive.html';
+    const archiveItems = visiblePosts.map(post => {
+        const section = postSection(post);
+        const episode = post.episode
+            ? '<span class="archive-item-episode">قسمت ' + escapeHtml(Number(post.episode).toLocaleString('fa-IR')) + '</span>'
+            : '';
+        const tags = post.tags.length
+            ? '<div class="archive-item-tags">' + post.tags.slice(0, 4).map(tag => '<span>' + escapeHtml(tag) + '</span>').join('') + '</div>'
+            : '';
+        return [
+            '<article class="archive-item" data-content-type="' + escapeHtml(post.contentType) + '"' +
+                (post.series ? ' data-series="' + escapeHtml(post.series) + '"' : '') + '>',
+            '  <div class="archive-item-copy">',
+            '    <p class="archive-item-meta"><span>' + escapeHtml(section) + '</span>' + episode + '</p>',
+            '    <h2><a href="' + escapeHtml(post.url) + '">' + escapeHtml(post.title) + '</a></h2>',
+            '    <p class="archive-item-description">' + escapeHtml(post.description) + '</p>',
+            tags,
+            '  </div>',
+            '  <a class="archive-item-read" href="' + escapeHtml(post.url) + '">خواندن <span aria-hidden="true">←</span></a>',
+            '</article>'
+        ].filter(Boolean).join('\n');
+    }).join('\n');
+    const itemList = visiblePosts.map((post, index) => ({
+        '@type': 'ListItem',
+        'position': index + 1,
+        'item': {
+            '@type': 'Article',
+            'name': post.title,
+            'headline': post.title,
+            'url': absolutePostUrl(post),
+            'articleSection': postSection(post),
+            'inLanguage': 'fa-IR'
+        }
+    }));
+    const graph = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'CollectionPage',
+                '@id': archiveCanonical + '#archive',
+                'url': archiveCanonical,
+                'name': 'آرشیو داستان‌ها و دل‌نوشته‌های کاف‌پن',
+                'description': 'فهرست کامل داستان‌های کوتاه، مجموعه‌های داستانی و دل‌نوشته‌های سهیل آقایانی در کاف‌پن.',
+                'inLanguage': 'fa-IR',
+                'isPartOf': { '@id': siteUrl + '/#website' },
+                'about': { '@id': siteUrl + '/about.html#author' },
+                'mainEntity': {
+                    '@type': 'ItemList',
+                    'name': 'همهٔ نوشته‌های کاف‌پن',
+                    'numberOfItems': itemList.length,
+                    'itemListElement': itemList
+                }
+            },
+            {
+                '@type': 'BreadcrumbList',
+                '@id': archiveCanonical + '#breadcrumb',
+                'itemListElement': [
+                    { '@type': 'ListItem', position: 1, name: 'کاف‌پن', item: siteUrl + '/' },
+                    { '@type': 'ListItem', position: 2, name: 'آرشیو نوشته‌ها', item: archiveCanonical }
+                ]
+            }
+        ]
+    };
+    return '<!doctype html>\n' +
+        '<html lang="fa" dir="rtl" data-theme="sepia">\n' +
+        '<head>\n' +
+        '  <meta charset="utf-8">\n' +
+        '  <meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+        '  <title>آرشیو داستان‌ها و دل‌نوشته‌ها | کاف‌پن (Coffpen)</title>\n' +
+        '  <meta name="description" content="فهرست کامل داستان‌های کوتاه، مجموعه‌های داستانی و دل‌نوشته‌های سهیل آقایانی در کاف‌پن.">\n' +
+        '  <meta name="author" content="سهیل آقایانی">\n' +
+        '  <meta name="robots" content="index,follow,max-image-preview:large">\n' +
+        '  <link rel="canonical" href="' + archiveCanonical + '">\n' +
+        '  <link rel="alternate" type="application/rss+xml" title="کاف‌پن (Coffpen)" href="feed.xml">\n' +
+        '  <link rel="stylesheet" href="assets/css/style.min.css">\n' +
+        '  <script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
+        '  <style>\n' +
+        '    body{min-height:100vh;padding:28px 16px;background:var(--bg-body);}\n' +
+        '    .archive-shell{width:min(100%,920px);margin:0 auto;padding:clamp(22px,4vw,46px);border:1px solid var(--border-color);border-radius:22px;background:var(--bg-box);box-shadow:var(--shadow-box);}\n' +
+        '    .archive-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:24px;border-bottom:1px solid var(--border-subtle);}\n' +
+        '    .archive-kicker{margin:0 0 6px;color:var(--text-accent);font-size:.82rem;font-weight:700;}\n' +
+        '    .archive-header h1{margin:0;color:var(--text-main);font-size:clamp(1.55rem,4vw,2.25rem);line-height:1.5;}\n' +
+        '    .archive-header p{max-width:620px;margin:8px 0 0;color:var(--text-muted);font-size:.9rem;}\n' +
+        '    .archive-nav{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-start;}\n' +
+        '    .archive-nav a{padding:8px 12px;border:1px solid var(--border-color);border-radius:10px;color:var(--text-muted);font-size:.8rem;}\n' +
+        '    .archive-nav a:hover{color:var(--text-accent);border-color:var(--text-accent);}\n' +
+        '    .archive-count{margin:24px 0 12px;color:var(--text-muted);font-size:.82rem;}\n' +
+        '    .archive-list{display:grid;gap:12px;}\n' +
+        '    .archive-item{display:grid;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:18px;padding:17px 18px;border:1px solid var(--border-color);border-radius:15px;background:var(--bg-card);}\n' +
+        '    .archive-item-copy{min-width:0;}\n' +
+        '    .archive-item-meta{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 4px;color:var(--text-muted);font-size:.74rem;}\n' +
+        '    .archive-item-episode{color:var(--text-accent);font-weight:700;}\n' +
+        '    .archive-item h2{margin:0;font-size:1.08rem;line-height:1.7;}\n' +
+        '    .archive-item h2 a{color:var(--text-main);}\n' +
+        '    .archive-item h2 a:hover{color:var(--text-accent);}\n' +
+        '    .archive-item-description{display:-webkit-box;overflow:hidden;margin:4px 0 0;color:var(--text-muted);font-size:.82rem;line-height:1.8;-webkit-box-orient:vertical;-webkit-line-clamp:2;}\n' +
+        '    .archive-item-tags{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}\n' +
+        '    .archive-item-tags span{padding:2px 7px;border-radius:999px;background:var(--bg-tag);color:var(--text-muted);font-size:.68rem;}\n' +
+        '    .archive-item-read{white-space:nowrap;color:var(--text-accent);font-size:.8rem;font-weight:700;}\n' +
+        '    .archive-footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--border-subtle);color:var(--text-muted);font-size:.78rem;}\n' +
+        '    @media(max-width:600px){body{padding:0}.archive-shell{border:0;border-radius:0;box-shadow:none}.archive-header{display:block}.archive-nav{margin-top:16px}.archive-item{grid-template-columns:1fr;gap:8px}.archive-item-read{justify-self:start;}}\n' +
+        '  </style>\n' +
+        '</head>\n' +
+        '<body>\n' +
+        '  <div class="archive-shell">\n' +
+        '    <header class="archive-header">\n' +
+        '      <div><p class="archive-kicker">کتابخانهٔ کاف‌پن</p><h1>آرشیو داستان‌ها و دل‌نوشته‌ها</h1><p>همهٔ نوشته‌های منتشرشدهٔ سهیل آقایانی، از داستان‌های مستقل تا قسمت‌های مجموعه‌های دنباله‌دار.</p></div>\n' +
+        '      <nav class="archive-nav" aria-label="پیوندهای کاف‌پن"><a href="./">صفحهٔ اصلی</a><a href="about.html">دربارهٔ نویسنده</a></nav>\n' +
+        '    </header>\n' +
+        '    <p class="archive-count">' + escapeHtml(visiblePosts.length.toLocaleString('fa-IR')) + ' نوشته در این آرشیو</p>\n' +
+        '    <main id="archive-main"><section class="archive-list" aria-label="فهرست نوشته‌ها">\n' +
+        archiveItems + '\n' +
+        '    </section></main>\n' +
+        '    <footer class="archive-footer">کاف‌پن (Coffpen) — داستان کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌های سهیل آقایانی.</footer>\n' +
+        '  </div>\n' +
+        '</body>\n' +
+        '</html>\n';
+}
+
 syncGeneratedPostSeo(posts);
+
+fs.writeFileSync(archiveFile, renderArchivePage(posts), 'utf8');
 
 const indexFile = path.join(root, 'index.html');
 if (fs.existsSync(indexFile)) {
@@ -437,7 +561,7 @@ if (fs.existsSync(indexFile)) {
     const discoverySection = '<section class="seo-discovery" aria-labelledby="coffpen-discovery-title">' +
         '<div class="seo-discovery-heading"><p class="eyebrow">راهنمای کاف‌پن</p>' +
         '<h2 id="coffpen-discovery-title">کاف‌پن (Coffpen) را از اینجا بشناسید</h2>' +
-        '<p>داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی؛ برای شروع یکی از این نوشته‌ها را انتخاب کنید.</p></div>' +
+        '<p>داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی؛ برای شروع یکی از این نوشته‌ها را انتخاب کنید. <a href="archive.html">آرشیو کامل نوشته‌ها</a></p></div>' +
         '<nav class="seo-discovery-links" aria-label="شروع خواندن در کاف‌پن"><!-- Coffpen:featured-posts:start -->' +
         renderFeaturedPosts(posts) +
         '<!-- Coffpen:featured-posts:end --></nav></section>';
@@ -470,6 +594,7 @@ function escapeXml(value) {
 const sitemapEntries = [
     { path: '/', date: posts[0] && posts[0].date },
     { path: '/about.html', date: posts[0] && posts[0].date },
+    { path: '/archive.html', date: posts[0] && posts[0].date },
     ...posts.map(post => ({ path: '/' + post.url, date: post.date }))
 ];
 const sitemap = [
