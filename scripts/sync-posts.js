@@ -13,6 +13,25 @@ const seriesFile = path.join(root, 'series.html');
 const feedFile = path.join(root, 'feed.xml');
 const brandFile = path.join(root, 'coffpen.html');
 
+function faviconLinks(prefix = '') {
+    return [
+        `    <link rel="icon" href="${prefix}favicon.ico" sizes="any">`,
+        `    <link rel="icon" type="image/png" sizes="48x48" href="${prefix}assets/images/favicon-48.png">`,
+        `    <link rel="icon" type="image/webp" sizes="64x64" href="${prefix}assets/images/favicon.webp">`,
+        `    <link rel="apple-touch-icon" sizes="180x180" href="${prefix}assets/images/apple-touch-icon.png">`,
+        `    <link rel="manifest" href="${prefix}manifest.webmanifest">`
+    ].join('\n');
+}
+
+function ensureFaviconLinks(html, prefix = '') {
+    const withoutOldLinks = html.replace(/[ \t]*<link\s+rel=["'](?:icon|apple-touch-icon|manifest)["'][^>]*>\r?\n?/gi, '');
+    const head = withoutOldLinks.match(/<head\b[^>]*>/i);
+    if (!head || head.index === undefined) return html;
+    const headEnd = head.index + head[0].length;
+    const rest = withoutOldLinks.slice(headEnd).replace(/^(?:[ \t]*\r?\n)+/, '');
+    return withoutOldLinks.slice(0, headEnd) + '\n' + faviconLinks(prefix) + '\n' + rest;
+}
+
 function loadExistingDates() {
     if (!fs.existsSync(outputFile)) return new Map();
     try {
@@ -328,13 +347,14 @@ function renderPostSeo(post) {
 function syncGeneratedPostSeo(list) {
     list.forEach(post => {
         const file = path.join(postsDirectory, post.filename);
-        const source = fs.readFileSync(file, 'utf8');
+        const source = ensureFaviconLinks(fs.readFileSync(file, 'utf8'), '../');
         const block = renderPostSeo(post);
         const marker = /<!-- Coffpen:post-seo:start -->[\s\S]*?<!-- Coffpen:post-seo:end -->/;
+        const original = fs.readFileSync(file, 'utf8');
         const updated = marker.test(source)
             ? source.replace(marker, block)
             : source.replace(/<\/head>/i, block + '\n</head>');
-        if (updated !== source) fs.writeFileSync(file, updated, 'utf8');
+        if (updated !== original) fs.writeFileSync(file, updated, 'utf8');
     });
 }
 
@@ -498,6 +518,7 @@ function renderArchivePage(list) {
         '  <meta name="robots" content="index,follow,max-image-preview:large">\n' +
         '  <link rel="canonical" href="' + archiveCanonical + '">\n' +
         '  <link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
+        faviconLinks() + '\n' +
         '  <link rel="stylesheet" href="assets/css/style.min.css">\n' +
         '  <script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
         '  <style>\n' +
@@ -608,6 +629,7 @@ function renderSeriesPage(list) {
         '  <meta name="description" content="فهرست مجموعه‌های داستانی دنباله‌دار کافپن و قسمت‌های منتشرشدهٔ هر مجموعه.">\n' +
         '  <meta name="author" content="سهیل آقایانی"><meta name="robots" content="index,follow,max-image-preview:large">\n' +
         '  <link rel="canonical" href="' + seriesCanonical + '"><link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
+        faviconLinks() + '\n' +
         '  <link rel="stylesheet" href="assets/css/style.min.css"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
         '  <style>\n' +
         '    body{min-height:100vh;padding:28px 16px;background:var(--bg-body)}.series-shell{width:min(100%,920px);margin:0 auto;padding:clamp(22px,4vw,46px);border:1px solid var(--border-color);border-radius:22px;background:var(--bg-box);box-shadow:var(--shadow-box)}\n' +
@@ -645,6 +667,15 @@ function renderBrandPage(list) {
                 'inDefinedTermSet': { '@id': siteUrl + '/#website' }
             },
             {
+                '@type': 'Brand',
+                '@id': brandCanonical + '#brand',
+                'name': 'کافپن',
+                'alternateName': ['کاف‌پن', 'کاف پن', 'Coffpen'],
+                'url': brandCanonical,
+                'logo': siteUrl + '/assets/images/favicon-48.png',
+                'sameAs': [siteUrl + '/', siteUrl + '/about.html']
+            },
+            {
                 '@type': 'BreadcrumbList',
                 '@id': brandCanonical + '#breadcrumb',
                 'itemListElement': [
@@ -662,14 +693,14 @@ function renderBrandPage(list) {
         '  <meta name="author" content="سهیل آقایانی"><meta name="application-name" content="کافپن (کاف‌پن / Coffpen)">\n' +
         '  <meta name="robots" content="index,follow,max-image-preview:large"><meta name="googlebot" content="index,follow,max-image-preview:large">\n' +
         '  <link rel="canonical" href="' + brandCanonical + '"><link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
-        '  <link rel="icon" type="image/webp" href="assets/images/favicon.webp"><link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">\n' +
+        faviconLinks() + '\n' +
         '  <link rel="stylesheet" href="assets/css/style.min.css"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
         '  <style>body{min-height:100vh;padding:28px 16px;background:var(--bg-body)}.brand-shell{width:min(100%,860px);margin:0 auto;padding:clamp(24px,5vw,56px);border:1px solid var(--border-color);border-radius:24px;background:var(--bg-box);box-shadow:var(--shadow-box)}.brand-kicker{margin:0 0 8px;color:var(--text-accent);font-size:.84rem;font-weight:700}.brand-shell h1{margin:0;color:var(--text-main);font-size:clamp(1.7rem,5vw,2.8rem);line-height:1.5}.brand-lede{max-width:700px;margin:14px 0 0;color:var(--text-muted);font-size:1rem;line-height:2}.brand-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:28px 0}.brand-stat{padding:16px;border:1px solid var(--border-subtle);border-radius:14px;background:var(--bg-card)}.brand-stat strong{display:block;color:var(--text-main);font-size:1.35rem}.brand-stat span{display:block;margin-top:4px;color:var(--text-muted);font-size:.78rem}.brand-section{padding-top:24px;margin-top:24px;border-top:1px solid var(--border-subtle)}.brand-section h2{margin:0 0 10px;color:var(--text-main);font-size:1.25rem}.brand-section p{margin:0;color:var(--text-muted);line-height:2}.brand-variants{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.brand-variants span{padding:6px 10px;border:1px solid var(--border-color);border-radius:999px;color:var(--text-muted);font-size:.78rem}.brand-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.brand-links a{padding:9px 13px;border:1px solid var(--border-color);border-radius:10px;color:var(--text-main);font-size:.82rem}.brand-links a:hover{color:var(--text-accent);border-color:var(--text-accent)}.brand-footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border-subtle);color:var(--text-muted);font-size:.78rem}@media(max-width:620px){body{padding:0}.brand-shell{border:0;border-radius:0;box-shadow:none}.brand-grid{grid-template-columns:1fr 1fr}.brand-stat:last-child{grid-column:1/-1}}</style>\n' +
         '</head>\n<body>\n' +
         '  <main class="brand-shell">\n' +
         '    <p class="brand-kicker">هویت وبلاگ</p>\n' +
         '    <h1>کافپن (کاف‌پن / Coffpen)؛ سیاه و قلم</h1>\n' +
-        '    <p class="brand-lede"><strong>کافپن</strong> نام وبلاگ مستقل سهیل آقایانی است؛ جایی برای داستان‌های کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های شخصی. «کاف‌پن» و «Coffpen» شکل‌های دیگر همین نام‌اند.</p>\n' +
+        '    <p class="brand-lede"><strong>کافپن</strong> نام وبلاگ مستقل سهیل آقایانی است؛ جایی برای داستان‌های کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های شخصی. «کاف‌پن»، «کاف پن» و «Coffpen» شکل‌های دیگر همین نام‌اند.</p>\n' +
         '    <div class="brand-grid" aria-label="آمار کافپن">\n' +
         '      <div class="brand-stat"><strong>' + escapeHtml(visiblePosts.length.toLocaleString('fa-IR')) + '</strong><span>نوشتهٔ منتشرشده</span></div>\n' +
         '      <div class="brand-stat"><strong>' + escapeHtml(seriesCount.toLocaleString('fa-IR')) + '</strong><span>مجموعهٔ داستانی</span></div>\n' +
@@ -729,7 +760,7 @@ if (fs.existsSync(indexFile)) {
         .replace(/\.\.\/fonts\//g, 'assets/fonts/');
     const marker = '<div id="seriesHubList" class="series-hub-list"><!-- Coffpen:series-hub --></div>';
     const staticMarkerPattern = /<div id="seriesHubList" class="series-hub-list"><!-- Coffpen:series-hub:start -->[\s\S]*?<!-- Coffpen:series-hub:end --><\/div>/;
-    let indexHtml = fs.readFileSync(indexFile, 'utf8');
+    let indexHtml = ensureFaviconLinks(fs.readFileSync(indexFile, 'utf8'));
     indexHtml = indexHtml.replace(
         /<!-- Coffpen:inline-style:start -->[\s\S]*?<!-- Coffpen:inline-style:end -->/,
         '<!-- Coffpen:inline-style:start -->\n    <style id="coffpen-inline-style">\n' + minifiedStylesheet +
@@ -746,12 +777,18 @@ if (fs.existsSync(indexFile)) {
     const discoverySection = '<section class="seo-discovery" aria-labelledby="coffpen-discovery-title">' +
         '<div class="seo-discovery-heading"><p class="eyebrow">راهنمای کافپن</p>' +
         '<h2 id="coffpen-discovery-title">کافپن (کاف‌پن / Coffpen) را از اینجا بشناسید</h2>' +
-        '<p>کافپن (کاف‌پن / Coffpen) دفتر داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی است. برای شروع یکی از این نوشته‌ها را انتخاب کنید. <a href="coffpen.html">دربارهٔ کافپن</a> · <a href="archive.html">آرشیو کامل نوشته‌ها</a> · <a href="series.html">مجموعه‌های داستانی</a></p></div>' +
+        '<p>کافپن (کاف‌پن / کاف پن / Coffpen) نام خاص این وبلاگ و دفتر داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی است. برای شروع یکی از این نوشته‌ها را انتخاب کنید. <a href="coffpen.html">دربارهٔ کافپن</a> · <a href="archive.html">آرشیو کامل نوشته‌ها</a> · <a href="series.html">مجموعه‌های داستانی</a></p></div>' +
         '<nav class="seo-discovery-links" aria-label="شروع خواندن در کافپن"><!-- Coffpen:featured-posts:start -->' +
         renderFeaturedPosts(posts) +
         '<!-- Coffpen:featured-posts:end --></nav></section>';
     if (discoveryPattern.test(indexHtml)) indexHtml = indexHtml.replace(discoveryPattern, discoverySection);
     fs.writeFileSync(indexFile, indexHtml, 'utf8');
+}
+
+const aboutFile = path.join(root, 'about.html');
+if (fs.existsSync(aboutFile)) {
+    const aboutHtml = ensureFaviconLinks(fs.readFileSync(aboutFile, 'utf8'));
+    fs.writeFileSync(aboutFile, aboutHtml, 'utf8');
 }
 
 const output = [

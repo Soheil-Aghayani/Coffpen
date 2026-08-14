@@ -104,3 +104,9 @@
 4. برای SEO/GEO، canonical، robots، sitemap، JSON-LD و لینک‌های داخلی را هم‌زمان حفظ کن. ارتباط نویسنده با repository کاف‌پن باید در `sameAs` صفحهٔ اصلی/درباره و در `llms.txt` باقی بماند.
 5. برای Search Console از property مستقیم URL-prefix یعنی `https://soheil-aghayani.github.io/Coffpen/` استفاده کن. درخواست indexing را تکرار نکن؛ وضعیت ایندکس را با URL Inspection و جست‌وجوی عمومی بررسی کن و تا پیش از شواهد واقعی، رتبهٔ اول یا نتیجهٔ عمومی را ادعا نکن.
 6. اگر از مرورگر داخلی استفاده شد، پیش از پایان کار تب‌ها را finalize کن؛ پس از finalize دیگر ابزار مرورگر را صدا نزن.
+
+## وضعیت آخرین اصلاح برند و favicon (2026-08-14)
+
+- Google عبارت «Did you mean: کافئین» را از داخل HTML خاموش نمی‌کند؛ برای کاهش این اصلاح خودکار، شکل‌های طبیعی `کافپن`، `کاف‌پن`، `کاف پن` و `Coffpen` در صفحهٔ هویت برند و بخش معرفی صفحهٔ اصلی به‌صورت جملهٔ توضیحی آمده‌اند و صفحهٔ `coffpen.html` یک گرهٔ Schema.org از نوع `Brand` دارد. از اضافه‌کردن واژهٔ نامرتبط «کافئین» به محتوای سایت خودداری کن.
+- favicon پایدار سایت در ریشهٔ `favicon.ico` و نسخهٔ PNG در `assets/images/favicon-48.png` نگهداری می‌شود. `scripts/sync-posts.js` باید لینک‌های `favicon.ico`، PNG، WebP، Apple Touch Icon و manifest را برای صفحات ریشه، آرشیو، مجموعه‌ها، هویت برند و همهٔ `posts/*.html` یکسان نگه دارد.
+- کرهٔ آبی در نتایج قدیمی Google معمولاً favicon کش‌شدهٔ قبل از انتشار است؛ پس از انتشار آیکون جدید، درخواست‌های crawl را تکرار نکن و برای refresh شدن favicon زمان بده. صحت فنی را با HTTP 200 برای `/Coffpen/favicon.ico` و `/Coffpen/assets/images/favicon-48.png` بررسی کن.
