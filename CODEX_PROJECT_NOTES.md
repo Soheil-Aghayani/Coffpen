@@ -65,6 +65,7 @@
 - تأیید مالکیت Search Console به‌تنهایی ایندکس‌شدن را تضمین نمی‌کند. پس از انتشارهای مهم، در Search Console sitemap زیر را ثبت/بررسی کن:
   `https://soheil-aghayani.github.io/Coffpen/sitemap.xml`
 - برای صفحهٔ اصلی یا نوشتهٔ تازه، از URL Inspection درخواست indexing بده. ایندکس و رتبه‌گیری ممکن است چند روز یا چند هفته طول بکشد و تضمینی نیست.
+- وضعیت ثبت اولیه در ۲۰۲۶-۰۸-۱۴: مالکیت با روش `Parent property` تأیید شد، sitemap ارسال شد و درخواست indexing صفحهٔ اصلی با موفقیت وارد صف شد. اگر Search Console بلافاصله برای sitemap وضعیت `Couldn't fetch` نشان داد اما درخواست مستقیم HTTP وضعیت ۲۰۰ و XML معتبر دارد، آن را موقت/در حال پردازش در نظر بگیر؛ ۲۴ تا ۴۸ ساعت بعد دوباره بررسی کن و پشت‌سرهم sitemap را duplicate نکن.
 - از keyword stuffing و title/description تکراری پرهیز کن.
 
 ## راهنمای عیب‌یابی سریع
