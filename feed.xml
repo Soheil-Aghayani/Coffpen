@@ -1,24 +1,484 @@
----
-layout: null
----
 <?xml version="1.0" encoding="UTF-8"?>
-<?xml-stylesheet type="text/xsl" href="{{ '/assets/css/rss.xsl' | relative_url }}"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>{{ site.title | xml_escape }}</title>
-    <description>{{ site.description | xml_escape }}</description>
-    <link>{{ site.url }}{{ site.baseurl }}/</link>
-    <atom:link href="{{ site.url }}{{ site.baseurl }}/feed.xml" rel="self" type="application/rss+xml"/>
-    <language>fa-ir</language>
-    <lastBuildDate>{{ site.time | date_to_rfc822 }}</lastBuildDate>
-    {% for post in site.posts %}
+    <title>کاف‌پن (Coffpen) | سیاه و قلم</title>
+    <description>وبلاگ مستقل سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.</description>
+    <link>https://soheil-aghayani.github.io/Coffpen/</link>
+    <atom:link href="https://soheil-aghayani.github.io/Coffpen/feed.xml" rel="self" type="application/rss+xml"/>
+    <language>fa-IR</language>
+    <lastBuildDate>Thu, 06 Aug 2026 20:15:34 GMT</lastBuildDate>
+    <generator>Coffpen sync-posts.js</generator>
     <item>
-      <title>{{ post.title | xml_escape }}</title>
-      <description>{{ post.description | default: post.excerpt | strip_html | normalize_whitespace | xml_escape }}</description>
-      <pubDate>{{ post.date | date_to_rfc822 }}</pubDate>
-      <link>{{ site.url }}{{ site.baseurl }}{{ post.url }}</link>
-      <guid isPermaLink="true">{{ site.url }}{{ site.baseurl }}{{ post.url }}</guid>
+      <title>خفگی روی کاغذ</title>
+      <description>می‌دونی همیشه دوست دارم به دیگران غر بزنم. تنها دلیلی که اینکار رو معمولا نمی‌کردم بخاطر پدرم بود. همیشه بهم اصرار داد بفهمونه که غر زدن نشانه ضعف هست. نشانه‌ی ضعف در مدیریت و منابع.…</description>
+      <pubDate>Thu, 06 Aug 2026 20:15:34 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D9%81%DA%AF%DB%8C-%D8%B1%D9%88%DB%8C-%DA%A9%D8%A7%D8%BA%D8%B0.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D9%81%DA%AF%DB%8C-%D8%B1%D9%88%DB%8C-%DA%A9%D8%A7%D8%BA%D8%B0.html</guid>
+      <category>دل‌نوشته</category>
     </item>
-    {% endfor %}
+    <item>
+      <title>جریده آهمند</title>
+      <description>آسمان در امتداد اقیانوس کش آمده بود؛ سایه‌ای از بنفش و نارنجی که انگار جهان را در آستانه‌ی فروپاشی یا تولدی دوباره نگه داشته بود. ماه، در درخشان‌ترین حالت خود، به پهنه‌ی تاریک آب‌ها خیره…</description>
+      <pubDate>Thu, 30 Jul 2026 15:01:02 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AC%D8%B1%DB%8C%D8%AF%D9%87-%D8%A2%D9%87%D9%85%D9%86%D8%AF.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AC%D8%B1%DB%8C%D8%AF%D9%87-%D8%A2%D9%87%D9%85%D9%86%D8%AF.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>چوب برفی</title>
+      <description>بوی چوب سوخته هنوز در هوا مانده بود؛ حتی با گذشت این‌همه زمان، حتی با وجود برفی که از سقف سوراخ‌شده‌ی خانه آرام و بی‌صدا به داخل می‌ریخت. او روی تنها صندلی سالمی که میان این ویرانه باقی…</description>
+      <pubDate>Thu, 30 Jul 2026 14:56:51 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DA%86%D9%88%D8%A8-%D8%A8%D8%B1%D9%81%DB%8C.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DA%86%D9%88%D8%A8-%D8%A8%D8%B1%D9%81%DB%8C.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>بار مارکو</title>
+      <description>بار «مارکو»؛ ساعت ۱:۴۵ نیمه‌شب هوا بوی الکل کهنه و عرق آدم‌هایی را می‌داد که ساعت‌ها در اینجا نشسته بودند. بار شلوغ بود، اما نه از آن شلوغی‌هایی که پر از هیجان باشد. بیشتر شبیه جمع شدن…</description>
+      <pubDate>Thu, 30 Jul 2026 14:55:44 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A8%D8%A7%D8%B1-%D9%85%D8%A7%D8%B1%DA%A9%D9%88.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A8%D8%A7%D8%B1-%D9%85%D8%A7%D8%B1%DA%A9%D9%88.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>جادوی درون</title>
+      <description>شب سردی بود و باران آرام روی شیشه‌های بزرگ کافه «لا بوتیکا» می‌خورد. نور گرم و ملایم چراغ‌های رومیزی، فضایی دنج و آرام ایجاد کرده بود. صدای جاز آرامی در پس‌زمینه پخش می‌شد و بوی قهوه…</description>
+      <pubDate>Thu, 30 Jul 2026 14:53:51 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AC%D8%A7%D8%AF%D9%88%DB%8C-%D8%AF%D8%B1%D9%88%D9%86-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2%DB%B0.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AC%D8%A7%D8%AF%D9%88%DB%8C-%D8%AF%D8%B1%D9%88%D9%86-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2%DB%B0.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>فروخُفتگی</title>
+      <description>هانس روی صندلی نشسته بود و گاهی نگاهی نگران به جان می‌انداخت. شعله‌های شومینه در حال رقصیدن بودند و سایه‌هایشان بر دیوار، طرح‌های لرزانی ایجاد می‌کرد. جان اما ساکت بود و به نقطه‌ای…</description>
+      <pubDate>Thu, 30 Jul 2026 14:25:38 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%81%D8%B1%D9%88%D8%AE%D9%81%D8%AA%DA%AF%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B9.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%81%D8%B1%D9%88%D8%AE%D9%81%D8%AA%DA%AF%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B9.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>کتاب منافق</title>
+      <description>مرد قدمی به جلو برداشت. دستانش در سایه‌ی اورال کت بلندش پنهان بودند، اما حرکاتش مثل طعمه‌ای که به سمت شکارش می‌خزد، با اطمینان و بی‌رحمی همراه بود. او به سمت جنازه‌ی روی زمین رفت. چاقویی…</description>
+      <pubDate>Thu, 30 Jul 2026 14:24:28 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DA%A9%D8%AA%D8%A7%D8%A8-%D9%85%D9%86%D8%A7%D9%81%D9%82-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DA%A9%D8%AA%D8%A7%D8%A8-%D9%85%D9%86%D8%A7%D9%81%D9%82-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2.html</guid>
+      <category>کتاب منافق</category>
+    </item>
+    <item>
+      <title>کتاب منافق</title>
+      <description>«روزی که بخوام بر این دنیا حکمرانی کنم، کتاب‌ها رو حذف می‌کنم.» او حرفش را با صدایی مطمئن و آرام ادا کرد، انگار که چیزی کاملاً بدیهی را اعلام می‌کند. نور کم‌رنگ اتاق روی کت بلند مشکی‌اش…</description>
+      <pubDate>Thu, 30 Jul 2026 14:21:32 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DA%A9%D8%AA%D8%A7%D8%A8-%D9%85%D9%86%D8%A7%D9%81%D9%82-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DA%A9%D8%AA%D8%A7%D8%A8-%D9%85%D9%86%D8%A7%D9%81%D9%82-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html</guid>
+      <category>کتاب منافق</category>
+    </item>
+    <item>
+      <title>خشم منطق</title>
+      <description>«تو همیشه نگرانی، نگران اینکه تصمیمی بگیری که نشه جبرانش کرد.» جان این را گفت و پک عمیقی به پیپش زد. دود خاکستری به آرامی در اتاق پیچید و نگاهش به شعله‌های شومینه دوخته شد. لحظه‌ای سکوت…</description>
+      <pubDate>Thu, 30 Jul 2026 14:20:16 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%B4%D9%85-%D9%85%D9%86%D8%B7%D9%82-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B8.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%B4%D9%85-%D9%85%D9%86%D8%B7%D9%82-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B8.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>آرامش در میان هیاهو</title>
+      <description>«اولین باری که امی را دیدم زندگی‌ام را تغییر نداد؛ بلکه سکوتی که با خودش آورد، این کار را کرد. ببین، ذهن من همیشه جای شلوغ و بی‌قراری بوده. افکار، نگرانی‌ها و خاطرات مثل صدایی بی‌پایان…</description>
+      <pubDate>Thu, 30 Jul 2026 14:16:52 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A2%D8%B1%D8%A7%D9%85%D8%B4-%D8%AF%D8%B1-%D9%85%DB%8C%D8%A7%D9%86-%D9%87%DB%8C%D8%A7%D9%87%D9%88-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B7.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A2%D8%B1%D8%A7%D9%85%D8%B4-%D8%AF%D8%B1-%D9%85%DB%8C%D8%A7%D9%86-%D9%87%DB%8C%D8%A7%D9%87%D9%88-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B7.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>تو بازیچه من خواهی بود</title>
+      <description>در سکوت جنگل، زیر آسمانی که با ابرهای سنگین و متحرک پوشیده شده بود، موجودی ظاهر شد. موجودی پیچیده در سایه‌ها که رازهایی را نجوا می‌کرد که هیچ‌کس جرأت دانستنشان را نداشت. نامش باستین بود،…</description>
+      <pubDate>Thu, 30 Jul 2026 14:16:17 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AA%D9%88-%D8%A8%D8%A7%D8%B2%DB%8C%DA%86%D9%87-%D9%85%D9%86-%D8%AE%D9%88%D8%A7%D9%87%DB%8C-%D8%A8%D9%88%D8%AF.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AA%D9%88-%D8%A8%D8%A7%D8%B2%DB%8C%DA%86%D9%87-%D9%85%D9%86-%D8%AE%D9%88%D8%A7%D9%87%DB%8C-%D8%A8%D9%88%D8%AF.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>قتل یک برادر</title>
+      <description>در تالار بزرگ و تاریک، که تنها با نور شمع روشن شده بود، مردی تنها ایستاده بود. در تاریکی فرو رفته بود و چهره‌اش از اندوهی عمیق حکایت داشت. او با صدایی آرام و گرفته زمزمه می‌کرد، گویی…</description>
+      <pubDate>Thu, 30 Jul 2026 14:02:10 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%82%D8%AA%D9%84-%DB%8C%DA%A9-%D8%A8%D8%B1%D8%A7%D8%AF%D8%B1.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%82%D8%AA%D9%84-%DB%8C%DA%A9-%D8%A8%D8%B1%D8%A7%D8%AF%D8%B1.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>نجوای نیمه‌شب</title>
+      <description>جان با دقت شراب قرمز را در لیوان خاصش می‌ریخت. لیوانی که طراحی آن باعث می‌شد بیش از حد خاصی پر نشود. با بستن درب بطری، آن را در قفسهٔ مخصوصش گذاشت و روی صندلی موردعلاقه‌اش، روبه‌روی…</description>
+      <pubDate>Thu, 30 Jul 2026 13:58:31 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%86%D8%AC%D9%88%D8%A7%DB%8C-%D9%86%DB%8C%D9%85%D9%87-%D8%B4%D8%A8-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B6.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%86%D8%AC%D9%88%D8%A7%DB%8C-%D9%86%DB%8C%D9%85%D9%87-%D8%B4%D8%A8-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B6.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>پایان سه ملکه</title>
+      <description>«می‌دونی چی واقعاً عجیبه؟ سادگی این دنیا. در ظاهر همه‌چیز ساده‌ست، ولی پشت این سادگی، یه چیز عمیق‌تر خوابیده. یه چیزی که ممکنه آدمو تا مرز جنون بکشونه. از همون اولش هم همین بود. جهان از…</description>
+      <pubDate>Thu, 30 Jul 2026 13:55:28 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%BE%D8%A7%DB%8C%D8%A7%D9%86-%D8%B3%D9%87-%D9%85%D9%84%DA%A9%D9%87.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%BE%D8%A7%DB%8C%D8%A7%D9%86-%D8%B3%D9%87-%D9%85%D9%84%DA%A9%D9%87.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>خطای انسانی</title>
+      <description>توی آمار ما همیشه وقتی شروع می‌کنیم به بررسی دیتا و ورودی‌های خودمون. متوجه می‌شیم همراه یک رابطه‌ای بین آمارها هست. که در نهایت می‌تونیم یک برازش از آمارها بگیریم‌. که متوجه می‌شیم که…</description>
+      <pubDate>Thu, 30 Jul 2026 13:54:28 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%B7%D8%A7%DB%8C-%D8%A7%D9%86%D8%B3%D8%A7%D9%86%DB%8C.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%B7%D8%A7%DB%8C-%D8%A7%D9%86%D8%B3%D8%A7%D9%86%DB%8C.html</guid>
+      <category>دل‌نوشته</category>
+    </item>
+    <item>
+      <title>آلباتروس</title>
+      <description>اسم من آلباتروس هست. البته ممکنه خیلی‌ها من رو به این نام نشناسن. بعضی‌ها من رو قادوس هم ممکنه صدا کنن. در کل در طول سالیان مختلف اسم‌ها مختلفی به من داده شده. اما این اسم آلباتروس بقدری…</description>
+      <pubDate>Thu, 30 Jul 2026 13:53:58 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A2%D9%84%D8%A8%D8%A7%D8%AA%D8%B1%D9%88%D8%B3.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A2%D9%84%D8%A8%D8%A7%D8%AA%D8%B1%D9%88%D8%B3.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>کورسوی نگرانی</title>
+      <description>در شهر قدم می‌زنم. خورشید همچنان با انرژی وصف نشدنی بر مردم شهر می‌تابد. همواره دانشگاه رفتن برای من جذاب است. این مراکز معمولاً به انسان یادآوری می‌کند که از پس چه کارهایی می‌تواند بر…</description>
+      <pubDate>Thu, 30 Jul 2026 13:52:15 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DA%A9%D9%88%D8%B1%D8%B3%D9%88%DB%8C-%D9%86%DA%AF%D8%B1%D8%A7%D9%86%DB%8C.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DA%A9%D9%88%D8%B1%D8%B3%D9%88%DB%8C-%D9%86%DA%AF%D8%B1%D8%A7%D9%86%DB%8C.html</guid>
+      <category>دل‌نوشته</category>
+    </item>
+    <item>
+      <title>سگ و اژدها</title>
+      <description>جان گفت:«مسافرخونه‌ای هست که خودت نمی‌تونی پیداش کنی. باید تو یه خیابون مه‌آلود بهش برسی، نیمه‌شب. وقتی تو یه شهر عجیب گم شدی و نمی‌دونی کجا باید بری. درِ اون مسافرخونه یه چرخ داره، ولی…</description>
+      <pubDate>Thu, 30 Jul 2026 13:51:39 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%B3%DA%AF-%D9%88-%D8%A7%DA%98%D8%AF%D9%87%D8%A7-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B5.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%B3%DA%AF-%D9%88-%D8%A7%DA%98%D8%AF%D9%87%D8%A7-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B5.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>گرمای احساسات خام</title>
+      <description>در یک شب سرد پاییزی، در یک کافه کوچک و دنج، صدای ضعیف باران به شیشه‌های پنجره می‌خورد. بوی قهوه تلخ و شیرین در هوا می‌پیچد و نور ملایم شمع‌های کوچک روی میزها، فضایی آرام و نیمه‌تاریک را…</description>
+      <pubDate>Thu, 30 Jul 2026 13:48:47 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DA%AF%D8%B1%D9%85%D8%A7%DB%8C-%D8%A7%D8%AD%D8%B3%D8%A7%D8%B3%D8%A7%D8%AA-%D8%AE%D8%A7%D9%85.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DA%AF%D8%B1%D9%85%D8%A7%DB%8C-%D8%A7%D8%AD%D8%B3%D8%A7%D8%B3%D8%A7%D8%AA-%D8%AE%D8%A7%D9%85.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>مهم‌ترین کلمات</title>
+      <description>در یک شب تاریک و طوفانی، باران سنگینی می‌بارید که تمام دنیا را زیر چتر غم‌انگیز خود پنهان کرده بود. زمین از قطرات بی‌امان باران گل‌آلود شده بود و صدای برخورد قطرات باران به زمین، تنها…</description>
+      <pubDate>Thu, 30 Jul 2026 13:46:19 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D9%87%D9%85-%D8%AA%D8%B1%DB%8C%D9%86-%DA%A9%D9%84%D9%85%D8%A7%D8%AA.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D9%87%D9%85-%D8%AA%D8%B1%DB%8C%D9%86-%DA%A9%D9%84%D9%85%D8%A7%D8%AA.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>مرگ در فراموشی</title>
+      <description>نور کمرنگی از پنجره به داخل اتاق کوچک می‌تابید. صدای زمزمه‌هایی از دوردست به گوش می‌رسید، اما در اینجا، در این اتاق، تنها سکوت حکمفرما بود. مردی در گوشه‌ای از اتاق ایستاده بود، نگاهش به…</description>
+      <pubDate>Thu, 30 Jul 2026 12:53:36 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D8%B1%DA%AF-%D8%AF%D8%B1-%D9%81%D8%B1%D8%A7%D9%85%D9%88%D8%B4%DB%8C.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D8%B1%DA%AF-%D8%AF%D8%B1-%D9%81%D8%B1%D8%A7%D9%85%D9%88%D8%B4%DB%8C.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>مرد بی‌خدا</title>
+      <description>فضا سنگین بود و ترس در چهره‌های جمعیت موج می‌زد. نور کم‌رنگ اتاق، سایه‌های بلندی را روی دیوارها و چهره‌های افرادی که گرد هم آمده بودند، می‌انداخت. مردی که در مرکز ایستاده بود، با صدایی…</description>
+      <pubDate>Thu, 30 Jul 2026 12:52:08 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D8%B1%D8%AF-%D8%A8%DB%8C-%D8%AE%D8%AF%D8%A7.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D8%B1%D8%AF-%D8%A8%DB%8C-%D8%AE%D8%AF%D8%A7.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>تو قوانین رو می‌دونی</title>
+      <description>در شبی تاریک و توفانی، در دل جنگلی کهنه و متروک، خانه‌ای قدیمی و هولناک به چشم می‌خورد. درختان بلند و خمیده با شاخه‌های خشک و بی‌جان، همچون دست‌های مرگباری که در پی شکار چیزی هستند، این…</description>
+      <pubDate>Thu, 30 Jul 2026 12:48:29 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AA%D9%88-%D9%82%D9%88%D8%A7%D9%86%DB%8C%D9%86-%D8%B1%D9%88-%D9%85%DB%8C-%D8%AF%D9%88%D9%86%DB%8C.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AA%D9%88-%D9%82%D9%88%D8%A7%D9%86%DB%8C%D9%86-%D8%B1%D9%88-%D9%85%DB%8C-%D8%AF%D9%88%D9%86%DB%8C.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>خستگی</title>
+      <description>بر روی صندلی‌، خودش را انداخت و به محض اینکه کمی به نشستن عادت کرد سرش را به عقب هل داد و آهی از درونش به بیرون پرتاب کرد. در آن هوای سرد، بخار سفیدی از دهانش بیرون می‌آمد. گویا داشت روح…</description>
+      <pubDate>Thu, 30 Jul 2026 07:29:46 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%B3%D8%AA%DA%AF%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B2.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%B3%D8%AA%DA%AF%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B2.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>پادزهر</title>
+      <description>«اون چیه دستته؟» شالی با قدم‌هایی آرام به سمت جان برداشت. هانس همچنان مشغول تعویض لباسش بود تا سه نفری برای یک مهمانی رقص بروند. جان لیوان ویسکی خود را از روی میز برداشت و به رنگ زرد…</description>
+      <pubDate>Thu, 30 Jul 2026 07:29:46 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%BE%D8%A7%D8%AF%D8%B2%D9%87%D8%B1-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B4.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%BE%D8%A7%D8%AF%D8%B2%D9%87%D8%B1-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B4.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>۷ دقیقه</title>
+      <description>در حال کشیدن درختی بر روی بوم سفید خود بود. با قلم پهن خود رنگ‌های مختلف را بر روی پالت رنگ خود ترکیب می‌کرد. تا بتواند رنگ مطابق میل خود را در بیاورد. سپس بوم و قلم را بعد از مدت‌ها…</description>
+      <pubDate>Thu, 30 Jul 2026 07:29:46 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DB%B7-%D8%AF%D9%82%DB%8C%D9%82%D9%87-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B3.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DB%B7-%D8%AF%D9%82%DB%8C%D9%82%D9%87-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B3.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>خدا بودن</title>
+      <description>توی یه اتاق تاریک نشسته‌ای. فقط نور کمی از یه لامپ کوچیک روی میز پخش می‌شه، که به زور می‌شه جزئیات صورت کسی که روبروت نشسته رو ببینی. ولی از لحن صداش می‌فهمی که عصبانیه. دست‌هاش روی میز…</description>
+      <pubDate>Thu, 30 Jul 2026 00:23:43 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%AF%D8%A7-%D8%A8%D9%88%D8%AF%D9%86.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%AF%D8%A7-%D8%A8%D9%88%D8%AF%D9%86.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>ازدواج ثور</title>
+      <description>طبق افسانه‌های نروژی ما افسانه‌ای به نام Thor Wedding داریم. معمولا ما ثور رو زمانی که چکش، میولنیر، توی دستش داریم می‌بینیم. اما وقتی به این افسانه می‌رسیم می‌بینیم ثور تبدیل به عروس…</description>
+      <pubDate>Wed, 29 Jul 2026 23:52:48 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%D8%B2%D8%AF%D9%88%D8%A7%D8%AC-%D8%AB%D9%88%D8%B1-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%D8%B2%D8%AF%D9%88%D8%A7%D8%AC-%D8%AB%D9%88%D8%B1-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2.html</guid>
+      <category>افسانه نروث</category>
+    </item>
+    <item>
+      <title>افسانه Sleipnir</title>
+      <description>زمانی که درباره داستان Sleipnir می‌خونی. از طرفی هم تمام فیلم‌ها و سریال‌های مارول رو به یاد می‌یاری کلی این داستان آدم رو سوپرایز می‌کنه و بعد می‌فهمی که خیلی اوضاع فرق می‌کنه. حالا همه…</description>
+      <pubDate>Wed, 29 Jul 2026 23:47:21 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%D9%81%D8%B3%D8%A7%D9%86%D9%87-sleipnir-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%D9%81%D8%B3%D8%A7%D9%86%D9%87-sleipnir-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html</guid>
+      <category>افسانه نروث</category>
+    </item>
+    <item>
+      <title>اختلال عدن</title>
+      <description>«چه روز قشنگیه، نه؟ آره، می‌دونم. شاید گفتن این که روز قشنگیه یه کم تکراری باشه. هر روز از روز قبل قشنگ‌تر به نظر میاد. اما شاید این به این معنی باشه که دیروز اصلاً قشنگ نبوده و فقط چون…</description>
+      <pubDate>Wed, 29 Jul 2026 23:36:27 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%D8%AE%D8%AA%D9%84%D8%A7%D9%84-%D8%B9%D8%AF%D9%86.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%D8%AE%D8%AA%D9%84%D8%A7%D9%84-%D8%B9%D8%AF%D9%86.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>یک سوم مسیر</title>
+      <description>اگر الان بخوام درباره حالم صحبت کنم، باید یکم بیشتر از عبارت &quot;خوبم&quot; جواب بدم. در حقیقت کمتر از یک ماه دیگه، ۲۴ خردادماه ، من وارد ۲۴ سالگی می‌شم. ممکنه اتفاق خوشی باشه. اما من می‌ترسم.…</description>
+      <pubDate>Wed, 29 Jul 2026 23:21:03 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DB%8C%DA%A9-%D8%B3%D9%88%D9%85-%D9%85%D8%B3%DB%8C%D8%B1.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DB%8C%DA%A9-%D8%B3%D9%88%D9%85-%D9%85%D8%B3%DB%8C%D8%B1.html</guid>
+      <category>دل‌نوشته</category>
+    </item>
+    <item>
+      <title>ارزش آدمی</title>
+      <description>«بنظرت آدمیزاد به چه چیزی بیشتر از بقیه چیزها ارزش می‌ده؟... خب... تو چه فکر می‌کنی؟ اگر یه مرد یا یه زنی این انتخاب رو داشت که یه استعدادی رو برای خودش انتخاب کنه. چه استعدادی بهترین…</description>
+      <pubDate>Wed, 29 Jul 2026 22:32:27 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%D8%B1%D8%B2%D8%B4-%D8%A2%D8%AF%D9%85%DB%8C.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%D8%B1%D8%B2%D8%B4-%D8%A2%D8%AF%D9%85%DB%8C.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>لباس ارغوانی</title>
+      <description>زنی با بدنی زیبا در حالی که ران‌های پایش از تمیزی نور مهتاب را بازتاب می‌کرد از سمت دیگر پالتویی از جنس خز قرمز تیره‌ای بر روی دوشش انداخته بود. مشخص بود که سرما او را اذیت می‌کرد، اما…</description>
+      <pubDate>Wed, 29 Jul 2026 22:25:27 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%84%D8%A8%D8%A7%D8%B3-%D8%A7%D8%B1%D8%BA%D9%88%D8%A7%D9%86%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B1.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%84%D8%A8%D8%A7%D8%B3-%D8%A7%D8%B1%D8%BA%D9%88%D8%A7%D9%86%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B1.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>چمدان</title>
+      <description>هانس در حال جمع کردن چمدانش بود و آماده می‌شد با ایمی به سفر برود. جان با کمی سر خوشی به سمت میز ناهار خوری رفت و بر روی میز نشست و آماده شدن هانس را مشاهده می‌کرد. هانس با دقت و نظم سعی…</description>
+      <pubDate>Wed, 29 Jul 2026 22:15:37 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DA%86%D9%85%D8%AF%D8%A7%D9%86-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B0.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DA%86%D9%85%D8%AF%D8%A7%D9%86-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1%DB%B0.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>زندگی</title>
+      <description>جان عزیز سلام؛ مدتی هست که از آخرین دیدارمون می‌گذره. امیدوارم که ناراحتی‌ای که بینمون ایجاد شد رو فراموش کرده باشی. به هر حال احساسات گذشته تنها در گذشته جای دارن. خواستم بهت اطلاع بدم…</description>
+      <pubDate>Wed, 29 Jul 2026 22:11:14 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%B2%D9%86%D8%AF%DA%AF%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B9.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%B2%D9%86%D8%AF%DA%AF%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B9.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>ایمی</title>
+      <description>هانس در حالی که خودش را با دستمالی خشک می‌کرد بی‌صبرانه منتظر جان بود. مدام منو را نگاه می‌کرد. بار هشتمی بود که آن را می‌خواند. بار دیگر تمام صندلی و بشقاب و صندلی‌ها را مرتب کرد.…</description>
+      <pubDate>Wed, 29 Jul 2026 22:08:20 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%DB%8C%D9%85%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B8.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A7%DB%8C%D9%85%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B8.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>بچه زامبی</title>
+      <description>در یک روستای کوچکی، پسر بچه‌ای به دنیا می‌آید. بچه صورت رنگ و رو رفته و چشمانی بزرگ داشت. هر چه او بزرگ‌تر می‌شد مادر بیشتر متوجه می‌شد. پسر بچه هیچ احساساتی نداشت. او یک زامبی با…</description>
+      <pubDate>Wed, 29 Jul 2026 21:57:28 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A8%DA%86%D9%87-%D8%B2%D8%A7%D9%85%D8%A8%DB%8C.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A8%DA%86%D9%87-%D8%B2%D8%A7%D9%85%D8%A8%DB%8C.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>برادر</title>
+      <description>+ اوه برادر... بالاخره خوش آمدی. فکر کنم بالاخره چیزی که ازت خواسته بودم رو برام آوردی. البته باید اعتراف کنم... یکم زودتر از چیزی که فکر می‌کردم برگشتی. - به نام والدینمون... من دیگه…</description>
+      <pubDate>Wed, 29 Jul 2026 21:56:50 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A8%D8%B1%D8%A7%D8%AF%D8%B1.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A8%D8%B1%D8%A7%D8%AF%D8%B1.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>منافع</title>
+      <description>هانس در کنار جان را در حالی که با گل رز سفیدی که کاشته بود حرف می‌زد ایستاده بود. محو جان بود. اینکه چگونه جلوی گیاهی که شاید به حتی سر زانوی او نمی‌رسد زانو زده و از اون چنین مراقبت…</description>
+      <pubDate>Wed, 29 Jul 2026 21:55:15 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D9%86%D8%A7%D9%81%D8%B9-%D9%82%D8%B3%D9%85%D8%AA-%DB%B7.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D9%86%D8%A7%D9%81%D8%B9-%D9%82%D8%B3%D9%85%D8%AA-%DB%B7.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>تراژدی</title>
+      <description>- هانس می‌دونی تراژدی واقعی چیه؟ + چیه؟ مرگ‌های دسته جمعی؟ - نه... پیپش را از جیبش بیرون می‌کشد و شروع به روشن کردنش می‌کند. ... تراژدی زمانی هست که یک زن مردی را بیشتر از آنچه که او…</description>
+      <pubDate>Wed, 29 Jul 2026 21:53:23 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AA%D8%B1%D8%A7%DA%98%D8%AF%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B6.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AA%D8%B1%D8%A7%DA%98%D8%AF%DB%8C-%D9%82%D8%B3%D9%85%D8%AA-%DB%B6.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>نفرین</title>
+      <description>هانس و جان در یکی از عصرهای شهر بوردو فرانسه میان ساختمان‌های کوتاه و بلند که مردم شهر را احاطه کرده قدم می‌زدند. نسیم خنک پاییزی شهر بر صورت مردم بوسه می‌زد. ناگهان هانس شروع به قهقه…</description>
+      <pubDate>Wed, 29 Jul 2026 21:52:26 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%86%D9%81%D8%B1%DB%8C%D9%86-%D9%82%D8%B3%D9%85%D8%AA-%DB%B5.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%86%D9%81%D8%B1%DB%8C%D9%86-%D9%82%D8%B3%D9%85%D8%AA-%DB%B5.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>تقسیم وظایف</title>
+      <description>- هانس حس می‌کنم که باید کمی هوا بخوری... متاسفم که دختره اینطوری ولت کرد. اما می‌دونی من بیشتر تاسف می‌خورم وقتی توی این حال می‌بینمت. شب و روزت شده که مثل یک ربات بری سرکار یک لبخند…</description>
+      <pubDate>Wed, 29 Jul 2026 21:51:08 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AA%D9%82%D8%B3%DB%8C%D9%85-%D9%88%D8%B8%D8%A7%DB%8C%D9%81-%D9%82%D8%B3%D9%85%D8%AA-%DB%B4.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AA%D9%82%D8%B3%DB%8C%D9%85-%D9%88%D8%B8%D8%A7%DB%8C%D9%81-%D9%82%D8%B3%D9%85%D8%AA-%DB%B4.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>شیرینی تلخ</title>
+      <description>+ جان... جان مانند دزدی که پلیس او را گرفته است یک لحظه ثابت ایستاد و آرام در حالی لپ‌هایی پر از شیرینی و کمی خامه در گوشه لبش جا مانده بود به سمت هانس چرخید. لبخندی آرومی زد و یک صدای…</description>
+      <pubDate>Wed, 29 Jul 2026 21:39:28 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%B4%DB%8C%D8%B1%DB%8C%D9%86%DB%8C-%D8%AA%D9%84%D8%AE-%D9%82%D8%B3%D9%85%D8%AA-%DB%B3.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%B4%DB%8C%D8%B1%DB%8C%D9%86%DB%8C-%D8%AA%D9%84%D8%AE-%D9%82%D8%B3%D9%85%D8%AA-%DB%B3.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>خاطرات</title>
+      <description>- هانس چه سوالی ذهنت رو انقدر درگیر کرده؟ + دارم به این فکر می‌کنم که چرا انقدر علاقه داری وقایعی که رخ داده رو نقاشی کنی و حتی اگر فرصت بهت اجازه بده ازشون عکس بگیری؟ - سادس... ریشه این…</description>
+      <pubDate>Wed, 29 Jul 2026 21:35:56 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%A7%D8%B7%D8%B1%D8%A7%D8%AA-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%A7%D8%B7%D8%B1%D8%A7%D8%AA-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>غم</title>
+      <description>- آقای هانس، می‌دونی وقتی احساساتی مثل غم رو خفه کنی چی می‌شه؟ + نمی‌دونم، باعث می‌شه افسرده بشی؟ - حدس خوبی بود. اما وقتی غم روی هم تلبار بشه و سعی هم نشه به بیرون ریخته بشه در فرم‌های…</description>
+      <pubDate>Wed, 29 Jul 2026 21:34:15 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%BA%D9%85-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%BA%D9%85-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html</guid>
+      <category>هانس و جان</category>
+    </item>
+    <item>
+      <title>شنل قرمزی</title>
+      <description>گرگ به مادربزرگ گفت: «یا مرا دوست بدار، یا تو را می‌خورم.» مادربزرگ روی صندلی چوبی کنار بخاری نشسته بود. عینکش را کمی بالا برد و با دقت به او نگاه کرد. گرگ سعی داشت ترسناک به نظر برسد.…</description>
+      <pubDate>Wed, 29 Jul 2026 21:00:41 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%B4%D9%86%D9%84-%D9%82%D8%B1%D9%85%D8%B2%DB%8C.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%B4%D9%86%D9%84-%D9%82%D8%B1%D9%85%D8%B2%DB%8C.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>کلبه آتش زده</title>
+      <description>در حالی در دستش اسلحه بود و چشمانش از شدت خشم و ناراحتی قرمز شده بود به الکساندر خیره شده بود. می‌شد غضب را که از رگ‌های صورتش رد می‌شدن را دید. صورتش به واسطه خیسی اشک‌هایش قرمزتر بنظر…</description>
+      <pubDate>Wed, 29 Jul 2026 20:28:50 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%DA%A9%D9%84%D8%A8%D9%87-%D8%A2%D8%AA%D8%B4-%D8%B2%D8%AF%D9%87.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%DA%A9%D9%84%D8%A8%D9%87-%D8%A2%D8%AA%D8%B4-%D8%B2%D8%AF%D9%87.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>مقاومت</title>
+      <description>«شماها خیلی سر سختید... و من کم کم دیگه داره حالم بهم می‌خوره ازتون. به طوری که کم کم من دارم صبر و تحملم رو دارم از دست می‌دم. شماها همیشه درباره انتقام‌گیری از والدینتون یا بچه‌هاتون…</description>
+      <pubDate>Wed, 29 Jul 2026 20:28:00 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D9%82%D8%A7%D9%88%D9%85%D8%AA.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%85%D9%82%D8%A7%D9%88%D9%85%D8%AA.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>خانه</title>
+      <description>«می‌دونی... من زمانی احساسات داشتم. زمانی بود که می‌تونستم بدون هیچ دلیلی بخندم. می‌تونستم تنها روی شن‌های بیابان بشینم و چشمانم رو ببندم و از لحظه‌ای که درش قرار دارم لذت ببرم. اما یک…</description>
+      <pubDate>Wed, 29 Jul 2026 20:26:04 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%A7%D9%86%D9%87.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AE%D8%A7%D9%86%D9%87.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>پل لندن</title>
+      <description>سال‌های جنگ جهانی بود. آتش، آرام و بی‌رحم، ذره‌ذره شهر را می‌بلعید؛ گویی می‌دانست دیگر چیزی برای نجات باقی نمانده است. صدای شیون‌ها خاموش شده بود. دیگر کسی زنده نبود که برای مردگانش گریه…</description>
+      <pubDate>Wed, 29 Jul 2026 20:24:48 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D9%BE%D9%84-%D9%84%D9%86%D8%AF%D9%86.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D9%BE%D9%84-%D9%84%D9%86%D8%AF%D9%86.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>آب</title>
+      <description>آب عجیب‌ترین موجود در این کره خاکی هستش. یک ماده بی‌رنگ، بدون هیچ طعمی اما بسیار کشنده. می‌تواند با خون سردی هر چه تمام‌تر هر کسی را به آغوش مرگ بکشد. ماده‌ای که هم حیات می‌بخشد و هم…</description>
+      <pubDate>Wed, 29 Jul 2026 20:23:47 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%A2%D8%A8.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%A2%D8%A8.html</guid>
+      <category>داستان کوتاه</category>
+    </item>
+    <item>
+      <title>درون باطل</title>
+      <description>پدرش دستمال سفید را روی میز انداخت و بدون آن‌که نگاه دیگری به جان بیندازد، با خشمی سرد از جایش بلند شد. صندلی سنگین با صدایی خشن روی کف‌پوش مرمر کشیده شد و چند سر در سالن برگشتند. سکوتی…</description>
+      <pubDate>Wed, 29 Jul 2026 20:05:34 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B8.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B8.html</guid>
+      <category>درون باطل</category>
+    </item>
+    <item>
+      <title>درون باطل</title>
+      <description>پدرش دستمال سفید را روی میز انداخت و بدون آن‌که نگاه دیگری به جان بیندازد، با خشمی سرد از جایش بلند شد. صندلی سنگین با صدایی خشن روی کف‌پوش مرمر کشیده شد و چند سر در سالن برگشتند. سکوتی…</description>
+      <pubDate>Wed, 29 Jul 2026 20:04:38 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B7.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B7.html</guid>
+      <category>درون باطل</category>
+    </item>
+    <item>
+      <title>درون باطل</title>
+      <description>پدرش دستمال سفید را روی میز انداخت و بدون آن‌که نگاه دیگری به جان بیندازد، با خشمی سرد از جایش بلند شد. صندلی سنگین با صدایی خشن روی کف‌پوش مرمر کشیده شد و چند سر در سالن برگشتند. سکوتی…</description>
+      <pubDate>Wed, 29 Jul 2026 19:36:27 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B6.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B6.html</guid>
+      <category>درون باطل</category>
+    </item>
+    <item>
+      <title>درون باطل</title>
+      <description>جان رو به روی هتل ایستاده بود. هتل دو کریون در قلب پاریس، در میدان کنکورد قرار داشت؛ ساختمانی با شکوه از قرن هجدهم با نمای کلاسیک فرانسوی – ستون‌های عظیم سنگی و بالکن‌هایی با نرده‌های…</description>
+      <pubDate>Wed, 29 Jul 2026 18:56:00 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B5.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B5.html</guid>
+      <category>درون باطل</category>
+    </item>
+    <item>
+      <title>درون باطل</title>
+      <description>جان هنوز گردنبند را در دست داشت که صدای شارلوت، مثل نسیمی بازیگوش، در فضا پیچید:«خب، برات یه سورپرایز دیگه هم دارم. آماده‌ای؟» پیش از آنکه جان بتواند چیزی بپرسد، صدای کوبیدن شادی‌آمیز…</description>
+      <pubDate>Wed, 29 Jul 2026 18:49:37 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B4.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B4.html</guid>
+      <category>درون باطل</category>
+    </item>
+    <item>
+      <title>درون باطل</title>
+      <description>ساعت، دقیقاً رأس ۶:۳۰ صبح به صدا درآمد. جان پلک‌های نیمه‌سنگینش را باز نکرد. انگار چیزی از درون، او را با خشونت نامرئی‌ای به بستر چسبانده بود. جابه‌جا نمی‌شد. حتی نمی‌دانست خواب بوده یا…</description>
+      <pubDate>Wed, 29 Jul 2026 18:09:54 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B3.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B3.html</guid>
+      <category>درون باطل</category>
+    </item>
+    <item>
+      <title>سیاه و قلم</title>
+      <description>همچنان آن سایه‌ی سیاه به جان نگاه می‌کرد؛ نگاهی نه از روی دیدار، بلکه گویی به دنبال بیرون کشیدن چیزی از درون او بود انگار منتظر بود روح جان به شکل اعترافی بی‌صدا خودش را تسلیم کند. جان…</description>
+      <pubDate>Wed, 29 Jul 2026 13:43:51 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B2.html</guid>
+      <category>درون باطل</category>
+    </item>
+    <item>
+      <title>درون باطل</title>
+      <description>جان با اضطراب راهی دیدار پدری می‌شود که هم نجات‌دهندهٔ او بوده و هم سرچشمهٔ رنجش؛ دیداری سرد در ایستگاه راه‌آهن که گذشته‌ای رازآلود را زنده می‌کند.</description>
+      <pubDate>Wed, 29 Jul 2026 13:39:47 GMT</pubDate>
+      <link>https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html</link>
+      <guid isPermaLink="true">https://soheil-aghayani.github.io/Coffpen/posts/%D8%AF%D8%B1%D9%88%D9%86-%D8%A8%D8%A7%D8%B7%D9%84-%D9%82%D8%B3%D9%85%D8%AA-%DB%B1.html</guid>
+      <category>درون باطل</category>
+    </item>
   </channel>
 </rss>

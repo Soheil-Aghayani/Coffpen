@@ -10,6 +10,7 @@ const siteUrl = 'https://soheil-aghayani.github.io/Coffpen';
 const sitemapFile = path.join(root, 'sitemap.xml');
 const archiveFile = path.join(root, 'archive.html');
 const seriesFile = path.join(root, 'series.html');
+const feedFile = path.join(root, 'feed.xml');
 
 function loadExistingDates() {
     if (!fs.existsSync(outputFile)) return new Map();
@@ -611,10 +612,46 @@ function renderSeriesPage(list) {
         '    <footer class="series-footer">کاف‌پن (Coffpen) — مجموعه‌های داستانی فارسیِ سهیل آقایانی.</footer></div>\n</body>\n</html>\n';
 }
 
+function renderFeedXml(list) {
+    const visiblePosts = list.filter(post => !post.empty);
+    const lastBuildDate = visiblePosts[0] ? new Date(visiblePosts[0].date).toUTCString() : new Date(0).toUTCString();
+    const items = visiblePosts.map(post => {
+        const canonical = absolutePostUrl(post);
+        const pubDate = new Date(post.date).toUTCString();
+        return [
+            '    <item>',
+            '      <title>' + escapeXml(post.title) + '</title>',
+            '      <description>' + escapeXml(post.description) + '</description>',
+            '      <pubDate>' + escapeXml(pubDate) + '</pubDate>',
+            '      <link>' + escapeXml(canonical) + '</link>',
+            '      <guid isPermaLink="true">' + escapeXml(canonical) + '</guid>',
+            '      <category>' + escapeXml(postSection(post)) + '</category>',
+            '    </item>'
+        ].join('\n');
+    }).join('\n');
+    return [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
+        '  <channel>',
+        '    <title>کاف‌پن (Coffpen) | سیاه و قلم</title>',
+        '    <description>وبلاگ مستقل سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.</description>',
+        '    <link>' + escapeXml(siteUrl + '/') + '</link>',
+        '    <atom:link href="' + escapeXml(siteUrl + '/feed.xml') + '" rel="self" type="application/rss+xml"/>',
+        '    <language>fa-IR</language>',
+        '    <lastBuildDate>' + escapeXml(lastBuildDate) + '</lastBuildDate>',
+        '    <generator>Coffpen sync-posts.js</generator>',
+        items,
+        '  </channel>',
+        '</rss>',
+        ''
+    ].filter(Boolean).join('\n');
+}
+
 syncGeneratedPostSeo(posts);
 
 fs.writeFileSync(archiveFile, renderArchivePage(posts), 'utf8');
 fs.writeFileSync(seriesFile, renderSeriesPage(posts), 'utf8');
+fs.writeFileSync(feedFile, renderFeedXml(posts), 'utf8');
 
 const indexFile = path.join(root, 'index.html');
 if (fs.existsSync(indexFile)) {
