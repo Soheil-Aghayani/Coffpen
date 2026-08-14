@@ -21,6 +21,7 @@
 - نشانگرهای تولیدشدهٔ صفحهٔ اصلی را دست‌نخورده نگه دار:
   - `Coffpen:inline-style:start` / `Coffpen:inline-style:end`
   - `Coffpen:series-hub:start` / `Coffpen:series-hub:end`
+- `llms.txt` خلاصهٔ machine-readable هویت، نویسنده و مسیرهای اصلی محتوای سایت است؛ لینک‌های آن را با URLهای canonical همگام نگه دار و آن را با `git add .` ناخواسته جایگزین نکن.
 - اگر نوشته‌ای در پنل ساخته شد ولی در سایت دیده نشد، ابتدا فایل واقعی آن را در `posts/` بررسی کن، سپس sync را اجرا کن؛ مشکل را با ویرایش دستی `posts-data` پنهان نکن.
 
 ## روند امن انتشار
