@@ -360,6 +360,7 @@ function renderIndexStructuredData(list) {
             'jobTitle': 'نویسنده و توسعه‌دهنده وب',
             'sameAs': [
                 'https://github.com/soheil-aghayani',
+                'https://github.com/Soheil-Aghayani/Coffpen',
                 'https://soheil-aghayani.github.io/Portfolio/'
             ]
         },
