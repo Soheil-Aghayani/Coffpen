@@ -18,8 +18,8 @@ if (notificationSettings.enabled && notificationSettings.firebaseConfig) {
         const title = data.title || 'خبر تازه‌ای در سیاه و قلم';
         const options = {
             body: data.body || 'یک داستان تازه منتشر شده است.',
-            icon: data.icon || './assets/images/favicon.png',
-            badge: data.badge || './assets/images/favicon.png',
+            icon: data.icon || './assets/images/favicon.webp',
+            badge: data.badge || './assets/images/favicon.webp',
             tag: data.tag || 'coffpen-new-story',
             renotify: true,
             data: {

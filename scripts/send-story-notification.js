@@ -153,8 +153,8 @@ async function sendToSubscription(projectId, accessToken, subscription, story) {
                     title: story.notificationTitle,
                     body: story.body,
                     url: story.url,
-                    icon: new URL('assets/images/favicon.png', SITE_URL).href,
-                    badge: new URL('assets/images/favicon.png', SITE_URL).href,
+                    icon: new URL('assets/images/favicon.webp', SITE_URL).href,
+                    badge: new URL('assets/images/favicon.webp', SITE_URL).href,
                     tag: 'coffpen-story-' + Buffer.from(story.url).toString('base64url').slice(-24)
                 },
                 webpush: {

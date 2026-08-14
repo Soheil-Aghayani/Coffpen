@@ -1115,7 +1115,7 @@ function initPostRegistry() {
         return '<article class="blackthemePostBox post-preview' + contentTypeClass + '"' + seriesAttribute + tagsAttribute + '>' +
             '<div class="blackthemePostInfo">' +
                 '<div class="blackthemePostInfoMain">' +
-                    '<div class="blackthemePostInfoImg"><img src="assets/images/author-avatar.jpg" alt="' + escapeHtml(post.author) +
+                    '<div class="blackthemePostInfoImg"><img src="assets/images/author-avatar.webp" alt="' + escapeHtml(post.author) +
                         '" class="author-avatar-img" loading="lazy" decoding="async"></div>' +
                     '<div class="blackthemePostInfoContent">' +
                         '<div class="post-title-row">' +
@@ -1377,7 +1377,15 @@ function initSeriesHub() {
         return;
     }
 
-    list.innerHTML = seriesUpdates.map(function (update) {
+    function getSeriesCoverThumb(source) {
+        if (!source || typeof source !== 'string') return source;
+        const marker = 'assets/images/';
+        if (source.indexOf(marker) !== 0) return source;
+        return marker + 'thumbs/' + source.slice(marker.length);
+    }
+
+    function renderSeriesCards() {
+        return seriesUpdates.map(function (update, updateIndex) {
         const latest = update.latest;
         const episodeNumber = Number(latest.episode || update.posts.length).toLocaleString('fa-IR');
         const episodeProgress = update.posts.map(getPostReadingProgress);
@@ -1386,8 +1394,14 @@ function initSeriesHub() {
         })
             ? 'read'
             : (episodeProgress.some(function (progress) { return progress > 0; }) ? 'started' : 'unread');
+        // Two cards are visible on a phone at first paint; keep only those
+        // eager so a long library still lazy-loads the rest of its covers.
+        const coverLoading = updateIndex < 2 ? 'eager' : 'lazy';
+        const coverPriority = updateIndex < 2 ? 'high' : 'low';
         const coverMarkup = update.cover && update.cover.image
-            ? '<img src="' + escapeHtml(update.cover.image) + '" alt="" loading="lazy" decoding="async">'
+            ? '<img src="' + escapeHtml(getSeriesCoverThumb(update.cover.image)) + '" data-fallback-src="' + escapeHtml(update.cover.image) +
+                '" alt="" width="360" height="450" loading="' + coverLoading + '" decoding="' + (coverLoading === 'eager' ? 'sync' : 'async') + '" fetchpriority="' + coverPriority +
+                '" onerror="this.onerror=null;this.src=this.dataset.fallbackSrc">'
             : '<span class="series-update-cover-fallback" aria-hidden="true">' + readerIcon('layers') + '</span>';
         return '<a class="series-hub-card" href="index.html?series=' + encodeURIComponent(update.name) + '#latest-posts-heading">' +
             '<span class="series-update-cover">' + coverMarkup +
@@ -1397,7 +1411,31 @@ function initSeriesHub() {
                 '<span class="series-update-badge">قسمت جدید ' + episodeNumber + '</span>' +
             '</span>' +
         '</a>';
-    }).join('');
+        }).join('');
+    }
+
+    // sync-posts.js places the first series cards directly in index.html so
+    // the browser can paint the LCP image immediately. Keep those cards and
+    // only add per-device reading state after the first paint; rebuild only
+    // when the page has no static cards (for example an older cached build).
+    const staticCards = list.querySelectorAll('.series-hub-card');
+    if (!staticCards.length) {
+        list.innerHTML = renderSeriesCards();
+    } else {
+        seriesUpdates.forEach(function (update, updateIndex) {
+            const card = staticCards[updateIndex];
+            if (!card) return;
+            const cover = card.querySelector('.series-update-cover');
+            if (!cover || cover.querySelector('.series-read-state')) return;
+            const episodeProgress = update.posts.map(getPostReadingProgress);
+            const playlistReadingState = episodeProgress.length && episodeProgress.every(function (progress) {
+                return progress >= 0.9;
+            })
+                ? 'read'
+                : (episodeProgress.some(function (progress) { return progress > 0; }) ? 'started' : 'unread');
+            cover.insertAdjacentHTML('beforeend', readingStateMarkup(playlistReadingState, 'series-read-state'));
+        });
+    }
     hub.hidden = false;
 
     const carouselControls = hub.querySelector('.series-carousel-controls');
@@ -2354,15 +2392,28 @@ function writeReaderStorage(key, value) {
 function initializeCoffpenPage() {
     initTheme();
     initSidebar();
-    initPaperboyNotifications();
     initContextMenu();
-    initPostRegistry();
-    initSeriesHub();
-    initLiveHero();
-    initSeriesFilter();
-    initStoryHero();
-    initStoryPlaylist();
-    initLongformReader();
+    const isHomePage = Boolean(document.getElementById('postList'));
+    const initializeContent = function () {
+        initPaperboyNotifications();
+        initPostRegistry();
+        initSeriesHub();
+        initLiveHero();
+        initSeriesFilter();
+        initStoryHero();
+        initStoryPlaylist();
+        initLongformReader();
+    };
+
+    if (isHomePage && typeof window.requestIdleCallback === 'function') {
+        // Let the static hero and series cards paint before hydrating the
+        // searchable library and notification UI on the home page.
+        window.requestIdleCallback(initializeContent, { timeout: 900 });
+    } else if (isHomePage) {
+        window.setTimeout(initializeContent, 0);
+    } else {
+        initializeContent();
+    }
     window.setTimeout(function () {
         window.requestAnimationFrame(function () {
             document.documentElement.classList.add('page-ready');

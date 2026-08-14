@@ -3,6 +3,31 @@
    Includes 6 Curated Themes, Glassmorphic Share Modal & Icon-Only Minimal Row
    ========================================================================== */
 
+/* Self-hosted Vazirmatn keeps Persian text visually consistent without the
+   render-blocking round trip to Google Fonts. The downloaded files are the
+   same variable font used by the previous stylesheet link. */
+@font-face {
+    font-family: "Vazirmatn";
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url("../fonts/vazirmatn-arabic.woff2") format("woff2");
+    unicode-range: U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891,
+        U+0897-08E1, U+08E3-08FF, U+200C-200E, U+2010-2011, U+204F,
+        U+2E41, U+FB50-FDFF, U+FE70-FEFC;
+}
+
+@font-face {
+    font-family: "Vazirmatn";
+    font-style: normal;
+    font-weight: 300 700;
+    font-display: swap;
+    src: url("../fonts/vazirmatn-latin.woff2") format("woff2");
+    unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6,
+        U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+        U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
 /* Theme 1: Dark (Midnight Charcoal) */
 :root, [data-theme="dark"] {
     --bg-body: #0f1013;
@@ -148,19 +173,12 @@ body {
     background-color: var(--bg-body);
     direction: rtl;
     color: var(--text-main);
-    opacity: 0;
     transition: background-color 0.3s ease, color 0.3s ease;
-    animation: coffpenFallbackReveal 0s 2.5s forwards;
 }
 
 html.page-ready body {
     opacity: 1;
-    animation: none;
     transition: opacity 0.16s ease, background-color 0.3s ease, color 0.3s ease;
-}
-
-@keyframes coffpenFallbackReveal {
-    to { opacity: 1; }
 }
 
 a {
@@ -310,7 +328,8 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     z-index: -1;
     opacity: 0.18;
     pointer-events: none;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 180 180' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.82' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.55'/%3E%3C/svg%3E");
+    background-image: radial-gradient(rgba(255, 255, 255, 0.34) 0.75px, transparent 0.75px);
+    background-size: 5px 5px;
     mix-blend-mode: soft-light;
 }
 
@@ -1267,6 +1286,10 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     border-radius: 16px;
     background: color-mix(in srgb, var(--bg-card) 92%, transparent);
     box-shadow: var(--shadow-box);
+}
+
+html.series-view #seriesHub[hidden] {
+    display: none;
 }
 
 .post-quick-filters {
