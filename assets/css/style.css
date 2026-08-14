@@ -859,6 +859,71 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     box-shadow: var(--shadow-box);
 }
 
+.seo-discovery {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+    align-items: center;
+    gap: 20px 28px;
+    margin: 0 0 46px;
+    padding: clamp(16px, 3vw, 24px);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    background: color-mix(in srgb, var(--bg-box) 92%, var(--text-accent));
+}
+
+.seo-discovery-heading h2 {
+    margin: 2px 0 8px;
+    font-size: 1.2em;
+}
+
+.seo-discovery-heading > p:last-child {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 8pt;
+    line-height: 1.9;
+}
+
+.seo-discovery-links {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+}
+
+.seo-discovery-links a {
+    display: flex;
+    min-width: 0;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 12px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 11px;
+    background: var(--bg-card);
+    color: var(--text-main);
+    text-decoration: none;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.seo-discovery-links a:hover {
+    border-color: var(--text-accent);
+    color: var(--text-main) !important;
+    transform: translateY(-1px);
+}
+
+.seo-discovery-links strong {
+    overflow: hidden;
+    font-size: 8.25pt;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.seo-discovery-links span {
+    overflow: hidden;
+    color: var(--text-muted);
+    font-size: 7pt;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .series-hub-heading {
     display: flex;
     align-items: center;
@@ -1211,6 +1276,11 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 }
 
 @media screen and (max-width: 700px) {
+    .seo-discovery {
+        grid-template-columns: 1fr;
+        gap: 14px;
+    }
+
     .series-hub-list {
         grid-auto-columns: calc((100% - 10px) / 2);
         gap: 10px;
@@ -1226,6 +1296,16 @@ nav ul li a:hover, .theme-toggle-btn:hover {
         margin-bottom: 28px;
         padding: 14px;
         border-radius: 16px;
+    }
+
+    .seo-discovery {
+        margin-bottom: 28px;
+        padding: 14px;
+        border-radius: 16px;
+    }
+
+    .seo-discovery-links {
+        grid-template-columns: 1fr;
     }
 
     .series-hub-heading {

@@ -234,6 +234,172 @@ function renderStaticSeriesHub(updates) {
     }).join('');
 }
 
+function jsonForHtml(value) {
+    return JSON.stringify(value)
+        .replace(/</g, '\\u003c')
+        .replace(/>/g, '\\u003e')
+        .replace(/&/g, '\\u0026');
+}
+
+function absolutePostUrl(post) {
+    return siteUrl + '/' + post.url;
+}
+
+function postSection(post) {
+    return post.contentType === 'note' ? 'دل‌نوشته' : (post.series || 'داستان کوتاه');
+}
+
+function renderPostSeo(post) {
+    const canonical = absolutePostUrl(post);
+    const image = post.image
+        ? (/^(?:https?:|data:)/i.test(post.image) ? post.image : siteUrl + '/' + post.image)
+        : siteUrl + '/assets/images/social-preview.jpg';
+    const section = postSection(post);
+    const keywords = post.tags.length ? post.tags : [section, 'کاف‌پن', 'Coffpen', 'سیاه و قلم'];
+    const graph = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'Article',
+                '@id': canonical + '#article',
+                'headline': post.title,
+                'description': post.description,
+                'url': canonical,
+                'inLanguage': 'fa-IR',
+                'isPartOf': { '@id': siteUrl + '/#website' },
+                'mainEntityOfPage': { '@type': 'WebPage', '@id': canonical },
+                'author': {
+                    '@type': 'Person',
+                    '@id': siteUrl + '/about.html#author',
+                    'name': 'سهیل آقایانی'
+                },
+                'publisher': {
+                    '@type': 'Person',
+                    '@id': siteUrl + '/about.html#author',
+                    'name': 'سهیل آقایانی'
+                },
+                'datePublished': post.date,
+                'image': [image],
+                'articleSection': section,
+                'keywords': keywords.join(', '),
+                ...(post.wordCount ? { wordCount: post.wordCount } : {})
+            },
+            {
+                '@type': 'BreadcrumbList',
+                '@id': canonical + '#breadcrumb',
+                'itemListElement': [
+                    { '@type': 'ListItem', position: 1, name: 'کاف‌پن', item: siteUrl + '/' },
+                    { '@type': 'ListItem', position: 2, name: post.title, item: canonical }
+                ]
+            }
+        ]
+    };
+    const tagMeta = keywords.map(tag =>
+        '    <meta property="article:tag" content="' + escapeHtml(tag) + '">'
+    ).join('\n');
+    return [
+        '<!-- Coffpen:post-seo:start -->',
+        '    <meta name="robots" content="index,follow,max-image-preview:large">',
+        '    <meta name="googlebot" content="index,follow,max-image-preview:large">',
+        '    <meta name="author" content="سهیل آقایانی">',
+        '    <meta property="article:published_time" content="' + escapeHtml(post.date) + '">',
+        '    <meta property="article:section" content="' + escapeHtml(section) + '">',
+        tagMeta,
+        '    <script type="application/ld+json">' + jsonForHtml(graph) + '</script>',
+        '<!-- Coffpen:post-seo:end -->'
+    ].filter(Boolean).join('\n');
+}
+
+function syncGeneratedPostSeo(list) {
+    list.forEach(post => {
+        const file = path.join(postsDirectory, post.filename);
+        const source = fs.readFileSync(file, 'utf8');
+        const block = renderPostSeo(post);
+        const marker = /<!-- Coffpen:post-seo:start -->[\s\S]*?<!-- Coffpen:post-seo:end -->/;
+        const updated = marker.test(source)
+            ? source.replace(marker, block)
+            : source.replace(/<\/head>/i, block + '\n</head>');
+        if (updated !== source) fs.writeFileSync(file, updated, 'utf8');
+    });
+}
+
+function renderIndexStructuredData(list) {
+    const visiblePosts = list.filter(post => !post.empty).slice(0, 12);
+    const personId = siteUrl + '/about.html#author';
+    const graph = [
+        {
+            '@type': 'WebSite',
+            '@id': siteUrl + '/#website',
+            'url': siteUrl + '/',
+            'name': 'کاف‌پن (Coffpen) | سیاه و قلم',
+            'alternateName': ['کافپن', 'کاف پن', 'Coffpen', 'سیاه و قلم'],
+            'description': 'وبلاگ شخصی سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.',
+            'inLanguage': 'fa-IR',
+            'publisher': { '@id': personId }
+        },
+        {
+            '@type': 'Person',
+            '@id': personId,
+            'name': 'سهیل آقایانی',
+            'alternateName': ['کاف‌پن', 'کافپن', 'Coffpen'],
+            'url': siteUrl + '/about.html',
+            'image': siteUrl + '/assets/images/author-avatar.webp',
+            'jobTitle': 'نویسنده و توسعه‌دهنده وب',
+            'sameAs': [
+                'https://github.com/soheil-aghayani',
+                'https://soheil-aghayani.github.io/Portfolio/'
+            ]
+        },
+        {
+            '@type': 'CollectionPage',
+            '@id': siteUrl + '/#home',
+            'url': siteUrl + '/',
+            'name': 'کاف‌پن؛ داستان و دل‌نوشته فارسی',
+            'description': 'آرشیو داستان‌های کوتاه، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی در کاف‌پن.',
+            'inLanguage': 'fa-IR',
+            'isPartOf': { '@id': siteUrl + '/#website' },
+            'about': { '@id': personId },
+            'mainEntity': {
+                '@type': 'ItemList',
+                'name': 'آخرین نوشته‌های کاف‌پن',
+                'numberOfItems': visiblePosts.length,
+                'itemListElement': visiblePosts.map((post, index) => ({
+                    '@type': 'ListItem',
+                    'position': index + 1,
+                    'item': {
+                        '@type': 'Article',
+                        'name': post.title,
+                        'url': absolutePostUrl(post),
+                        'headline': post.title
+                    }
+                }))
+            }
+        }
+    ];
+    return '<!-- Coffpen:structured-data:start -->\n    <script type="application/ld+json">' +
+        jsonForHtml({ '@context': 'https://schema.org', '@graph': graph }) +
+        '</script>\n    <!-- Coffpen:structured-data:end -->';
+}
+
+function renderFeaturedPosts(list) {
+    const selected = [];
+    const add = post => {
+        if (post && !post.empty && !selected.some(item => item.filename === post.filename)) selected.push(post);
+    };
+    add(list.find(post => post.contentType === 'note'));
+    add(list.find(post => post.contentType === 'story' && !post.series));
+    seriesUpdatesFromPosts(list).forEach(update => add(update.latest));
+    list.forEach(add);
+    return selected.slice(0, 6).map(post =>
+        '<a href="' + escapeHtml(post.url) + '">' +
+            '<strong>' + escapeHtml(post.title) + '</strong>' +
+            '<span>' + escapeHtml(postSection(post)) + '</span>' +
+        '</a>'
+    ).join('');
+}
+
+syncGeneratedPostSeo(posts);
+
 const indexFile = path.join(root, 'index.html');
 if (fs.existsSync(indexFile)) {
     const minifiedStylesheet = fs.readFileSync(path.join(root, 'assets', 'css', 'style.min.css'), 'utf8')
@@ -251,6 +417,17 @@ if (fs.existsSync(indexFile)) {
         '<!-- Coffpen:series-hub:end --></div>';
     if (staticMarkerPattern.test(indexHtml)) indexHtml = indexHtml.replace(staticMarkerPattern, staticHub);
     else if (indexHtml.includes(marker)) indexHtml = indexHtml.replace(marker, staticHub);
+    const structuredDataPattern = /<!-- Coffpen:structured-data:start -->[\s\S]*?<!-- Coffpen:structured-data:end -->/;
+    if (structuredDataPattern.test(indexHtml)) indexHtml = indexHtml.replace(structuredDataPattern, renderIndexStructuredData(posts));
+    const discoveryPattern = /<section class="seo-discovery"[\s\S]*?<!-- Coffpen:featured-posts:end -->[\s\S]*?<\/section>/;
+    const discoverySection = '<section class="seo-discovery" aria-labelledby="coffpen-discovery-title">' +
+        '<div class="seo-discovery-heading"><p class="eyebrow">راهنمای کاف‌پن</p>' +
+        '<h2 id="coffpen-discovery-title">کاف‌پن (Coffpen) را از اینجا بشناسید</h2>' +
+        '<p>داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی؛ برای شروع یکی از این نوشته‌ها را انتخاب کنید.</p></div>' +
+        '<nav class="seo-discovery-links" aria-label="شروع خواندن در کاف‌پن"><!-- Coffpen:featured-posts:start -->' +
+        renderFeaturedPosts(posts) +
+        '<!-- Coffpen:featured-posts:end --></nav></section>';
+    if (discoveryPattern.test(indexHtml)) indexHtml = indexHtml.replace(discoveryPattern, discoverySection);
     fs.writeFileSync(indexFile, indexHtml, 'utf8');
 }
 

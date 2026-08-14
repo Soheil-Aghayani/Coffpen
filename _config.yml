@@ -1,12 +1,12 @@
 # Site Configuration for Coffpen Blog
-title: کاف پـن
-description: یادداشت‌ها، داستان‌ها و نوشته‌های کاف پن
+title: کاف‌پن (Coffpen) | سیاه و قلم
+description: وبلاگ شخصی سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.
 url: "https://soheil-aghayani.github.io"
 baseurl: "/Coffpen"
 
 author:
-  name: کاف پن
-  bio: نویسنده و پژوهشگر. یادداشت‌هایی درباره زندگی، کلمات و داستان‌ها.
+  name: سهیل آقایانی
+  bio: نویسنده و توسعه‌دهنده وب؛ نویسنده داستان‌های کوتاه فارسی و دل‌نوشته‌ها در کاف‌پن.
   email: info@coffpen.com
   avatar: https://s6.uupload.ir/files/untitled-2_3s5m.jpg
 
