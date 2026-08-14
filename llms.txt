@@ -5,6 +5,7 @@
 ## صفحات اصلی
 
 - [صفحهٔ اصلی کاف‌پن](https://soheil-aghayani.github.io/Coffpen/): آرشیو تازه‌ترین نوشته‌ها و مجموعه‌های داستانی.
+- [آرشیو کامل نوشته‌ها](https://soheil-aghayani.github.io/Coffpen/archive.html): فهرست قابل‌خزش همهٔ داستان‌ها، قسمت‌ها و دل‌نوشته‌های منتشرشده.
 - [دربارهٔ نویسنده](https://soheil-aghayani.github.io/Coffpen/about.html): معرفی سهیل آقایانی و توضیح پروژهٔ کاف‌پن.
 - [فهرست کامل نوشته‌ها](https://soheil-aghayani.github.io/Coffpen/index.html#latest-posts-heading): جست‌وجو و فیلتر داستان‌ها، مجموعه‌ها و دل‌نوشته‌ها.
 - [نقشهٔ سایت](https://soheil-aghayani.github.io/Coffpen/sitemap.xml): فهرست URLهای منتشرشده.
