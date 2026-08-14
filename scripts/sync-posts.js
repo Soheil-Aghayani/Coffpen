@@ -259,7 +259,13 @@ function renderPostSeo(post) {
         ? (/^(?:https?:|data:)/i.test(post.image) ? post.image : siteUrl + '/' + post.image)
         : siteUrl + '/assets/images/social-preview.jpg';
     const section = postSection(post);
-    const keywords = post.tags.length ? post.tags : [section, 'کاف‌پن', 'Coffpen', 'سیاه و قلم'];
+    const keywords = [...new Set([
+        ...(post.tags.length ? post.tags : [section]),
+        'کافپن',
+        'کاف‌پن',
+        'Coffpen',
+        'سیاه و قلم'
+    ])];
     const graph = {
         '@context': 'https://schema.org',
         '@graph': [
@@ -294,7 +300,7 @@ function renderPostSeo(post) {
                 '@type': 'BreadcrumbList',
                 '@id': canonical + '#breadcrumb',
                 'itemListElement': [
-                    { '@type': 'ListItem', position: 1, name: 'کاف‌پن', item: siteUrl + '/' },
+                    { '@type': 'ListItem', position: 1, name: 'کافپن', item: siteUrl + '/' },
                     { '@type': 'ListItem', position: 2, name: post.title, item: canonical }
                 ]
             }
@@ -307,12 +313,12 @@ function renderPostSeo(post) {
         '<!-- Coffpen:post-seo:start -->',
         '    <meta name="robots" content="index,follow,max-image-preview:large">',
         '    <meta name="googlebot" content="index,follow,max-image-preview:large">',
-        '    <meta name="application-name" content="کاف‌پن (Coffpen)">',
+        '    <meta name="application-name" content="کافپن (کاف‌پن / Coffpen)">',
         '    <meta name="author" content="سهیل آقایانی">',
         '    <meta property="article:published_time" content="' + escapeHtml(post.date) + '">',
         '    <meta property="article:modified_time" content="' + escapeHtml(post.date) + '">',
         '    <meta property="article:section" content="' + escapeHtml(section) + '">',
-        '    <link rel="alternate" type="application/rss+xml" title="کاف‌پن (Coffpen)" href="../feed.xml">',
+        '    <link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="../feed.xml">',
         tagMeta,
         '    <script type="application/ld+json">' + jsonForHtml(graph) + '</script>',
         '<!-- Coffpen:post-seo:end -->'
@@ -340,9 +346,9 @@ function renderIndexStructuredData(list) {
             '@type': 'WebSite',
             '@id': siteUrl + '/#website',
             'url': siteUrl + '/',
-            'name': 'کاف‌پن (Coffpen) | سیاه و قلم',
-            'alternateName': ['کافپن', 'کاف پن', 'Coffpen', 'سیاه و قلم'],
-            'description': 'وبلاگ شخصی سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.',
+            'name': 'کافپن (کاف‌پن / Coffpen) | سیاه و قلم',
+            'alternateName': ['کافپن', 'کاف‌پن', 'کاف پن', 'Coffpen', 'سیاه و قلم'],
+            'description': 'وبلاگ مستقل کافپن (کاف‌پن / Coffpen) متعلق به سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.',
             'inLanguage': 'fa-IR',
             'potentialAction': {
                 '@type': 'SearchAction',
@@ -358,7 +364,7 @@ function renderIndexStructuredData(list) {
             '@type': 'Person',
             '@id': personId,
             'name': 'سهیل آقایانی',
-            'alternateName': ['کاف‌پن', 'کافپن', 'Coffpen'],
+            'alternateName': ['کافپن', 'کاف‌پن', 'کاف پن', 'Coffpen', 'سیاه و قلم'],
             'url': siteUrl + '/about.html',
             'image': siteUrl + '/assets/images/author-avatar.webp',
             'jobTitle': 'نویسنده و توسعه‌دهنده وب',
@@ -372,14 +378,14 @@ function renderIndexStructuredData(list) {
             '@type': 'CollectionPage',
             '@id': siteUrl + '/#home',
             'url': siteUrl + '/',
-            'name': 'کاف‌پن؛ داستان و دل‌نوشته فارسی',
-            'description': 'آرشیو داستان‌های کوتاه، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی در کاف‌پن.',
+            'name': 'کافپن؛ داستان و دل‌نوشته فارسی',
+            'description': 'آرشیو داستان‌های کوتاه، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی در کافپن.',
             'inLanguage': 'fa-IR',
             'isPartOf': { '@id': siteUrl + '/#website' },
             'about': { '@id': personId },
             'mainEntity': {
                 '@type': 'ItemList',
-                'name': 'آخرین نوشته‌های کاف‌پن',
+                'name': 'آخرین نوشته‌های کافپن',
                 'numberOfItems': visiblePosts.length,
                 'itemListElement': visiblePosts.map((post, index) => ({
                     '@type': 'ListItem',
@@ -459,14 +465,14 @@ function renderArchivePage(list) {
                 '@type': 'CollectionPage',
                 '@id': archiveCanonical + '#archive',
                 'url': archiveCanonical,
-                'name': 'آرشیو داستان‌ها و دل‌نوشته‌های کاف‌پن',
-                'description': 'فهرست کامل داستان‌های کوتاه، مجموعه‌های داستانی و دل‌نوشته‌های سهیل آقایانی در کاف‌پن.',
+                'name': 'آرشیو داستان‌ها و دل‌نوشته‌های کافپن',
+                'description': 'فهرست کامل داستان‌های کوتاه، مجموعه‌های داستانی و دل‌نوشته‌های سهیل آقایانی در کافپن.',
                 'inLanguage': 'fa-IR',
                 'isPartOf': { '@id': siteUrl + '/#website' },
                 'about': { '@id': siteUrl + '/about.html#author' },
                 'mainEntity': {
                     '@type': 'ItemList',
-                    'name': 'همهٔ نوشته‌های کاف‌پن',
+                    'name': 'همهٔ نوشته‌های کافپن',
                     'numberOfItems': itemList.length,
                     'itemListElement': itemList
                 }
@@ -475,7 +481,7 @@ function renderArchivePage(list) {
                 '@type': 'BreadcrumbList',
                 '@id': archiveCanonical + '#breadcrumb',
                 'itemListElement': [
-                    { '@type': 'ListItem', position: 1, name: 'کاف‌پن', item: siteUrl + '/' },
+                    { '@type': 'ListItem', position: 1, name: 'کافپن', item: siteUrl + '/' },
                     { '@type': 'ListItem', position: 2, name: 'آرشیو نوشته‌ها', item: archiveCanonical }
                 ]
             }
@@ -486,12 +492,12 @@ function renderArchivePage(list) {
         '<head>\n' +
         '  <meta charset="utf-8">\n' +
         '  <meta name="viewport" content="width=device-width, initial-scale=1">\n' +
-        '  <title>آرشیو داستان‌ها و دل‌نوشته‌ها | کاف‌پن (Coffpen)</title>\n' +
-        '  <meta name="description" content="فهرست کامل داستان‌های کوتاه، مجموعه‌های داستانی و دل‌نوشته‌های سهیل آقایانی در کاف‌پن.">\n' +
+        '  <title>آرشیو داستان‌ها و دل‌نوشته‌ها | کافپن (کاف‌پن / Coffpen)</title>\n' +
+        '  <meta name="description" content="فهرست کامل داستان‌های کوتاه، مجموعه‌های داستانی و دل‌نوشته‌های سهیل آقایانی در کافپن.">\n' +
         '  <meta name="author" content="سهیل آقایانی">\n' +
         '  <meta name="robots" content="index,follow,max-image-preview:large">\n' +
         '  <link rel="canonical" href="' + archiveCanonical + '">\n' +
-        '  <link rel="alternate" type="application/rss+xml" title="کاف‌پن (Coffpen)" href="feed.xml">\n' +
+        '  <link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
         '  <link rel="stylesheet" href="assets/css/style.min.css">\n' +
         '  <script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
         '  <style>\n' +
@@ -580,8 +586,8 @@ function renderSeriesPage(list) {
             '@type': 'CollectionPage',
             '@id': seriesCanonical + '#collections',
             'url': seriesCanonical,
-            'name': 'مجموعه‌های داستانی کاف‌پن',
-            'description': 'فهرست مجموعه‌های داستانی دنباله‌دار کاف‌پن و قسمت‌های منتشرشدهٔ هر مجموعه.',
+            'name': 'مجموعه‌های داستانی کافپن',
+            'description': 'فهرست مجموعه‌های داستانی دنباله‌دار کافپن و قسمت‌های منتشرشدهٔ هر مجموعه.',
             'inLanguage': 'fa-IR',
             'isPartOf': { '@id': siteUrl + '/#website' },
             'about': { '@id': siteUrl + '/about.html#author' },
@@ -590,7 +596,7 @@ function renderSeriesPage(list) {
             '@type': 'BreadcrumbList',
             '@id': seriesCanonical + '#breadcrumb',
             'itemListElement': [
-                { '@type': 'ListItem', position: 1, name: 'کاف‌پن', item: siteUrl + '/' },
+                { '@type': 'ListItem', position: 1, name: 'کافپن', item: siteUrl + '/' },
                 { '@type': 'ListItem', position: 2, name: 'مجموعه‌های داستانی', item: seriesCanonical }
             ]
         }]
@@ -598,10 +604,10 @@ function renderSeriesPage(list) {
     return '<!doctype html>\n' +
         '<html lang="fa" dir="rtl" data-theme="sepia">\n<head>\n' +
         '  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
-        '  <title>مجموعه‌های داستانی دنباله‌دار | کاف‌پن (Coffpen)</title>\n' +
-        '  <meta name="description" content="فهرست مجموعه‌های داستانی دنباله‌دار کاف‌پن و قسمت‌های منتشرشدهٔ هر مجموعه.">\n' +
+        '  <title>مجموعه‌های داستانی دنباله‌دار | کافپن (کاف‌پن / Coffpen)</title>\n' +
+        '  <meta name="description" content="فهرست مجموعه‌های داستانی دنباله‌دار کافپن و قسمت‌های منتشرشدهٔ هر مجموعه.">\n' +
         '  <meta name="author" content="سهیل آقایانی"><meta name="robots" content="index,follow,max-image-preview:large">\n' +
-        '  <link rel="canonical" href="' + seriesCanonical + '"><link rel="alternate" type="application/rss+xml" title="کاف‌پن (Coffpen)" href="feed.xml">\n' +
+        '  <link rel="canonical" href="' + seriesCanonical + '"><link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
         '  <link rel="stylesheet" href="assets/css/style.min.css"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
         '  <style>\n' +
         '    body{min-height:100vh;padding:28px 16px;background:var(--bg-body)}.series-shell{width:min(100%,920px);margin:0 auto;padding:clamp(22px,4vw,46px);border:1px solid var(--border-color);border-radius:22px;background:var(--bg-box);box-shadow:var(--shadow-box)}\n' +
@@ -696,8 +702,8 @@ function renderFeedXml(list) {
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
         '  <channel>',
-        '    <title>کاف‌پن (Coffpen) | سیاه و قلم</title>',
-        '    <description>وبلاگ مستقل سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.</description>',
+        '    <title>کافپن (کاف‌پن / Coffpen) | سیاه و قلم</title>',
+        '    <description>وبلاگ مستقل کافپن (کاف‌پن / Coffpen) متعلق به سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.</description>',
         '    <link>' + escapeXml(siteUrl + '/') + '</link>',
         '    <atom:link href="' + escapeXml(siteUrl + '/feed.xml') + '" rel="self" type="application/rss+xml"/>',
         '    <language>fa-IR</language>',
@@ -738,10 +744,10 @@ if (fs.existsSync(indexFile)) {
     if (structuredDataPattern.test(indexHtml)) indexHtml = indexHtml.replace(structuredDataPattern, renderIndexStructuredData(posts));
     const discoveryPattern = /<section class="seo-discovery"[\s\S]*?<!-- Coffpen:featured-posts:end -->[\s\S]*?<\/section>/;
     const discoverySection = '<section class="seo-discovery" aria-labelledby="coffpen-discovery-title">' +
-        '<div class="seo-discovery-heading"><p class="eyebrow">راهنمای کاف‌پن</p>' +
-        '<h2 id="coffpen-discovery-title">کاف‌پن (Coffpen) را از اینجا بشناسید</h2>' +
+        '<div class="seo-discovery-heading"><p class="eyebrow">راهنمای کافپن</p>' +
+        '<h2 id="coffpen-discovery-title">کافپن (کاف‌پن / Coffpen) را از اینجا بشناسید</h2>' +
         '<p>کافپن (کاف‌پن / Coffpen) دفتر داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی است. برای شروع یکی از این نوشته‌ها را انتخاب کنید. <a href="coffpen.html">دربارهٔ کافپن</a> · <a href="archive.html">آرشیو کامل نوشته‌ها</a> · <a href="series.html">مجموعه‌های داستانی</a></p></div>' +
-        '<nav class="seo-discovery-links" aria-label="شروع خواندن در کاف‌پن"><!-- Coffpen:featured-posts:start -->' +
+        '<nav class="seo-discovery-links" aria-label="شروع خواندن در کافپن"><!-- Coffpen:featured-posts:start -->' +
         renderFeaturedPosts(posts) +
         '<!-- Coffpen:featured-posts:end --></nav></section>';
     if (discoveryPattern.test(indexHtml)) indexHtml = indexHtml.replace(discoveryPattern, discoverySection);
