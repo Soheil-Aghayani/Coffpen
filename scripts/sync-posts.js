@@ -11,6 +11,7 @@ const sitemapFile = path.join(root, 'sitemap.xml');
 const archiveFile = path.join(root, 'archive.html');
 const seriesFile = path.join(root, 'series.html');
 const feedFile = path.join(root, 'feed.xml');
+const brandFile = path.join(root, 'coffpen.html');
 
 function loadExistingDates() {
     if (!fs.existsSync(outputFile)) return new Map();
@@ -612,6 +613,68 @@ function renderSeriesPage(list) {
         '    <footer class="series-footer">کاف‌پن (Coffpen) — مجموعه‌های داستانی فارسیِ سهیل آقایانی.</footer></div>\n</body>\n</html>\n';
 }
 
+function renderBrandPage(list) {
+    const visiblePosts = list.filter(post => !post.empty);
+    const seriesCount = new Set(list.filter(post => !post.empty && post.series).map(post => post.series)).size;
+    const brandCanonical = siteUrl + '/coffpen.html';
+    const graph = {
+        '@context': 'https://schema.org',
+        '@graph': [
+            {
+                '@type': 'AboutPage',
+                '@id': brandCanonical + '#about',
+                'url': brandCanonical,
+                'name': 'کافپن (کاف‌پن / Coffpen) | سیاه و قلم',
+                'description': 'کافپن یا کاف‌پن، وبلاگ مستقل سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌هاست.',
+                'inLanguage': 'fa-IR',
+                'isPartOf': { '@id': siteUrl + '/#website' },
+                'mainEntity': { '@id': siteUrl + '/about.html#author' }
+            },
+            {
+                '@type': 'DefinedTerm',
+                '@id': brandCanonical + '#term',
+                'name': 'کافپن (کاف‌پن / Coffpen)',
+                'alternateName': ['کافپن', 'کاف‌پن', 'کاف پن', 'Coffpen', 'سیاه و قلم'],
+                'description': 'نام وبلاگ مستقل سهیل آقایانی برای انتشار داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های شخصی.',
+                'inDefinedTermSet': { '@id': siteUrl + '/#website' }
+            },
+            {
+                '@type': 'BreadcrumbList',
+                '@id': brandCanonical + '#breadcrumb',
+                'itemListElement': [
+                    { '@type': 'ListItem', position: 1, name: 'کافپن', item: siteUrl + '/' },
+                    { '@type': 'ListItem', position: 2, name: 'دربارهٔ کافپن', item: brandCanonical }
+                ]
+            }
+        ]
+    };
+    return '<!doctype html>\n' +
+        '<html lang="fa" dir="rtl" data-theme="sepia">\n<head>\n' +
+        '  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+        '  <title>کافپن (کاف‌پن / Coffpen) | سیاه و قلم</title>\n' +
+        '  <meta name="description" content="کافپن یا کاف‌پن (Coffpen)، وبلاگ مستقل سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌هاست.">\n' +
+        '  <meta name="author" content="سهیل آقایانی"><meta name="application-name" content="کافپن (کاف‌پن / Coffpen)">\n' +
+        '  <meta name="robots" content="index,follow,max-image-preview:large"><meta name="googlebot" content="index,follow,max-image-preview:large">\n' +
+        '  <link rel="canonical" href="' + brandCanonical + '"><link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
+        '  <link rel="icon" type="image/webp" href="assets/images/favicon.webp"><link rel="apple-touch-icon" href="assets/images/apple-touch-icon.png">\n' +
+        '  <link rel="stylesheet" href="assets/css/style.min.css"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
+        '  <style>body{min-height:100vh;padding:28px 16px;background:var(--bg-body)}.brand-shell{width:min(100%,860px);margin:0 auto;padding:clamp(24px,5vw,56px);border:1px solid var(--border-color);border-radius:24px;background:var(--bg-box);box-shadow:var(--shadow-box)}.brand-kicker{margin:0 0 8px;color:var(--text-accent);font-size:.84rem;font-weight:700}.brand-shell h1{margin:0;color:var(--text-main);font-size:clamp(1.7rem,5vw,2.8rem);line-height:1.5}.brand-lede{max-width:700px;margin:14px 0 0;color:var(--text-muted);font-size:1rem;line-height:2}.brand-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:28px 0}.brand-stat{padding:16px;border:1px solid var(--border-subtle);border-radius:14px;background:var(--bg-card)}.brand-stat strong{display:block;color:var(--text-main);font-size:1.35rem}.brand-stat span{display:block;margin-top:4px;color:var(--text-muted);font-size:.78rem}.brand-section{padding-top:24px;margin-top:24px;border-top:1px solid var(--border-subtle)}.brand-section h2{margin:0 0 10px;color:var(--text-main);font-size:1.25rem}.brand-section p{margin:0;color:var(--text-muted);line-height:2}.brand-variants{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.brand-variants span{padding:6px 10px;border:1px solid var(--border-color);border-radius:999px;color:var(--text-muted);font-size:.78rem}.brand-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.brand-links a{padding:9px 13px;border:1px solid var(--border-color);border-radius:10px;color:var(--text-main);font-size:.82rem}.brand-links a:hover{color:var(--text-accent);border-color:var(--text-accent)}.brand-footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border-subtle);color:var(--text-muted);font-size:.78rem}@media(max-width:620px){body{padding:0}.brand-shell{border:0;border-radius:0;box-shadow:none}.brand-grid{grid-template-columns:1fr 1fr}.brand-stat:last-child{grid-column:1/-1}}</style>\n' +
+        '</head>\n<body>\n' +
+        '  <main class="brand-shell">\n' +
+        '    <p class="brand-kicker">هویت وبلاگ</p>\n' +
+        '    <h1>کافپن (کاف‌پن / Coffpen)؛ سیاه و قلم</h1>\n' +
+        '    <p class="brand-lede"><strong>کافپن</strong> نام وبلاگ مستقل سهیل آقایانی است؛ جایی برای داستان‌های کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های شخصی. «کاف‌پن» و «Coffpen» شکل‌های دیگر همین نام‌اند.</p>\n' +
+        '    <div class="brand-grid" aria-label="آمار کافپن">\n' +
+        '      <div class="brand-stat"><strong>' + escapeHtml(visiblePosts.length.toLocaleString('fa-IR')) + '</strong><span>نوشتهٔ منتشرشده</span></div>\n' +
+        '      <div class="brand-stat"><strong>' + escapeHtml(seriesCount.toLocaleString('fa-IR')) + '</strong><span>مجموعهٔ داستانی</span></div>\n' +
+        '      <div class="brand-stat"><strong>سهیل آقایانی</strong><span>نویسنده و توسعه‌دهندهٔ وب</span></div>\n' +
+        '    </div>\n' +
+        '    <section class="brand-section"><h2>کافپن چیست؟</h2><p>کافپن یا سیاه و قلم یک دفتر آنلاین فارسی برای خواندن روایت‌های مستقل، قسمت‌های مجموعه‌های داستانی و یادداشت‌های شخصی است. متن‌ها بدون نیاز به حساب کاربری و با تمرکز بر خوانایی منتشر می‌شوند.</p><div class="brand-variants" aria-label="نام‌های دیگر کافپن"><span>کافپن</span><span>کاف‌پن</span><span>کاف پن</span><span>Coffpen</span><span>سیاه و قلم</span></div></section>\n' +
+        '    <section class="brand-section"><h2>از کجا شروع کنم؟</h2><p>برای دیدن نوشته‌های تازه به صفحهٔ اصلی بروید؛ برای پیدا کردن یک عنوان قدیمی آرشیو را باز کنید و برای خواندن قسمت‌ها به‌ترتیب، صفحهٔ مجموعه‌های داستانی را ببینید.</p><nav class="brand-links" aria-label="صفحات اصلی کافپن"><a href="index.html">صفحهٔ اصلی</a><a href="archive.html">آرشیو نوشته‌ها</a><a href="series.html">مجموعه‌های داستانی</a><a href="about.html">دربارهٔ سهیل آقایانی</a></nav></section>\n' +
+        '    <footer class="brand-footer">کافپن (کاف‌پن / Coffpen) — داستان کوتاه فارسی و دل‌نوشته‌های سهیل آقایانی.</footer>\n' +
+        '  </main>\n</body>\n</html>\n';
+}
+
 function renderFeedXml(list) {
     const visiblePosts = list.filter(post => !post.empty);
     const lastBuildDate = visiblePosts[0] ? new Date(visiblePosts[0].date).toUTCString() : new Date(0).toUTCString();
@@ -652,6 +715,7 @@ syncGeneratedPostSeo(posts);
 fs.writeFileSync(archiveFile, renderArchivePage(posts), 'utf8');
 fs.writeFileSync(seriesFile, renderSeriesPage(posts), 'utf8');
 fs.writeFileSync(feedFile, renderFeedXml(posts), 'utf8');
+fs.writeFileSync(brandFile, renderBrandPage(posts), 'utf8');
 
 const indexFile = path.join(root, 'index.html');
 if (fs.existsSync(indexFile)) {
@@ -676,7 +740,7 @@ if (fs.existsSync(indexFile)) {
     const discoverySection = '<section class="seo-discovery" aria-labelledby="coffpen-discovery-title">' +
         '<div class="seo-discovery-heading"><p class="eyebrow">راهنمای کاف‌پن</p>' +
         '<h2 id="coffpen-discovery-title">کاف‌پن (Coffpen) را از اینجا بشناسید</h2>' +
-        '<p>داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی؛ برای شروع یکی از این نوشته‌ها را انتخاب کنید. <a href="archive.html">آرشیو کامل نوشته‌ها</a> · <a href="series.html">مجموعه‌های داستانی</a></p></div>' +
+        '<p>کافپن (کاف‌پن / Coffpen) دفتر داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی است. برای شروع یکی از این نوشته‌ها را انتخاب کنید. <a href="coffpen.html">دربارهٔ کافپن</a> · <a href="archive.html">آرشیو کامل نوشته‌ها</a> · <a href="series.html">مجموعه‌های داستانی</a></p></div>' +
         '<nav class="seo-discovery-links" aria-label="شروع خواندن در کاف‌پن"><!-- Coffpen:featured-posts:start -->' +
         renderFeaturedPosts(posts) +
         '<!-- Coffpen:featured-posts:end --></nav></section>';
@@ -709,6 +773,7 @@ function escapeXml(value) {
 const sitemapEntries = [
     { path: '/', date: posts[0] && posts[0].date },
     { path: '/about.html', date: posts[0] && posts[0].date },
+    { path: '/coffpen.html', date: posts[0] && posts[0].date },
     { path: '/archive.html', date: posts[0] && posts[0].date },
     { path: '/series.html', date: posts[0] && posts[0].date },
     ...posts.map(post => ({ path: '/' + post.url, date: post.date }))

@@ -24,10 +24,11 @@
 
 </div>
 
-## کاف‌پن (Coffpen) چیست؟
+## کافپن (کاف‌پن / Coffpen) چیست؟
 
 کاف‌پن، که با نام‌های «کافپن»، «کاف پن» و «سیاه و قلم» هم شناخته می‌شود، دفتر مستقل **سهیل آقایانی** برای انتشار داستان‌های کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های شخصی است. نسخهٔ منتشرشدهٔ نوشته‌ها را در سایت می‌خوانید:
 
+- [معرفی کافپن](https://soheil-aghayani.github.io/Coffpen/coffpen.html)
 - [ورود به سایت کاف‌پن](https://soheil-aghayani.github.io/Coffpen/)
 - [فهرست کامل نوشته‌ها](https://soheil-aghayani.github.io/Coffpen/index.html#latest-posts-heading)
 - [دربارهٔ سهیل آقایانی](https://soheil-aghayani.github.io/Coffpen/about.html)
