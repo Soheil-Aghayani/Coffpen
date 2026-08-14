@@ -9,6 +9,7 @@ const minOutputFile = path.join(postsDirectory, 'posts-data.min.js');
 const siteUrl = 'https://soheil-aghayani.github.io/Coffpen';
 const sitemapFile = path.join(root, 'sitemap.xml');
 const archiveFile = path.join(root, 'archive.html');
+const seriesFile = path.join(root, 'series.html');
 
 function loadExistingDates() {
     if (!fs.existsSync(outputFile)) return new Map();
@@ -534,9 +535,86 @@ function renderArchivePage(list) {
         '</html>\n';
 }
 
+function renderSeriesPage(list) {
+    const groups = new Map();
+    list.filter(post => !post.empty && post.series).forEach(post => {
+        if (!groups.has(post.series)) groups.set(post.series, []);
+        groups.get(post.series).push(post);
+    });
+    const seriesGroups = Array.from(groups, ([name, seriesPosts]) => ({
+        name,
+        posts: seriesPosts.slice().sort((a, b) => Number(b.episode || 0) - Number(a.episode || 0) || new Date(b.date) - new Date(a.date))
+    })).sort((a, b) => new Date(b.posts[0].date) - new Date(a.posts[0].date));
+    const seriesCanonical = siteUrl + '/series.html';
+    const cards = seriesGroups.map((group, index) => {
+        const id = 'series-' + (index + 1);
+        const latest = group.posts[0];
+        const episodes = group.posts.map(post => {
+            const episode = post.episode
+                ? '<span>قسمت ' + escapeHtml(Number(post.episode).toLocaleString('fa-IR')) + '</span>'
+                : '<span>نوشته</span>';
+            return '<li><a href="' + escapeHtml(post.url) + '"><strong>' + escapeHtml(post.title) + '</strong>' + episode + '</a></li>';
+        }).join('');
+        return '<section class="series-archive-card" id="' + id + '">' +
+            '<div class="series-archive-card-head"><div><p class="series-archive-kicker">مجموعهٔ داستانی</p>' +
+            '<h2>' + escapeHtml(group.name) + '</h2><p>' + escapeHtml(group.posts.length.toLocaleString('fa-IR')) + ' قسمت منتشرشده؛ تازه‌ترین قسمت: ' + escapeHtml(latest.title) + '</p></div>' +
+            '<a href="' + escapeHtml(latest.url) + '" class="series-archive-latest">آخرین قسمت <span aria-hidden="true">←</span></a></div>' +
+            '<ol class="series-archive-episodes" aria-label="قسمت‌های ' + escapeHtml(group.name) + '">' + episodes + '</ol></section>';
+    }).join('\n');
+    const seriesItems = seriesGroups.map((group, index) => ({
+        '@type': 'ListItem',
+        'position': index + 1,
+        'item': {
+            '@type': 'CreativeWorkSeries',
+            '@id': seriesCanonical + '#series-' + (index + 1),
+            'name': group.name,
+            'url': seriesCanonical + '#series-' + (index + 1),
+            'numberOfItems': group.posts.length
+        }
+    }));
+    const graph = {
+        '@context': 'https://schema.org',
+        '@graph': [{
+            '@type': 'CollectionPage',
+            '@id': seriesCanonical + '#collections',
+            'url': seriesCanonical,
+            'name': 'مجموعه‌های داستانی کاف‌پن',
+            'description': 'فهرست مجموعه‌های داستانی دنباله‌دار کاف‌پن و قسمت‌های منتشرشدهٔ هر مجموعه.',
+            'inLanguage': 'fa-IR',
+            'isPartOf': { '@id': siteUrl + '/#website' },
+            'about': { '@id': siteUrl + '/about.html#author' },
+            'mainEntity': { '@type': 'ItemList', 'name': 'مجموعه‌های داستانی', 'numberOfItems': seriesItems.length, 'itemListElement': seriesItems }
+        }, {
+            '@type': 'BreadcrumbList',
+            '@id': seriesCanonical + '#breadcrumb',
+            'itemListElement': [
+                { '@type': 'ListItem', position: 1, name: 'کاف‌پن', item: siteUrl + '/' },
+                { '@type': 'ListItem', position: 2, name: 'مجموعه‌های داستانی', item: seriesCanonical }
+            ]
+        }]
+    };
+    return '<!doctype html>\n' +
+        '<html lang="fa" dir="rtl" data-theme="sepia">\n<head>\n' +
+        '  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
+        '  <title>مجموعه‌های داستانی دنباله‌دار | کاف‌پن (Coffpen)</title>\n' +
+        '  <meta name="description" content="فهرست مجموعه‌های داستانی دنباله‌دار کاف‌پن و قسمت‌های منتشرشدهٔ هر مجموعه.">\n' +
+        '  <meta name="author" content="سهیل آقایانی"><meta name="robots" content="index,follow,max-image-preview:large">\n' +
+        '  <link rel="canonical" href="' + seriesCanonical + '"><link rel="alternate" type="application/rss+xml" title="کاف‌پن (Coffpen)" href="feed.xml">\n' +
+        '  <link rel="stylesheet" href="assets/css/style.min.css"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
+        '  <style>\n' +
+        '    body{min-height:100vh;padding:28px 16px;background:var(--bg-body)}.series-shell{width:min(100%,920px);margin:0 auto;padding:clamp(22px,4vw,46px);border:1px solid var(--border-color);border-radius:22px;background:var(--bg-box);box-shadow:var(--shadow-box)}\n' +
+        '    .series-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:24px;border-bottom:1px solid var(--border-subtle)}.series-header h1{margin:0;color:var(--text-main);font-size:clamp(1.55rem,4vw,2.25rem);line-height:1.5}.series-header p{max-width:650px;margin:8px 0 0;color:var(--text-muted);font-size:.9rem}.series-kicker,.series-archive-kicker{margin:0 0 6px;color:var(--text-accent);font-size:.82rem;font-weight:700}.series-nav{display:flex;flex-wrap:wrap;gap:8px}.series-nav a,.series-archive-latest{padding:8px 12px;border:1px solid var(--border-color);border-radius:10px;color:var(--text-muted);font-size:.8rem}.series-nav a:hover,.series-archive-latest:hover{color:var(--text-accent);border-color:var(--text-accent)}\n' +
+        '    .series-archive-list{display:grid;gap:16px;margin-top:24px}.series-archive-card{padding:19px;border:1px solid var(--border-color);border-radius:16px;background:var(--bg-card)}.series-archive-card-head{display:flex;align-items:flex-start;justify-content:space-between;gap:15px}.series-archive-card h2{margin:0;color:var(--text-main);font-size:1.25rem}.series-archive-card-head p:last-child{margin:5px 0 0;color:var(--text-muted);font-size:.78rem}.series-archive-episodes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px 10px;margin:18px 0 0;padding:16px 0 0;border-top:1px solid var(--border-subtle);list-style:none}.series-archive-episodes li a{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:8px 10px;border:1px solid var(--border-subtle);border-radius:9px;color:var(--text-main);font-size:.82rem}.series-archive-episodes li a:hover{color:var(--text-accent);border-color:var(--text-accent)}.series-archive-episodes span{white-space:nowrap;color:var(--text-muted);font-size:.72rem}.series-footer{margin-top:28px;padding-top:18px;border-top:1px solid var(--border-subtle);color:var(--text-muted);font-size:.78rem}@media(max-width:620px){body{padding:0}.series-shell{border:0;border-radius:0;box-shadow:none}.series-header{display:block}.series-nav{margin-top:16px}.series-archive-card-head{display:block}.series-archive-latest{display:inline-flex;margin-top:12px}.series-archive-episodes{grid-template-columns:1fr}}\n' +
+        '  </style>\n</head>\n<body>\n' +
+        '  <div class="series-shell"><header class="series-header"><div><p class="series-kicker">کتابخانهٔ کاف‌پن</p><h1>مجموعه‌های داستانی دنباله‌دار</h1><p>هر مجموعه را یک‌جا و به‌ترتیب ببینید؛ از تازه‌ترین قسمت شروع کنید یا به قسمت دلخواه بروید.</p></div><nav class="series-nav" aria-label="پیوندهای کاف‌پن"><a href="./">صفحهٔ اصلی</a><a href="archive.html">آرشیو کامل</a></nav></header>\n' +
+        '    <main id="series-main" class="series-archive-list" aria-label="مجموعه‌های داستانی">' + cards + '</main>\n' +
+        '    <footer class="series-footer">کاف‌پن (Coffpen) — مجموعه‌های داستانی فارسیِ سهیل آقایانی.</footer></div>\n</body>\n</html>\n';
+}
+
 syncGeneratedPostSeo(posts);
 
 fs.writeFileSync(archiveFile, renderArchivePage(posts), 'utf8');
+fs.writeFileSync(seriesFile, renderSeriesPage(posts), 'utf8');
 
 const indexFile = path.join(root, 'index.html');
 if (fs.existsSync(indexFile)) {
@@ -561,7 +639,7 @@ if (fs.existsSync(indexFile)) {
     const discoverySection = '<section class="seo-discovery" aria-labelledby="coffpen-discovery-title">' +
         '<div class="seo-discovery-heading"><p class="eyebrow">راهنمای کاف‌پن</p>' +
         '<h2 id="coffpen-discovery-title">کاف‌پن (Coffpen) را از اینجا بشناسید</h2>' +
-        '<p>داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی؛ برای شروع یکی از این نوشته‌ها را انتخاب کنید. <a href="archive.html">آرشیو کامل نوشته‌ها</a></p></div>' +
+        '<p>داستان کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های سهیل آقایانی؛ برای شروع یکی از این نوشته‌ها را انتخاب کنید. <a href="archive.html">آرشیو کامل نوشته‌ها</a> · <a href="series.html">مجموعه‌های داستانی</a></p></div>' +
         '<nav class="seo-discovery-links" aria-label="شروع خواندن در کاف‌پن"><!-- Coffpen:featured-posts:start -->' +
         renderFeaturedPosts(posts) +
         '<!-- Coffpen:featured-posts:end --></nav></section>';
@@ -595,6 +673,7 @@ const sitemapEntries = [
     { path: '/', date: posts[0] && posts[0].date },
     { path: '/about.html', date: posts[0] && posts[0].date },
     { path: '/archive.html', date: posts[0] && posts[0].date },
+    { path: '/series.html', date: posts[0] && posts[0].date },
     ...posts.map(post => ({ path: '/' + post.url, date: post.date }))
 ];
 const sitemap = [
