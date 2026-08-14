@@ -66,8 +66,9 @@
 - `robots.txt` باید sitemap را معرفی کند و `sitemap.xml` بعد از sync به‌روز شود.
 - تأیید مالکیت Search Console به‌تنهایی ایندکس‌شدن را تضمین نمی‌کند. پس از انتشارهای مهم، در Search Console sitemap زیر را ثبت/بررسی کن:
   `https://soheil-aghayani.github.io/Coffpen/sitemap.xml`
+- دامنهٔ ریشهٔ صاحب سایت (`Soheil-Aghayani.github.io`) هم باید در `robots.txt` به sitemap کاف‌پن اشاره کند و URL صفحهٔ اصلی کاف‌پن را در sitemap خودش داشته باشد؛ این کار برای کشف سایت از property ریشه انجام شده و نباید با sitemap کاف‌پن اشتباه گرفته شود.
 - برای صفحهٔ اصلی یا نوشتهٔ تازه، از URL Inspection درخواست indexing بده. ایندکس و رتبه‌گیری ممکن است چند روز یا چند هفته طول بکشد و تضمینی نیست.
-- وضعیت ثبت اولیه در ۲۰۲۶-۰۸-۱۴: مالکیت با روش `Parent property` تأیید شد، sitemap ارسال شد و درخواست indexing صفحهٔ اصلی با موفقیت وارد صف شد. اگر Search Console بلافاصله برای sitemap وضعیت `Couldn't fetch` نشان داد اما درخواست مستقیم HTTP وضعیت ۲۰۰ و XML معتبر دارد، آن را موقت/در حال پردازش در نظر بگیر؛ ۲۴ تا ۴۸ ساعت بعد دوباره بررسی کن و پشت‌سرهم sitemap را duplicate نکن.
+- وضعیت ثبت اولیه در ۲۰۲۶-۰۸-۱۴: مالکیت با روش `Parent property` تأیید شد و ارسال sitemap پیام موفقیت گرفت؛ جدول Search Console ممکن است مدتی `Unknown`/`Couldn't fetch` بماند، در حالی‌که درخواست مستقیم HTTP وضعیت ۲۰۰ و XML معتبر دارد. درخواست indexing صفحهٔ اصلی در این نشست به‌دلیل خطای موقت/recaptcha وارد صف نشد؛ پشت‌سرهم تکرار نکن و ۲۴ تا ۴۸ ساعت بعد دوباره بررسی کن.
 - از keyword stuffing و title/description تکراری پرهیز کن.
 
 ## راهنمای عیب‌یابی سریع
