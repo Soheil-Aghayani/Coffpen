@@ -279,9 +279,11 @@ function renderPostSeo(post) {
                     'name': 'سهیل آقایانی'
                 },
                 'datePublished': post.date,
+                'dateModified': post.date,
                 'image': [image],
                 'articleSection': section,
                 'keywords': keywords.join(', '),
+                'isAccessibleForFree': true,
                 ...(post.wordCount ? { wordCount: post.wordCount } : {})
             },
             {
@@ -301,9 +303,12 @@ function renderPostSeo(post) {
         '<!-- Coffpen:post-seo:start -->',
         '    <meta name="robots" content="index,follow,max-image-preview:large">',
         '    <meta name="googlebot" content="index,follow,max-image-preview:large">',
+        '    <meta name="application-name" content="کاف‌پن (Coffpen)">',
         '    <meta name="author" content="سهیل آقایانی">',
         '    <meta property="article:published_time" content="' + escapeHtml(post.date) + '">',
+        '    <meta property="article:modified_time" content="' + escapeHtml(post.date) + '">',
         '    <meta property="article:section" content="' + escapeHtml(section) + '">',
+        '    <link rel="alternate" type="application/rss+xml" title="کاف‌پن (Coffpen)" href="../feed.xml">',
         tagMeta,
         '    <script type="application/ld+json">' + jsonForHtml(graph) + '</script>',
         '<!-- Coffpen:post-seo:end -->'
@@ -335,6 +340,14 @@ function renderIndexStructuredData(list) {
             'alternateName': ['کافپن', 'کاف پن', 'Coffpen', 'سیاه و قلم'],
             'description': 'وبلاگ شخصی سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌ها.',
             'inLanguage': 'fa-IR',
+            'potentialAction': {
+                '@type': 'SearchAction',
+                'target': {
+                    '@type': 'EntryPoint',
+                    'urlTemplate': siteUrl + '/?q={search_term_string}'
+                },
+                'query-input': 'required name=search_term_string'
+            },
             'publisher': { '@id': personId }
         },
         {
