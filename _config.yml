@@ -7,8 +7,8 @@ baseurl: "/Coffpen"
 author:
   name: سهیل آقایانی
   bio: نویسنده و توسعه‌دهنده وب؛ نویسنده داستان‌های کوتاه فارسی و دل‌نوشته‌ها در کاف‌پن.
-  email: info@coffpen.com
-  avatar: https://s6.uupload.ir/files/untitled-2_3s5m.jpg
+  email: soheil.aghayani@gmail.com
+  avatar: /assets/images/author-avatar.webp
 
 # Header Banner
 header_image: /assets/images/social-preview.jpg
@@ -30,13 +30,13 @@ navigation:
     url: /
     icon: home
   - title: درباره من
-    url: /about/
+    url: /about.html
     icon: profile
   - title: تماس
-    url: /contact/
+    url: mailto:soheil.aghayani@gmail.com
     icon: email
   - title: مدیریت
-    url: /admin/
+    url: /admin/index.html
     icon: edit
 
 # Exclude from build

@@ -24,6 +24,17 @@
 
 </div>
 
+## کاف‌پن (Coffpen) چیست؟
+
+کاف‌پن، که با نام‌های «کافپن»، «کاف پن» و «سیاه و قلم» هم شناخته می‌شود، دفتر مستقل **سهیل آقایانی** برای انتشار داستان‌های کوتاه فارسی، مجموعه‌های دنباله‌دار و دل‌نوشته‌های شخصی است. نسخهٔ منتشرشدهٔ نوشته‌ها را در سایت می‌خوانید:
+
+- [ورود به سایت کاف‌پن](https://soheil-aghayani.github.io/Coffpen/)
+- [فهرست کامل نوشته‌ها](https://soheil-aghayani.github.io/Coffpen/index.html#latest-posts-heading)
+- [دربارهٔ سهیل آقایانی](https://soheil-aghayani.github.io/Coffpen/about.html)
+- [راهنمای machine-readable سایت](https://soheil-aghayani.github.io/Coffpen/llms.txt)
+
+این repository کد و محتوای استاتیک سایت را نگه می‌دارد و با GitHub Pages منتشر می‌شود.
+
 
 ## <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.iconify.design/solar:layers-linear.svg?color=%23F59E0B"><source media="(prefers-color-scheme: light)" srcset="https://api.iconify.design/solar:layers-linear.svg?color=%2392400E"><img alt="Layers Icon" src="https://api.iconify.design/solar:layers-linear.svg?color=%2392400E" width="28" height="28"></picture> PLATFORM FEATURES & ARCHITECTURE
 
@@ -41,7 +52,7 @@ The repository is cleanly organized to separate the static site rendering logic 
 
 ```yaml
 📦 Coffpen
- ┣ 📂 _posts/              # Markdown (.md) files containing published stories and articles
+ ┣ 📂 posts/               # HTML files containing published stories and articles
  ┣ 📂 admin/               # Headless CMS configuration (config.yml) and admin panel access
  ┣ 📂 assets/              # Site imagery, fonts, and global stylesheet assets (CSS)
  ┣ 📂 layouts/             # Reusable HTML template structures for the blog and single-post views
