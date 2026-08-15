@@ -1,5 +1,7 @@
 <div align="center">
 
+<img src="docs/readme-hero.svg" alt="Coffpen visual hero" width="100%">
+
 # <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.iconify.design/solar:pen-new-square-linear.svg?color=%23F59E0B"><source media="(prefers-color-scheme: light)" srcset="https://api.iconify.design/solar:pen-new-square-linear.svg?color=%2392400E"><img alt="Pen Icon" src="https://api.iconify.design/solar:pen-new-square-linear.svg?color=%2392400E" width="38" height="38" align="text-bottom"></picture> COFFPEN
 ### **Where the Aroma of Coffee Meets the Art of the Pen.**
 
