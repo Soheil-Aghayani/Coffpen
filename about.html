@@ -58,7 +58,7 @@
     }
     </script>
 
-    <link rel="stylesheet" href="assets/css/style.min.css?v=20260814-1">
+    <link rel="stylesheet" href="assets/css/style.min.css?v=20260814-2">
 </head>
 
 <body>
@@ -291,11 +291,9 @@
         <span>آدرس ایمیل با موفقیت کپی شد!</span>
     </div>
 
+    <script defer src="posts/posts-data.js?v=20260814-2"></script>
     <script>
-        document.write('<script src="posts/posts-data.js?v=' + Date.now() + '"><\/script>');
-    </script>
-    <script>
-        (function updateAboutBannerStats() {
+        window.addEventListener('DOMContentLoaded', function updateAboutBannerStats() {
             var posts = Array.isArray(window.COFFPEN_POSTS) ? window.COFFPEN_POSTS : [];
             var series = new Set(posts.map(function (post) { return post.series || ''; }).filter(Boolean));
             var words = posts.reduce(function (total, post) {
@@ -304,9 +302,9 @@
             document.getElementById('aboutPostCount').textContent = posts.length.toLocaleString('fa-IR');
             document.getElementById('aboutSeriesCount').textContent = series.size.toLocaleString('fa-IR');
             document.getElementById('aboutWordCount').textContent = words.toLocaleString('fa-IR');
-        })();
+        });
     </script>
-    <script src="assets/js/main.min.js?v=20260814-1"></script>
+    <script src="assets/js/main.min.js?v=20260814-2"></script>
 </body>
 
 </html>

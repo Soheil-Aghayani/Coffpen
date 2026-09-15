@@ -4,6 +4,7 @@
   "scripts": {
     "serve": "node scripts/serve-local.js",
     "sync": "node scripts/sync-posts.js",
-    "watch": "node scripts/watch-posts.js"
+    "watch": "node scripts/watch-posts.js",
+    "check": "node scripts/check-site.js"
   }
 }

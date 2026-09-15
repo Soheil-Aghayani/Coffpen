@@ -1,0 +1,32 @@
+name: Validate static site
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/js/main.js
+          node --check assets/js/main.min.js
+          node --check scripts/sync-posts.js
+          node --check scripts/check-site.js
+          node --check scripts/send-story-notification.js
+      - name: Validate generated site
+        run: |
+          node scripts/sync-posts.js
+          npm run check
+      - name: Check whitespace errors
+        run: git diff --check

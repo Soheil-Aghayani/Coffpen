@@ -14,6 +14,7 @@ const PAPERBOY_SNOOZE_DELAYS = [
 let notificationConfigPromise = null;
 let firebaseClientPromise = null;
 let paperboyImagePromise = null;
+let sidebarPreviousFocus = null;
 
 // Theme Management
 function initTheme() {
@@ -166,10 +167,12 @@ function ensureGlobalSidebar() {
     if (!sidebar) {
         sidebar = document.createElement('aside');
         sidebar.className = 'blackthemeSidebar';
+        sidebar.id = 'blackthemeSidebar';
         sidebar.setAttribute('aria-label', 'منوی وبلاگ');
         sidebar.setAttribute('aria-hidden', 'true');
         document.body.appendChild(sidebar);
     }
+    sidebar.id = sidebar.id || 'blackthemeSidebar';
     sidebar.innerHTML = buildSidebarContent(baseUrl);
     sidebar.inert = true;
     setSidebarFocusability(sidebar, false);
@@ -203,20 +206,33 @@ function initSidebar() {
     const notificationButton = sidebar ? sidebar.querySelector('[data-notification-toggle]') : null;
 
     if (menuBtn && sidebar && overlay) {
+<<<<<<< Updated upstream
         const initiallyOpen = sidebar.classList.contains('set');
         sidebar.setAttribute('aria-hidden', initiallyOpen ? 'false' : 'true');
         sidebar.inert = !initiallyOpen;
         setSidebarFocusability(sidebar, initiallyOpen);
         menuBtn.setAttribute('aria-expanded', initiallyOpen ? 'true' : 'false');
+=======
+        menuBtn.setAttribute('aria-controls', sidebar.id || 'blackthemeSidebar');
+        sidebar.setAttribute('aria-hidden', sidebar.classList.contains('set') ? 'false' : 'true');
+        menuBtn.setAttribute('aria-expanded', sidebar.classList.contains('set') ? 'true' : 'false');
+>>>>>>> Stashed changes
         menuBtn.onclick = function (e) {
             e.preventDefault();
             const shouldOpen = !sidebar.classList.contains('set');
+            if (shouldOpen) sidebarPreviousFocus = document.activeElement;
             sidebar.classList.toggle('set', shouldOpen);
             overlay.classList.toggle('set', shouldOpen);
             sidebar.setAttribute('aria-hidden', shouldOpen ? 'false' : 'true');
             sidebar.inert = !shouldOpen;
             setSidebarFocusability(sidebar, shouldOpen);
             menuBtn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+            if (shouldOpen) {
+                window.requestAnimationFrame(function () {
+                    const firstFocusable = getSidebarFocusableElements(sidebar)[0];
+                    if (firstFocusable) firstFocusable.focus();
+                });
+            }
         };
 
         overlay.onclick = function () {
@@ -229,11 +245,46 @@ function initSidebar() {
                 handleNotificationMenuAction();
             };
         }
+        if (!sidebar.dataset.keyboardReady) {
+            sidebar.dataset.keyboardReady = 'true';
+            sidebar.addEventListener('keydown', handleSidebarKeydown);
+        }
         sidebar.querySelectorAll('.theme-opt-btn').forEach(function (button) {
             button.onclick = function () {
                 setTheme(button.dataset.themeVal);
             };
         });
+    }
+}
+
+function getSidebarFocusableElements(sidebar) {
+    if (!sidebar) return [];
+    return Array.from(sidebar.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )).filter(function (element) {
+        return !element.hidden && element.offsetParent !== null;
+    });
+}
+
+function handleSidebarKeydown(event) {
+    const sidebar = event.currentTarget;
+    if (!sidebar.classList.contains('set')) return;
+    if (event.key === 'Escape') {
+        event.preventDefault();
+        closeSidebar();
+        return;
+    }
+    if (event.key !== 'Tab') return;
+    const focusable = getSidebarFocusableElements(sidebar);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+    } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
     }
 }
 
@@ -247,6 +298,11 @@ function closeSidebar() {
     if (sidebar) setSidebarFocusability(sidebar, false);
     if (overlay) overlay.classList.remove('set');
     if (menuBtn) menuBtn.setAttribute('aria-expanded', 'false');
+    const previousFocus = sidebarPreviousFocus;
+    sidebarPreviousFocus = null;
+    if (previousFocus && previousFocus.isConnected && typeof previousFocus.focus === 'function') {
+        previousFocus.focus({ preventScroll: true });
+    }
 }
 
 function getPaperboyPreviewMode() {
@@ -285,7 +341,7 @@ function loadNotificationConfig() {
 
     notificationConfigPromise = new Promise(function (resolve) {
         const script = document.createElement('script');
-        script.src = new URL('assets/js/firebase-config.js?v=20260801-4', getSiteBaseUrl()).href;
+        script.src = new URL('assets/js/firebase-config.js?v=20260814-2', getSiteBaseUrl()).href;
         script.onload = function () {
             resolve(window.COFFPEN_NOTIFICATIONS || { enabled: false });
         };

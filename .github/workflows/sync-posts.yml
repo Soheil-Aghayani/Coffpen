@@ -43,15 +43,29 @@ jobs:
           echo "file=$file" >> "$GITHUB_OUTPUT"
       - name: Generate shared post registry
         run: node scripts/sync-posts.js
+      - name: Validate generated site
+        run: npm run check
       - name: Commit updated registry
         run: |
-          if git diff --quiet -- posts/posts-data.js; then
+          generated_files=(
+            index.html
+            about.html
+            archive.html
+            series.html
+            coffpen.html
+            feed.xml
+            sitemap.xml
+            posts/*.html
+            posts/posts-data.js
+            posts/posts-data.min.js
+          )
+          if git diff --quiet -- "${generated_files[@]}"; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add posts/posts-data.js
-          git commit -m "Sync published posts"
+          git add -- "${generated_files[@]}"
+          git commit -m "Sync published posts and generated pages"
           git push
       - name: Notify readers about the new story
         if: github.event_name == 'push' && steps.new_story.outputs.file != ''

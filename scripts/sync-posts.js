@@ -12,6 +12,7 @@ const archiveFile = path.join(root, 'archive.html');
 const seriesFile = path.join(root, 'series.html');
 const feedFile = path.join(root, 'feed.xml');
 const brandFile = path.join(root, 'coffpen.html');
+const assetVersion = '20260814-2';
 
 function faviconLinks(prefix = '') {
     return [
@@ -30,6 +31,18 @@ function ensureFaviconLinks(html, prefix = '') {
     const headEnd = head.index + head[0].length;
     const rest = withoutOldLinks.slice(headEnd).replace(/^(?:[ \t]*\r?\n)+/, '');
     return withoutOldLinks.slice(0, headEnd) + '\n' + faviconLinks(prefix) + '\n' + rest;
+}
+
+function ensureAssetVersions(html) {
+    return html
+        .replace(/(assets\/css\/style\.min\.css)(?:\?v=[^"']+)?/g, '$1?v=' + assetVersion)
+        .replace(/(assets\/js\/main\.min\.js)(?:\?v=[^"']+)?/g, '$1?v=' + assetVersion)
+        .replace(/(posts\/posts-data\.js)(?:\?v=[^"']+)?/g, '$1?v=' + assetVersion)
+        .replace(/(posts\/posts-data\.min\.js)(?:\?v=[^"']+)?/g, '$1?v=' + assetVersion);
+}
+
+function sanitizeGeneratedAttributes(html) {
+    return String(html || '').replace(/\s+id=["'](?:null|undefined)["']/gi, '');
 }
 
 function loadExistingDates() {
@@ -71,6 +84,77 @@ function englishDigits(value) {
     return String(value || '')
         .replace(/[۰-۹]/g, digit => String('۰۱۲۳۴۵۶۷۸۹'.indexOf(digit)))
         .replace(/[٠-٩]/g, digit => String('٠١٢٣٤٥٦٧٨٩'.indexOf(digit)));
+}
+
+function collectMetaContents(html, patterns) {
+    return patterns.reduce((values, pattern) => {
+        const matches = Array.from(html.matchAll(pattern));
+        matches.forEach(match => {
+            if (match[1]) values.push(stripHtml(match[1]));
+        });
+        return values;
+    }, []);
+}
+
+function normalizeTag(value) {
+    return String(value || '')
+        .normalize('NFKC')
+        .replace(/^#+/, '')
+        .replace(/[\u200c\u200d]/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
+
+function tagKey(value) {
+    return normalizeTag(value)
+        .toLocaleLowerCase('fa-IR')
+        .replace(/[يى]/g, 'ی')
+        .replace(/[ك]/g, 'ک');
+}
+
+const generatedSeoTagKeys = new Set([
+    'کافپن',
+    'کاف پن',
+    'coffpen',
+    'سیاه و قلم',
+    'داستان کوتاه',
+    'دل نوشته'
+].map(tagKey));
+
+function splitTagValues(values) {
+    const seen = new Set();
+    return values
+        .flatMap(value => String(value || '').split(/[,،|\n]/))
+        .map(normalizeTag)
+        .filter(Boolean)
+        .filter(tag => {
+            const key = tagKey(tag);
+            if (seen.has(key)) return false;
+            seen.add(key);
+            return true;
+        })
+        .slice(0, 8);
+}
+
+function parsePostTags(html, section, series) {
+    const explicitValues = collectMetaContents(html, [
+        /<meta[^>]+name=["']coffpen:tags["'][^>]+content=["']([^"']*)["']/gi,
+        /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']coffpen:tags["']/gi,
+        /<meta[^>]+name=["']keywords["'][^>]+content=["']([^"']*)["']/gi,
+        /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']keywords["']/gi
+    ]);
+    if (explicitValues.length) return splitTagValues(explicitValues);
+
+    const sectionKey = tagKey(section);
+    const seriesKey = tagKey(series);
+    const articleValues = collectMetaContents(html, [
+        /<meta[^>]+property=["']article:tag["'][^>]+content=["']([^"']*)["']/gi,
+        /<meta[^>]+content=["']([^"']*)["'][^>]+property=["']article:tag["']/gi
+    ]);
+    return splitTagValues(articleValues).filter(tag => {
+        const key = tagKey(tag);
+        return !generatedSeoTagKeys.has(key) && key !== sectionKey && key !== seriesKey;
+    });
 }
 
 function normalizePostImage(value) {
@@ -138,14 +222,6 @@ function parsePost(filename) {
         /<meta[^>]+name=["']author["'][^>]+content=["']([^"']*)["']/i,
         /<span[^>]*class=["'][^"']*blackthemeDate[^"']*["'][^>]*>[\s\S]*?<b[^>]*>([\s\S]*?)<\/b>/i
     ]) || 'سهیل آقایانی';
-    const tagsText = firstMatch(html, [
-        /<meta[^>]+name=["']keywords["'][^>]+content=["']([^"']*)["']/i,
-        /<meta[^>]+content=["']([^"']*)["'][^>]+name=["']keywords["']/i
-    ]);
-    const tags = tagsText
-        ? tagsText.split(/[,،\n]/).map(tag => tag.trim().replace(/^#+/, '')).filter(Boolean)
-            .filter((tag, index, list) => list.indexOf(tag) === index).slice(0, 8)
-        : [];
     const contentTypeText = firstMatch(html, [
         /<meta[^>]+name=["'](?:coffpen:content-type|content-type)["'][^>]+content=["']([^"']*)["']/i
     ]).toLowerCase();
@@ -160,6 +236,7 @@ function parsePost(filename) {
             series = seriesLink[1];
         }
     }
+    const tags = parsePostTags(html, postSection({ contentType, series }), series);
 
     const episodeText = firstMatch(html, [
         /class=["'][^"']*(?:post-episode-link|preview-episode-link)[^"']*["'][^>]*>\s*قسمت\s*([۰-۹٠-٩0-9]+)/i
@@ -338,6 +415,9 @@ function renderPostSeo(post) {
         '    <meta property="article:modified_time" content="' + escapeHtml(post.date) + '">',
         '    <meta property="article:section" content="' + escapeHtml(section) + '">',
         '    <link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="../feed.xml">',
+        post.tags.length
+            ? '    <meta name="coffpen:tags" content="' + escapeHtml(post.tags.join('، ')) + '">'
+            : '',
         tagMeta,
         '    <script type="application/ld+json">' + jsonForHtml(graph) + '</script>',
         '<!-- Coffpen:post-seo:end -->'
@@ -347,7 +427,7 @@ function renderPostSeo(post) {
 function syncGeneratedPostSeo(list) {
     list.forEach(post => {
         const file = path.join(postsDirectory, post.filename);
-        const source = ensureFaviconLinks(fs.readFileSync(file, 'utf8'), '../');
+        const source = ensureAssetVersions(ensureFaviconLinks(sanitizeGeneratedAttributes(fs.readFileSync(file, 'utf8')), '../'));
         const block = renderPostSeo(post);
         const marker = /<!-- Coffpen:post-seo:start -->[\s\S]*?<!-- Coffpen:post-seo:end -->/;
         const original = fs.readFileSync(file, 'utf8');
@@ -519,7 +599,7 @@ function renderArchivePage(list) {
         '  <link rel="canonical" href="' + archiveCanonical + '">\n' +
         '  <link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
         faviconLinks() + '\n' +
-        '  <link rel="stylesheet" href="assets/css/style.min.css">\n' +
+        '  <link rel="stylesheet" href="assets/css/style.min.css?v=' + assetVersion + '">\n' +
         '  <script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
         '  <style>\n' +
         '    body{min-height:100vh;padding:28px 16px;background:var(--bg-body);}\n' +
@@ -630,7 +710,7 @@ function renderSeriesPage(list) {
         '  <meta name="author" content="سهیل آقایانی"><meta name="robots" content="index,follow,max-image-preview:large">\n' +
         '  <link rel="canonical" href="' + seriesCanonical + '"><link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
         faviconLinks() + '\n' +
-        '  <link rel="stylesheet" href="assets/css/style.min.css"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
+        '  <link rel="stylesheet" href="assets/css/style.min.css?v=' + assetVersion + '"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
         '  <style>\n' +
         '    body{min-height:100vh;padding:28px 16px;background:var(--bg-body)}.series-shell{width:min(100%,920px);margin:0 auto;padding:clamp(22px,4vw,46px);border:1px solid var(--border-color);border-radius:22px;background:var(--bg-box);box-shadow:var(--shadow-box)}\n' +
         '    .series-header{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;padding-bottom:24px;border-bottom:1px solid var(--border-subtle)}.series-header h1{margin:0;color:var(--text-main);font-size:clamp(1.55rem,4vw,2.25rem);line-height:1.5}.series-header p{max-width:650px;margin:8px 0 0;color:var(--text-muted);font-size:.9rem}.series-kicker,.series-archive-kicker{margin:0 0 6px;color:var(--text-accent);font-size:.82rem;font-weight:700}.series-nav{display:flex;flex-wrap:wrap;gap:8px}.series-nav a,.series-archive-latest{padding:8px 12px;border:1px solid var(--border-color);border-radius:10px;color:var(--text-muted);font-size:.8rem}.series-nav a:hover,.series-archive-latest:hover{color:var(--text-accent);border-color:var(--text-accent)}\n' +
@@ -694,7 +774,7 @@ function renderBrandPage(list) {
         '  <meta name="robots" content="index,follow,max-image-preview:large"><meta name="googlebot" content="index,follow,max-image-preview:large">\n' +
         '  <link rel="canonical" href="' + brandCanonical + '"><link rel="alternate" type="application/rss+xml" title="کافپن (Coffpen)" href="feed.xml">\n' +
         faviconLinks() + '\n' +
-        '  <link rel="stylesheet" href="assets/css/style.min.css"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
+        '  <link rel="stylesheet" href="assets/css/style.min.css?v=' + assetVersion + '"><script type="application/ld+json">' + jsonForHtml(graph) + '</script>\n' +
         '  <style>body{min-height:100vh;padding:28px 16px;background:var(--bg-body)}.brand-shell{width:min(100%,860px);margin:0 auto;padding:clamp(24px,5vw,56px);border:1px solid var(--border-color);border-radius:24px;background:var(--bg-box);box-shadow:var(--shadow-box)}.brand-kicker{margin:0 0 8px;color:var(--text-accent);font-size:.84rem;font-weight:700}.brand-shell h1{margin:0;color:var(--text-main);font-size:clamp(1.7rem,5vw,2.8rem);line-height:1.5}.brand-lede{max-width:700px;margin:14px 0 0;color:var(--text-muted);font-size:1rem;line-height:2}.brand-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:28px 0}.brand-stat{padding:16px;border:1px solid var(--border-subtle);border-radius:14px;background:var(--bg-card)}.brand-stat strong{display:block;color:var(--text-main);font-size:1.35rem}.brand-stat span{display:block;margin-top:4px;color:var(--text-muted);font-size:.78rem}.brand-section{padding-top:24px;margin-top:24px;border-top:1px solid var(--border-subtle)}.brand-section h2{margin:0 0 10px;color:var(--text-main);font-size:1.25rem}.brand-section p{margin:0;color:var(--text-muted);line-height:2}.brand-variants{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}.brand-variants span{padding:6px 10px;border:1px solid var(--border-color);border-radius:999px;color:var(--text-muted);font-size:.78rem}.brand-links{display:flex;flex-wrap:wrap;gap:9px;margin-top:18px}.brand-links a{padding:9px 13px;border:1px solid var(--border-color);border-radius:10px;color:var(--text-main);font-size:.82rem}.brand-links a:hover{color:var(--text-accent);border-color:var(--text-accent)}.brand-footer{margin-top:30px;padding-top:18px;border-top:1px solid var(--border-subtle);color:var(--text-muted);font-size:.78rem}@media(max-width:620px){body{padding:0}.brand-shell{border:0;border-radius:0;box-shadow:none}.brand-grid{grid-template-columns:1fr 1fr}.brand-stat:last-child{grid-column:1/-1}}</style>\n' +
         '</head>\n<body>\n' +
         '  <main class="brand-shell">\n' +
@@ -760,7 +840,7 @@ if (fs.existsSync(indexFile)) {
         .replace(/\.\.\/fonts\//g, 'assets/fonts/');
     const marker = '<div id="seriesHubList" class="series-hub-list"><!-- Coffpen:series-hub --></div>';
     const staticMarkerPattern = /<div id="seriesHubList" class="series-hub-list"><!-- Coffpen:series-hub:start -->[\s\S]*?<!-- Coffpen:series-hub:end --><\/div>/;
-    let indexHtml = ensureFaviconLinks(fs.readFileSync(indexFile, 'utf8'));
+    let indexHtml = ensureAssetVersions(ensureFaviconLinks(fs.readFileSync(indexFile, 'utf8')));
     indexHtml = indexHtml.replace(
         /<!-- Coffpen:inline-style:start -->[\s\S]*?<!-- Coffpen:inline-style:end -->/,
         '<!-- Coffpen:inline-style:start -->\n    <style id="coffpen-inline-style">\n' + minifiedStylesheet +
@@ -787,7 +867,7 @@ if (fs.existsSync(indexFile)) {
 
 const aboutFile = path.join(root, 'about.html');
 if (fs.existsSync(aboutFile)) {
-    const aboutHtml = ensureFaviconLinks(fs.readFileSync(aboutFile, 'utf8'));
+    const aboutHtml = ensureAssetVersions(ensureFaviconLinks(fs.readFileSync(aboutFile, 'utf8')));
     fs.writeFileSync(aboutFile, aboutHtml, 'utf8');
 }
 
