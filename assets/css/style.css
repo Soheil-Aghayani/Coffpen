@@ -151,7 +151,6 @@
 /* Base Normalize & Font Rules */
 html {
     line-height: 1.15;
-    -webkit-text-size-adjust: 100%;
 }
 
 * {
@@ -426,6 +425,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     border-radius: 18px;
     background: rgba(255, 255, 255, 0.04);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
 }
 
@@ -483,6 +483,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     line-height: 2;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
+    line-clamp: 2;
 }
 
 .story-hero-meta {
@@ -523,6 +524,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     border-radius: 18px;
     background: rgba(127, 127, 127, 0.07);
     text-align: center;
+    -webkit-backdrop-filter: blur(10px);
     backdrop-filter: blur(10px);
     box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
 }
@@ -665,6 +667,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     border-radius: 14px;
     background: rgba(127, 127, 127, 0.07);
     text-align: center;
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
 }
 
@@ -1138,6 +1141,7 @@ nav ul li a:hover, .theme-toggle-btn:hover {
     top: 9px;
     left: 9px;
     z-index: 2;
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
 }
 
@@ -2239,6 +2243,7 @@ html.series-view #seriesHub[hidden] {
     transform: scale(0.95);
     transform-origin: top right;
     transition: opacity 0.15s ease, transform 0.15s ease;
+    -webkit-backdrop-filter: blur(8px);
     backdrop-filter: blur(8px);
 }
 
@@ -2287,6 +2292,7 @@ html.series-view #seriesHub[hidden] {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
     background-color: rgba(0, 0, 0, 0.65);
+    -webkit-backdrop-filter: blur(6px);
     backdrop-filter: blur(6px);
     z-index: 10001;
     display: flex;
@@ -2438,6 +2444,7 @@ html.series-view #seriesHub[hidden] {
    ========================================================================== */
 .blackthemeOverlay {
     background-color: rgba(0, 0, 0, 0.65);
+    -webkit-backdrop-filter: blur(5px);
     backdrop-filter: blur(5px);
     pointer-events: none;
     opacity: 0;
@@ -3188,6 +3195,7 @@ footer {
     border-radius: 14px;
     background: color-mix(in srgb, var(--bg-box) 88%, transparent);
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
 }
 
