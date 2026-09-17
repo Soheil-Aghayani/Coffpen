@@ -3659,6 +3659,270 @@ html[data-reader-theme="dark"] .reader-book-page {
     .reader-pause-point { align-items: flex-start; flex-direction: column; }
 }
 
+/* ==========================================================================
+   Ambient Soundscape Player
+   ========================================================================== */
+.ambient-trigger-btn {
+    position: relative;
+    transition: color 0.2s ease, transform 0.2s ease, background-color 0.2s ease;
+}
+
+.ambient-trigger-btn svg {
+    width: 20px;
+    height: 20px;
+}
+
+.ambient-trigger-btn.is-active {
+    color: var(--text-accent);
+}
+
+.ambient-trigger-btn.is-active::after {
+    content: '';
+    position: absolute;
+    bottom: 3px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background-color: var(--text-accent);
+    box-shadow: 0 0 6px var(--text-accent);
+    animation: ambientPulseDot 2s infinite ease-in-out;
+}
+
+@keyframes ambientPulseDot {
+    0%, 100% { transform: translateX(-50%) scale(1); opacity: 0.8; }
+    50% { transform: translateX(-50%) scale(1.4); opacity: 1; }
+}
+
+.ambient-player-modal {
+    position: fixed;
+    z-index: 10002;
+    top: 75px;
+    left: 24px;
+    width: 320px;
+    max-width: calc(100vw - 32px);
+    background-color: var(--bg-modal);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    box-shadow: var(--shadow-modal);
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-8px) scale(0.96);
+    transition: opacity 0.22s ease, transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    direction: rtl;
+    color: var(--text-main);
+}
+
+.ambient-player-modal.is-open {
+    opacity: 1;
+    pointer-events: all;
+    transform: translateY(0) scale(1);
+}
+
+.ambient-player-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--border-subtle);
+}
+
+.ambient-player-title {
+    font-size: 0.95em;
+    font-weight: 700;
+    color: var(--text-main);
+    letter-spacing: -0.2px;
+}
+
+.ambient-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.ambient-close-btn:hover {
+    color: var(--text-main);
+    background-color: var(--bg-tag);
+}
+
+.ambient-close-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.ambient-tracks-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+}
+
+.ambient-track-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 12px 6px;
+    background-color: var(--bg-tag);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.ambient-track-btn:hover {
+    color: var(--text-main);
+    border-color: var(--text-accent);
+    transform: translateY(-2px);
+    background-color: var(--bg-card);
+}
+
+.ambient-track-btn.active {
+    background-color: color-mix(in srgb, var(--text-accent) 14%, var(--bg-card));
+    border-color: var(--text-accent);
+    color: var(--text-accent);
+    font-weight: 700;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.ambient-track-btn svg {
+    width: 22px;
+    height: 22px;
+}
+
+.ambient-track-label {
+    font-size: 8pt;
+}
+
+.ambient-player-controls {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-subtle);
+    border-radius: 14px;
+}
+
+.ambient-play-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--text-accent);
+    color: #0f1013;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(229, 184, 105, 0.25);
+    transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.ambient-play-toggle:hover {
+    transform: scale(1.06);
+    background-color: #f0c578;
+}
+
+.ambient-play-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+.ambient-volume-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+}
+
+.ambient-mute-toggle {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: color 0.2s ease;
+}
+
+.ambient-mute-toggle:hover {
+    color: var(--text-main);
+}
+
+.ambient-mute-toggle svg {
+    width: 18px;
+    height: 18px;
+}
+
+.ambient-volume-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 5px;
+    border-radius: 999px;
+    background: var(--bg-tag);
+    outline: none;
+    cursor: pointer;
+}
+
+.ambient-volume-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-accent);
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+    transition: transform 0.15s ease;
+}
+
+.ambient-volume-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+}
+
+.ambient-volume-slider::-moz-range-thumb {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: var(--text-accent);
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+}
+
+@media screen and (max-width: 520px) {
+    .ambient-player-modal {
+        top: auto;
+        bottom: 20px;
+        left: 16px;
+        right: 16px;
+        width: auto;
+        max-width: none;
+    }
+}
+
 @media (prefers-reduced-motion: reduce) {
     .headerImage,
     .headerImage::after,

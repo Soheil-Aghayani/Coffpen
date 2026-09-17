@@ -2467,10 +2467,286 @@ function writeReaderStorage(key, value) {
     }
 }
 
+/* ==========================================================================
+   Ambient Soundscape Player
+   ========================================================================== */
+function initAmbientAudio() {
+    const navList = document.querySelector('.blackthemeBox > header nav ul');
+    if (!navList || document.getElementById('ambientTriggerBtn')) {
+        return;
+    }
+
+    const baseUrl = getSiteBaseUrl();
+    const tracks = {
+        cafe: new URL('assets/audio/cafe.mp3', baseUrl).href,
+        rain: new URL('assets/audio/rain.mp3', baseUrl).href,
+        fireplace: new URL('assets/audio/fireplace.mp3', baseUrl).href
+    };
+
+    let savedTrack = localStorage.getItem('coffpen_ambient_track') || 'cafe';
+    if (!tracks[savedTrack]) savedTrack = 'cafe';
+    let savedVol = parseFloat(localStorage.getItem('coffpen_ambient_vol') || '0.6');
+    if (isNaN(savedVol) || savedVol < 0 || savedVol > 1) savedVol = 0.6;
+
+    let audioElement = null;
+    let isPlaying = false;
+    let isMuted = false;
+    let previousVol = savedVol;
+
+    // 9 Exact SVGs provided by user
+    const iconTrigger = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M12 4L12 20"/><path d="M16 7L16 9M16 17L16 13"/><path d="M8 17L8 15M8 7L8 11"/><path d="M20 11L20 13"/><path d="M4 11L4 13"/></g></svg>';
+    const iconCafe = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"><path d="M3 14c.83.642 2.077 1.017 3.5 1c1.423.017 2.67-.358 3.5-1s2.077-1.017 3.5-1c1.423-.017 2.67.358 3.5 1M8 3a2.4 2.4 0 0 0-1 2a2.4 2.4 0 0 0 1 2m4-4a2.4 2.4 0 0 0-1 2a2.4 2.4 0 0 0 1 2"/><path d="M3 10h14v5a6 6 0 0 1-6 6H9a6 6 0 0 1-6-6z"/><path d="M16.746 16.726a3 3 0 1 0 .252-5.555"/></g></svg>';
+    const iconRain = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M14.381 8.02721C14.9767 7.81911 15.6178 7.70588 16.2857 7.70588C16.9404 7.70588 17.5693 7.81468 18.1551 8.01498M8.66667 11.2426C8.20528 10.9374 7.68059 10.7184 7.11616 10.6089C6.8475 10.5567 6.56983 10.5294 6.28571 10.5294C3.91878 10.5294 2 12.4256 2 14.7647C2 16.0746 2.60178 17.2457 3.54704 18.0226M7.11616 10.6089C6.88706 9.9978 6.7619 9.33687 6.7619 8.64706C6.7619 5.52827 9.32028 3 12.4762 3C15.4159 3 17.8371 5.19371 18.1551 8.01498M18.1551 8.01498C20.393 8.78024 22 10.8811 22 13.3529C22 15.2939 21.0091 17.0061 19.5 18.0226"/><path d="M17 19L15 21"/><path d="M16 15.5L14 17.5"/><path d="M12 20L10 22"/><path d="M11.5 15.5L9.5 17.5"/><path d="M7.5 19L5.5 21"/></g></svg>';
+    const iconFireplace = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.5" d="M20 15C20 19.2545 17.3819 21.1215 15.3588 21.751C14.9274 21.8853 14.6438 21.3823 14.9019 21.0115C15.7823 19.7462 16.8 17.8159 16.8 16C16.8 14.0494 15.1559 11.7465 13.8721 10.3261C13.5786 10.0014 13.0667 10.2163 13.0507 10.6537C12.9976 12.1029 12.7689 14.0418 11.7828 15.5614C11.6241 15.806 11.2872 15.8262 11.1063 15.5975C10.7982 15.2079 10.4901 14.7265 10.182 14.3462C10.016 14.1414 9.71604 14.1386 9.52461 14.3198C8.77825 15.0265 7.73333 16.1286 7.73333 17.5C7.73333 18.4893 8.20479 19.7206 8.69077 20.6741C8.91147 21.1071 8.50204 21.615 8.08142 21.3715C6.24558 20.3088 4 18.1069 4 15C4 11.8536 8.31029 7.49484 9.95605 3.37694C10.2157 2.72714 11.0161 2.42181 11.5727 2.84585C14.9439 5.41391 20 10.3781 20 15Z"/></svg>';
+    const iconPlay = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><path fill="none" stroke="currentColor" stroke-width="1.5" d="M20.4086 9.35258C22.5305 10.5065 22.5305 13.4935 20.4086 14.6474L7.59662 21.6145C5.53435 22.736 3 21.2763 3 18.9671L3 5.0329C3 2.72368 5.53435 1.26402 7.59661 2.38548L20.4086 9.35258Z"/></svg>';
+    const iconPause = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 6C2 4.11438 2 3.17157 2.58579 2.58579C3.17157 2 4.11438 2 6 2C7.88562 2 8.82843 2 9.41421 2.58579C10 3.17157 10 4.11438 10 6V18C10 19.8856 10 20.8284 9.41421 21.4142C8.82843 22 7.88562 22 6 22C4.11438 22 3.17157 22 2.58579 21.4142C2 20.8284 2 19.8856 2 18V6Z"/><path d="M14 6C14 4.11438 14 3.17157 14.5858 2.58579C15.1716 2 16.1144 2 18 2C19.8856 2 20.8284 2 21.4142 2.58579C22 3.17157 22 4.11438 22 6V18C22 19.8856 22 20.8284 21.4142 21.4142C20.8284 22 19.8856 22 18 22C16.1144 22 15.1716 22 14.5858 21.4142C14 20.8284 14 19.8856 14 18V6Z"/></g></svg>';
+    const iconVolume = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1.53479 10.9714C1.60847 9.76255 1.64531 9.15814 1.95854 8.57679C2.24473 8.04563 2.7923 7.53042 3.33988 7.27707C3.93921 6.99979 4.62617 6.99979 6.00008 6.99979C6.51215 6.99979 6.76819 6.99979 7.0162 6.95791C7.26138 6.9165 7.50046 6.84478 7.72795 6.74438C7.95806 6.64283 8.17181 6.50189 8.59932 6.22002L8.81825 6.07566C11.3612 4.39898 12.6327 3.56063 13.7001 3.92487C13.9047 3.9947 14.1028 4.09551 14.2797 4.21984C15.2024 4.86829 15.2725 6.37699 15.4127 9.3944C15.4646 10.5117 15.5 11.4679 15.5 11.9998C15.5 12.5317 15.4646 13.4879 15.4127 14.6052C15.2725 17.6226 15.2024 19.1313 14.2797 19.7797C14.1028 19.9041 13.9047 20.0049 13.7001 20.0747C12.6327 20.4389 11.3612 19.6006 8.81825 17.9239L8.59932 17.7796C8.17181 17.4977 7.95806 17.3567 7.72795 17.2552C7.50046 17.1548 7.26138 17.0831 7.0162 17.0417C6.76819 16.9998 6.51215 16.9998 6.00008 16.9998C4.62617 16.9998 3.93921 16.9998 3.33988 16.7225C2.7923 16.4692 2.24473 15.9539 1.95854 15.4228C1.64531 14.8414 1.60847 14.237 1.53479 13.0282C1.51299 12.6706 1.5 12.3222 1.5 11.9998C1.5 11.6774 1.51299 11.329 1.53479 10.9714Z"/><path stroke-linecap="round" d="M20 6C20 6 21.5 7.8 21.5 12C21.5 16.2 20 18 20 18"/><path stroke-linecap="round" d="M18 9C18 9 18.5 9.9 18.5 12C18.5 14.1 18 15 18 15"/></g></svg>';
+    const iconMute = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="1.5"><path d="M7.0162 17.0417C6.76819 16.9998 6.51215 16.9998 6.00008 16.9998C4.62617 16.9998 3.93921 16.9998 3.33988 16.7225C2.7923 16.4692 2.24473 15.9539 1.95854 15.4228C1.64531 14.8414 1.60847 14.237 1.53479 13.0282C1.51299 12.6706 1.5 12.3222 1.5 11.9998C1.5 11.6774 1.51299 11.329 1.53479 10.9714C1.60847 9.76255 1.64531 9.15814 1.95854 8.57679C2.24473 8.04563 2.7923 7.53042 3.33988 7.27707C3.93921 6.99979 4.62617 6.99979 6.00008 6.99979C6.51215 6.99979 6.76819 6.99979 7.0162 6.95791C7.26138 6.9165 7.50046 6.84478 7.72795 6.74438C7.95806 6.64283 8.17181 6.50189 8.59932 6.22002L8.81825 6.07566C11.3612 4.39898 12.6327 3.56063 13.7001 3.92487C13.9047 3.9947 14.1028 4.09551 14.2797 4.21984C15.115 4.80685 15.2516 6.09882 15.374 8.57679"/><path d="M15.5 8.5V12C15.5 12.5319 15.4646 13.4881 15.4127 14.6054C15.2725 17.6228 15.2024 19.1315 14.2797 19.78C14.1028 19.9043 13.9047 20.0051 13.7001 20.0749C12.7327 20.405 11.5975 19.7473 9.5 18.3727C8.83333 17.9152 7.4 17 7 17" opacity=".5"/><path stroke-linecap="round" d="M20 18C20 18 21.5 16.2 21.5 12C21.5 9.56658 20.9965 7.93882 20.5729 7" opacity=".5"/><path stroke-linecap="round" d="M18 15C18 15 18.5 14.1 18.5 12C18.5 11.1381 18.4158 10.4784 18.3165 10" opacity=".5"/><path stroke-linecap="round" d="M22 2L2 22"/></g></svg>';
+    const iconClose = '<svg xmlns="http://www.w3.org/2000/svg" width="32px" height="32px" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="1.5"><path d="M19.0068 5L5.00684 19"/><path d="M19 19L5 5"/></g></svg>';
+
+    // 1. Mount Trigger Button in nav
+    const triggerLi = document.createElement('li');
+    triggerLi.className = 'ambient-nav-item';
+    triggerLi.innerHTML =
+        '<button type="button" id="ambientTriggerBtn" class="theme-toggle-btn ambient-trigger-btn" ' +
+        'title="صدای محیطی برای مطالعه" aria-label="پخش صدای محیطی" aria-haspopup="dialog" aria-expanded="false">' +
+            iconTrigger +
+        '</button>';
+
+    const themeBtn = navList.querySelector('.theme-toggle-btn');
+    if (themeBtn && themeBtn.closest('li')) {
+        navList.insertBefore(triggerLi, themeBtn.closest('li'));
+    } else {
+        navList.appendChild(triggerLi);
+    }
+
+    // 2. Mount Modal in body
+    let modal = document.getElementById('ambientPlayerModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'ambientPlayerModal';
+        modal.className = 'ambient-player-modal';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-label', 'صدای پس‌زمینه مطالعه');
+        modal.setAttribute('aria-hidden', 'true');
+
+        modal.innerHTML =
+            '<div class="ambient-player-header">' +
+                '<span class="ambient-player-title">صدای محیطی</span>' +
+                '<button type="button" class="ambient-close-btn" id="ambientCloseBtn" title="بستن" aria-label="بستن پنجره">' +
+                    iconClose +
+                '</button>' +
+            '</div>' +
+            '<div class="ambient-tracks-grid">' +
+                '<button type="button" class="ambient-track-btn" data-track="cafe" title="فضای کافه">' +
+                    '<span class="ambient-track-icon">' + iconCafe + '</span>' +
+                    '<span class="ambient-track-label">کافه</span>' +
+                '</button>' +
+                '<button type="button" class="ambient-track-btn" data-track="rain" title="صدای باران">' +
+                    '<span class="ambient-track-icon">' + iconRain + '</span>' +
+                    '<span class="ambient-track-label">باران</span>' +
+                '</button>' +
+                '<button type="button" class="ambient-track-btn" data-track="fireplace" title="شومینه هیزمی">' +
+                    '<span class="ambient-track-icon">' + iconFireplace + '</span>' +
+                    '<span class="ambient-track-label">شومینه</span>' +
+                '</button>' +
+            '</div>' +
+            '<div class="ambient-player-controls">' +
+                '<button type="button" class="ambient-play-toggle" id="ambientPlayToggle" title="پخش / توقف" aria-label="پخش">' +
+                    '<span class="ambient-play-icon">' + iconPlay + '</span>' +
+                    '<span class="ambient-pause-icon" style="display:none;">' + iconPause + '</span>' +
+                '</button>' +
+                '<div class="ambient-volume-row">' +
+                    '<button type="button" class="ambient-mute-toggle" id="ambientMuteToggle" title="قطع / وصل صدا" aria-label="قطع صدا">' +
+                        '<span class="ambient-vol-icon">' + iconVolume + '</span>' +
+                        '<span class="ambient-mute-icon" style="display:none;">' + iconMute + '</span>' +
+                    '</button>' +
+                    '<input type="range" id="ambientVolumeSlider" class="ambient-volume-slider" min="0" max="100" value="' + Math.round(savedVol * 100) + '" aria-label="تنظیم بلندی صدا">' +
+                '</div>' +
+            '</div>';
+
+        document.body.appendChild(modal);
+    }
+
+    const triggerBtn = document.getElementById('ambientTriggerBtn');
+    const closeBtn = document.getElementById('ambientCloseBtn');
+    const playToggle = document.getElementById('ambientPlayToggle');
+    const muteToggle = document.getElementById('ambientMuteToggle');
+    const volumeSlider = document.getElementById('ambientVolumeSlider');
+    const trackBtns = modal.querySelectorAll('.ambient-track-btn');
+    const playIcon = playToggle.querySelector('.ambient-play-icon');
+    const pauseIcon = playToggle.querySelector('.ambient-pause-icon');
+    const volIcon = muteToggle.querySelector('.ambient-vol-icon');
+    const muteIcon = muteToggle.querySelector('.ambient-mute-icon');
+
+    function updateTrackUI() {
+        trackBtns.forEach(function (btn) {
+            btn.classList.toggle('active', btn.dataset.track === savedTrack);
+        });
+    }
+
+    function updatePlayStateUI(playing) {
+        isPlaying = playing;
+        if (playing) {
+            playIcon.style.display = 'none';
+            pauseIcon.style.display = 'inline-flex';
+            playToggle.setAttribute('aria-label', 'توقف');
+            playToggle.title = 'توقف';
+            triggerBtn.classList.add('is-active');
+        } else {
+            playIcon.style.display = 'inline-flex';
+            pauseIcon.style.display = 'none';
+            playToggle.setAttribute('aria-label', 'پخش');
+            playToggle.title = 'پخش';
+            triggerBtn.classList.remove('is-active');
+        }
+    }
+
+    function updateVolumeUI(vol) {
+        volumeSlider.value = Math.round(vol * 100);
+        if (vol === 0 || isMuted) {
+            volIcon.style.display = 'none';
+            muteIcon.style.display = 'inline-flex';
+            muteToggle.setAttribute('aria-label', 'وصل صدا');
+            muteToggle.title = 'وصل صدا';
+        } else {
+            volIcon.style.display = 'inline-flex';
+            muteIcon.style.display = 'none';
+            muteToggle.setAttribute('aria-label', 'قطع صدا');
+            muteToggle.title = 'قطع صدا';
+        }
+    }
+
+    function ensureAudio() {
+        if (!audioElement) {
+            audioElement = new Audio(tracks[savedTrack]);
+            audioElement.loop = true;
+            audioElement.volume = isMuted ? 0 : savedVol;
+            audioElement.addEventListener('play', function () { updatePlayStateUI(true); });
+            audioElement.addEventListener('pause', function () { updatePlayStateUI(false); });
+            audioElement.addEventListener('ended', function () { updatePlayStateUI(false); });
+        }
+        return audioElement;
+    }
+
+    function playAudio() {
+        const audio = ensureAudio();
+        audio.src = tracks[savedTrack];
+        audio.volume = isMuted ? 0 : savedVol;
+        audio.play().then(function () {
+            updatePlayStateUI(true);
+        }).catch(function (err) {
+            console.warn('Ambient audio play prevented:', err);
+            updatePlayStateUI(false);
+        });
+    }
+
+    function pauseAudio() {
+        if (audioElement) {
+            audioElement.pause();
+        }
+        updatePlayStateUI(false);
+    }
+
+    function openModal() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        triggerBtn.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        triggerBtn.setAttribute('aria-expanded', 'false');
+    }
+
+    // Event Listeners
+    triggerBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (modal.classList.contains('is-open')) {
+            closeModal();
+        } else {
+            openModal();
+        }
+    });
+
+    closeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        closeModal();
+    });
+
+    playToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (isPlaying) {
+            pauseAudio();
+        } else {
+            playAudio();
+        }
+    });
+
+    trackBtns.forEach(function (btn) {
+        btn.addEventListener('click', function (e) {
+            e.stopPropagation();
+            const selected = btn.dataset.track;
+            if (selected && tracks[selected]) {
+                savedTrack = selected;
+                localStorage.setItem('coffpen_ambient_track', savedTrack);
+                updateTrackUI();
+                if (isPlaying) {
+                    playAudio();
+                }
+            }
+        });
+    });
+
+    volumeSlider.addEventListener('input', function (e) {
+        const val = parseInt(e.target.value, 10) / 100;
+        savedVol = val;
+        isMuted = (val === 0);
+        localStorage.setItem('coffpen_ambient_vol', savedVol.toString());
+        if (audioElement) {
+            audioElement.volume = savedVol;
+        }
+        updateVolumeUI(savedVol);
+    });
+
+    muteToggle.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (isMuted) {
+            isMuted = false;
+            savedVol = previousVol > 0 ? previousVol : 0.6;
+            if (audioElement) audioElement.volume = savedVol;
+            updateVolumeUI(savedVol);
+        } else {
+            isMuted = true;
+            previousVol = savedVol;
+            if (audioElement) audioElement.volume = 0;
+            updateVolumeUI(0);
+        }
+    });
+
+    document.addEventListener('click', function (e) {
+        if (modal.classList.contains('is-open') && !modal.contains(e.target) && e.target !== triggerBtn && !triggerBtn.contains(e.target)) {
+            closeModal();
+        }
+    });
+
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+        }
+    });
+
+    // Init UI with saved settings
+    updateTrackUI();
+    updateVolumeUI(savedVol);
+}
+
 function initializeCoffpenPage() {
     initTheme();
     initSidebar();
     initContextMenu();
+    initAmbientAudio();
     const isHomePage = Boolean(document.getElementById('postList'));
     const initializeContent = function () {
         initPaperboyNotifications();
