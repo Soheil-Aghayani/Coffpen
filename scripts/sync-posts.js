@@ -309,9 +309,10 @@ function seriesUpdatesFromPosts(list) {
 }
 
 function seriesCoverThumb(image) {
-    return image && image.indexOf('assets/images/') === 0
-        ? 'assets/images/thumbs/' + image.slice('assets/images/'.length)
-        : image;
+    if (!image || image.indexOf('assets/images/') !== 0) return image;
+    const candidate = 'assets/images/thumbs/' + image.slice('assets/images/'.length);
+    const decodedCandidate = decodeURIComponent(candidate);
+    return fs.existsSync(path.join(root, decodedCandidate)) ? candidate : image;
 }
 
 function renderStaticSeriesHub(updates) {

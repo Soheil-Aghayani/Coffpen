@@ -206,17 +206,12 @@ function initSidebar() {
     const notificationButton = sidebar ? sidebar.querySelector('[data-notification-toggle]') : null;
 
     if (menuBtn && sidebar && overlay) {
-<<<<<<< Updated upstream
         const initiallyOpen = sidebar.classList.contains('set');
+        menuBtn.setAttribute('aria-controls', sidebar.id || 'blackthemeSidebar');
         sidebar.setAttribute('aria-hidden', initiallyOpen ? 'false' : 'true');
         sidebar.inert = !initiallyOpen;
         setSidebarFocusability(sidebar, initiallyOpen);
         menuBtn.setAttribute('aria-expanded', initiallyOpen ? 'true' : 'false');
-=======
-        menuBtn.setAttribute('aria-controls', sidebar.id || 'blackthemeSidebar');
-        sidebar.setAttribute('aria-hidden', sidebar.classList.contains('set') ? 'false' : 'true');
-        menuBtn.setAttribute('aria-expanded', sidebar.classList.contains('set') ? 'true' : 'false');
->>>>>>> Stashed changes
         menuBtn.onclick = function (e) {
             e.preventDefault();
             const shouldOpen = !sidebar.classList.contains('set');
