@@ -17,16 +17,38 @@ let paperboyImagePromise = null;
 let sidebarPreviousFocus = null;
 
 // Theme Management
+const THEME_COLORS = {
+    dark: '#0f1013',
+    light: '#f5f6f8',
+    sepia: '#f7f2ea',
+    forest: '#0b1512',
+    midnight: '#090e1a',
+    rose: '#faf4f5'
+};
+
 function initTheme() {
     const savedTheme = localStorage.getItem('coffpen_theme') || 'dark';
-    setTheme(savedTheme);
+    setTheme(savedTheme, false);
 }
 
-function setTheme(themeName) {
+function setTheme(themeName, animate = true) {
     if (!THEMES.includes(themeName)) themeName = 'dark';
+
+    if (animate && document.documentElement.classList.contains('page-ready')) {
+        document.documentElement.classList.add('theme-transitioning');
+        clearTimeout(window.__themeTransitionTimeout);
+        window.__themeTransitionTimeout = setTimeout(function () {
+            document.documentElement.classList.remove('theme-transitioning');
+        }, 350);
+    }
 
     document.documentElement.setAttribute('data-theme', themeName);
     localStorage.setItem('coffpen_theme', themeName);
+
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta && THEME_COLORS[themeName]) {
+        themeColorMeta.setAttribute('content', THEME_COLORS[themeName]);
+    }
 
     const buttons = document.querySelectorAll('.theme-opt-btn');
     buttons.forEach(btn => {
@@ -42,7 +64,7 @@ function cycleTheme() {
     const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
     const currentIndex = THEMES.indexOf(currentTheme);
     const nextIndex = (currentIndex + 1) % THEMES.length;
-    setTheme(THEMES[nextIndex]);
+    setTheme(THEMES[nextIndex], true);
 }
 
 function getSiteBaseUrl() {
@@ -946,14 +968,23 @@ function copyStoryLink(url) {
 }
 
 function showToast(msg) {
-    const toast = document.getElementById('toast-notification');
-    if (toast) {
-        if (msg) toast.querySelector('span').textContent = msg;
-        toast.classList.add('show');
-        setTimeout(function () {
-            toast.classList.remove('show');
-        }, 3000);
+    let toast = document.getElementById('toast-notification');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'toast-notification';
+        toast.className = 'toast-notification';
+        toast.innerHTML = '<span></span>';
+        document.body.appendChild(toast);
     }
+    if (msg) {
+        const span = toast.querySelector('span');
+        if (span) span.textContent = msg;
+        else toast.textContent = msg;
+    }
+    toast.classList.add('show');
+    setTimeout(function () {
+        toast.classList.remove('show');
+    }, 3000);
 }
 
 // Local Fallback Comment Engine
@@ -1857,6 +1888,7 @@ function initLongformReader() {
     let resizeTimer = null;
     let scrollTimer = null;
     let touchStartX = 0;
+    let touchStartY = 0;
     let bookBuildToken = 0;
     let readerLayoutResolved = false;
     const readerLayoutReady = waitForReaderLayout().then(function () {
@@ -2254,11 +2286,20 @@ function initLongformReader() {
 
     book.addEventListener('pointerdown', function (event) {
         touchStartX = event.clientX;
+        touchStartY = event.clientY;
     });
     book.addEventListener('pointerup', function (event) {
-        const delta = event.clientX - touchStartX;
-        if (Math.abs(delta) < 55) return;
-        showBookPage(currentPage + (delta < 0 ? 1 : -1), true);
+        // Never flip page if user is highlighting/selecting text
+        const sel = window.getSelection();
+        if (sel && !sel.isCollapsed && sel.toString().trim().length > 0) return;
+
+        // Mouse drags on desktop are for selecting text and interacting, not page swiping
+        if (event.pointerType === 'mouse') return;
+
+        const deltaX = event.clientX - touchStartX;
+        const deltaY = event.clientY - touchStartY;
+        if (Math.abs(deltaX) < 60 || Math.abs(deltaY) > Math.abs(deltaX)) return;
+        showBookPage(currentPage + (deltaX < 0 ? 1 : -1), true);
     });
 
     document.addEventListener('keydown', function (event) {
@@ -2742,11 +2783,615 @@ function initAmbientAudio() {
     updateVolumeUI(savedVol);
 }
 
+/* ==========================================================================
+   Quote Image Card Generator (کارت‌ساز تصویری نقل‌قول)
+   ========================================================================== */
+function initQuoteCardGenerator() {
+    const isStoryPage = Boolean(
+        document.querySelector('.story-body') ||
+        document.querySelector('.blackthemePostText') ||
+        document.querySelector('.reader-source') ||
+        document.querySelector('meta[name="coffpen:content-type"][content="story"]')
+    );
+    if (!isStoryPage) return;
+
+    // Monochrome Vector SVGs (Strictly NO EMOJIS)
+    const iconQuote = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21c3 0 7-1 7-8V5c0-1.25-.756-2.017-2-2H4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2 1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/><path d="M15 21c3 0 7-1 7-8V5c0-1.25-.757-2.017-2-2h-4c-1.25 0-2 .75-2 1.972V11c0 1.25.75 2 2 2h.75c1 0 1 0 1 1v1c0 1-1 2-2 2s-1 .008-1 1.031V20c0 1 0 1 1 1z"/></svg>';
+    const iconCard = '<svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+    const iconSquare = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/></svg>';
+    const iconStory = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/></svg>';
+    const iconDownload = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+    const iconCopy = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+    const iconClose = '<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    const iconMinus = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+    const iconPlus = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>';
+
+    // 1. Create floating selection bar
+    let selectionBar = document.getElementById('quoteSelectionBar');
+    if (!selectionBar) {
+        selectionBar = document.createElement('div');
+        selectionBar.id = 'quoteSelectionBar';
+        selectionBar.className = 'quote-selection-bar';
+        selectionBar.innerHTML =
+            '<button type="button" class="quote-bar-btn" id="quoteBarCopyBtn" title="کپی نقل‌قول">' +
+                iconQuote + '<span>کپی نقل‌قول</span>' +
+            '</button>' +
+            '<div class="quote-bar-divider"></div>' +
+            '<button type="button" class="quote-bar-btn quote-bar-primary" id="quoteBarCardBtn" title="ساخت کارت تصویری">' +
+                iconCard + '<span>کارت تصویری</span>' +
+            '</button>';
+        document.body.appendChild(selectionBar);
+    }
+
+    // 2. Create Quote Card Modal
+    let modal = document.getElementById('quoteCardModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'quoteCardModal';
+        modal.className = 'quote-card-modal-overlay';
+        modal.setAttribute('role', 'dialog');
+        modal.setAttribute('aria-modal', 'true');
+        modal.setAttribute('aria-labelledby', 'quoteModalTitle');
+        modal.innerHTML =
+            '<div class="quote-card-modal-container">' +
+                '<div class="quote-card-modal-header">' +
+                    '<div class="quote-card-modal-title" id="quoteModalTitle">' +
+                        iconCard + '<span>کارت نقل‌قول</span>' +
+                    '</div>' +
+                    '<button type="button" class="quote-card-close-btn" id="quoteCardCloseBtn" title="بستن" aria-label="بستن پنجره">' +
+                        iconClose +
+                    '</button>' +
+                '</div>' +
+                '<div class="quote-card-controls-row">' +
+                    '<div class="quote-card-control-group">' +
+                        '<span class="quote-card-aspect-label">ابعاد:</span>' +
+                        '<button type="button" class="quote-ratio-btn active" data-ratio="square" aria-label="مربع ۱:۱">' +
+                            iconSquare + '<span>مربع (۱:۱)</span>' +
+                        '</button>' +
+                        '<button type="button" class="quote-ratio-btn" data-ratio="story" aria-label="استوری ۹:۱۶">' +
+                            iconStory + '<span>استوری (۹:۱۶)</span>' +
+                        '</button>' +
+                    '</div>' +
+                    '<div class="quote-card-control-group">' +
+                        '<span class="quote-card-aspect-label">اندازه متن:</span>' +
+                        '<button type="button" class="quote-ratio-btn quote-font-step-btn" id="quoteFontDownBtn" title="کوچک‌تر کردن متن" aria-label="کوچک‌تر کردن متن">' +
+                            iconMinus +
+                        '</button>' +
+                        '<button type="button" class="quote-ratio-btn quote-font-step-btn" id="quoteFontUpBtn" title="بزرگ‌تر کردن متن" aria-label="بزرگ‌تر کردن متن">' +
+                            iconPlus +
+                        '</button>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="quote-card-preview-area">' +
+                    '<canvas id="quoteCardCanvas" class="quote-card-canvas" width="1080" height="1080"></canvas>' +
+                '</div>' +
+                '<div class="quote-card-modal-actions">' +
+                    '<button type="button" class="quote-action-btn quote-download-btn" id="quoteCardDownloadBtn" title="دانلود تصویر با کیفیت">' +
+                        iconDownload + '<span>دانلود تصویر</span>' +
+                    '</button>' +
+                    '<button type="button" class="quote-action-btn quote-copy-img-btn" id="quoteCardCopyImgBtn" title="کپی تصویر در حافظه">' +
+                        iconCopy + '<span>کپی تصویر</span>' +
+                    '</button>' +
+                '</div>' +
+            '</div>';
+        document.body.appendChild(modal);
+    }
+
+    const canvas = document.getElementById('quoteCardCanvas');
+    const ctx = canvas.getContext('2d');
+    const closeBtn = document.getElementById('quoteCardCloseBtn');
+    const downloadBtn = document.getElementById('quoteCardDownloadBtn');
+    const copyImgBtn = document.getElementById('quoteCardCopyImgBtn');
+    const ratioBtns = modal.querySelectorAll('.quote-ratio-btn[data-ratio]');
+    const copyQuoteBtn = document.getElementById('quoteBarCopyBtn');
+    const makeCardBtn = document.getElementById('quoteBarCardBtn');
+    const fontDownBtn = document.getElementById('quoteFontDownBtn');
+    const fontUpBtn = document.getElementById('quoteFontUpBtn');
+
+    let currentSelectedText = '';
+    let currentAspectRatio = 'square'; // 'square' (1080x1080) or 'story' (1080x1920)
+    let fontScaleStep = 0; // -2 to +3
+
+    function getStoryDetails() {
+        const titleEl = document.querySelector('.blackthemePostBoxTitle') || document.querySelector('h1');
+        let title = titleEl ? titleEl.textContent.trim() : '';
+        if (!title && document.title) {
+            title = document.title.split('|')[0].trim();
+        }
+        return {
+            title: title || 'سیاه و قلم',
+            author: 'سهیل آقایانی',
+            url: window.location.href
+        };
+    }
+
+    function formatQuoteText(text) {
+        const details = getStoryDetails();
+        return '«' + text + '»\n\n' +
+               '— از داستان «' + details.title + '»\n' +
+               'نویسنده: ' + details.author + '\n' +
+               'کافپن (سیاه و قلم): ' + details.url;
+    }
+
+    function hideSelectionBar() {
+        selectionBar.classList.remove('is-visible');
+    }
+
+    function updateSelectionBar() {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed) {
+            hideSelectionBar();
+            return;
+        }
+
+        const text = sel.toString().trim();
+        if (text.length < 8) {
+            hideSelectionBar();
+            return;
+        }
+
+        const anchorNode = sel.anchorNode;
+        const focusNode = sel.focusNode;
+        if (!anchorNode || !focusNode) {
+            hideSelectionBar();
+            return;
+        }
+
+        const parent = anchorNode.nodeType === Node.ELEMENT_NODE ? anchorNode : anchorNode.parentElement;
+        const isInStory = parent && (
+            parent.closest('.story-body') ||
+            parent.closest('.blackthemePostText') ||
+            parent.closest('.reader-source') ||
+            parent.closest('.reader-book-stage') ||
+            parent.closest('article.blackthemePostBox')
+        );
+
+        if (!isInStory) {
+            hideSelectionBar();
+            return;
+        }
+
+        currentSelectedText = text;
+
+        try {
+            const range = sel.getRangeAt(0);
+            const rect = range.getBoundingClientRect();
+            if (rect.width === 0 && rect.height === 0) {
+                hideSelectionBar();
+                return;
+            }
+
+            selectionBar.style.visibility = 'hidden';
+            selectionBar.classList.add('is-visible');
+            const barWidth = selectionBar.offsetWidth || 230;
+            const barHeight = selectionBar.offsetHeight || 42;
+
+            let top = rect.top + window.scrollY - barHeight - 10;
+            let left = rect.left + window.scrollX + (rect.width / 2) - (barWidth / 2);
+
+            const minLeft = 12;
+            const maxLeft = window.innerWidth - barWidth - 12;
+            left = Math.max(minLeft, Math.min(maxLeft, left));
+
+            if (top < window.scrollY + 10) {
+                top = rect.bottom + window.scrollY + 10;
+            }
+
+            selectionBar.style.top = Math.round(top) + 'px';
+            selectionBar.style.left = Math.round(left) + 'px';
+            selectionBar.style.visibility = 'visible';
+        } catch (e) {
+            hideSelectionBar();
+        }
+    }
+
+    function drawQuoteCard() {
+        const details = getStoryDetails();
+        const isStory = currentAspectRatio === 'story';
+        const width = 1080;
+        const height = isStory ? 1920 : 1080;
+
+        canvas.width = width;
+        canvas.height = height;
+
+        // 1. Radial dark background
+        const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 80, width / 2, height / 2, height * 0.7);
+        bgGrad.addColorStop(0, '#191b22');
+        bgGrad.addColorStop(0.55, '#0f1015');
+        bgGrad.addColorStop(1, '#07080a');
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // 2. Atmospheric warm amber/gold glow
+        const glowGrad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, width * 0.65);
+        glowGrad.addColorStop(0, 'rgba(212, 175, 55, 0.11)');
+        glowGrad.addColorStop(0.55, 'rgba(212, 175, 55, 0.025)');
+        glowGrad.addColorStop(1, 'rgba(212, 175, 55, 0)');
+        ctx.fillStyle = glowGrad;
+        ctx.fillRect(0, 0, width, height);
+
+        // 3. Double Outer / Inner Border
+        const padOuter = 44;
+        const padInner = 56;
+        const cornerRadius = 24;
+
+        function drawRoundedRect(x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.arcTo(x + w, y, x + w, y + r, r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.arcTo(x + w, y + h, x + w - r, y + h, r);
+            ctx.lineTo(x + r, y + h);
+            ctx.arcTo(x, y + h, x, y + h - r, r);
+            ctx.lineTo(x, y + r);
+            ctx.arcTo(x, y, x + r, y, r);
+            ctx.closePath();
+        }
+
+        // Outer border
+        ctx.strokeStyle = 'rgba(212, 175, 55, 0.24)';
+        ctx.lineWidth = 1.75;
+        drawRoundedRect(padOuter, padOuter, width - (padOuter * 2), height - (padOuter * 2), cornerRadius);
+        ctx.stroke();
+
+        // Inner border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+        ctx.lineWidth = 1;
+        drawRoundedRect(padInner, padInner, width - (padInner * 2), height - (padInner * 2), cornerRadius - 8);
+        ctx.stroke();
+
+        // Corner gold dots
+        const cornerPoints = [
+            [padOuter + 14, padOuter + 14],
+            [width - padOuter - 14, padOuter + 14],
+            [padOuter + 14, height - padOuter - 14],
+            [width - padOuter - 14, height - padOuter - 14]
+        ];
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.5)';
+        cornerPoints.forEach(function (pt) {
+            ctx.beginPath();
+            ctx.arc(pt[0], pt[1], 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // 4. Header Watermark
+        const headerY = isStory ? 240 : 130;
+        ctx.direction = 'rtl';
+        ctx.textAlign = 'center';
+        ctx.font = isStory ? '600 36px Vazirmatn, Tahoma, sans-serif' : '600 28px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.9)';
+        ctx.fillText('کافپن   ✦   سیاه و قلم', width / 2, headerY);
+
+        // Header line
+        ctx.beginPath();
+        const headerLineWidth = isStory ? 180 : 140;
+        const headerLineGrad = ctx.createLinearGradient(width / 2 - headerLineWidth, 0, width / 2 + headerLineWidth, 0);
+        headerLineGrad.addColorStop(0, 'rgba(212, 175, 55, 0)');
+        headerLineGrad.addColorStop(0.5, 'rgba(212, 175, 55, 0.45)');
+        headerLineGrad.addColorStop(1, 'rgba(212, 175, 55, 0)');
+        ctx.strokeStyle = headerLineGrad;
+        ctx.lineWidth = 1.25;
+        ctx.moveTo(width / 2 - headerLineWidth, headerY + (isStory ? 28 : 22));
+        ctx.lineTo(width / 2 + headerLineWidth, headerY + (isStory ? 28 : 22));
+        ctx.stroke();
+
+        // 5. Quote Text Calculations & Layout
+        const quoteText = currentSelectedText.trim().replace(/\s+/g, ' ');
+        const textLen = quoteText.length;
+
+        let baseFontSize;
+        if (isStory) {
+            if (textLen < 60) baseFontSize = 74;
+            else if (textLen < 120) baseFontSize = 64;
+            else if (textLen < 220) baseFontSize = 54;
+            else if (textLen < 380) baseFontSize = 46;
+            else if (textLen < 550) baseFontSize = 39;
+            else baseFontSize = 33;
+        } else {
+            if (textLen < 60) baseFontSize = 62;
+            else if (textLen < 120) baseFontSize = 52;
+            else if (textLen < 220) baseFontSize = 44;
+            else if (textLen < 380) baseFontSize = 38;
+            else if (textLen < 550) baseFontSize = 31;
+            else baseFontSize = 26;
+        }
+
+        const fontSize = Math.max(18, baseFontSize + (fontScaleStep * (isStory ? 4 : 3)));
+        const lineHeight = Math.round(fontSize * 1.8);
+        const maxTextWidth = width - (isStory ? 200 : 220); // 880px / 860px
+        ctx.font = '500 ' + fontSize + 'px Vazirmatn, Tahoma, sans-serif';
+
+        const words = quoteText.split(' ');
+        const lines = [];
+        let currentLine = '';
+
+        for (let i = 0; i < words.length; i++) {
+            const testLine = currentLine ? currentLine + ' ' + words[i] : words[i];
+            const metrics = ctx.measureText(testLine);
+            if (metrics.width > maxTextWidth && currentLine) {
+                lines.push(currentLine);
+                currentLine = words[i];
+            } else {
+                currentLine = testLine;
+            }
+        }
+        if (currentLine) {
+            lines.push(currentLine);
+        }
+
+        const totalTextHeight = lines.length * lineHeight;
+        const quoteCenterY = isStory ? (height * 0.46) : (height * 0.48);
+        const textStartY = quoteCenterY - (totalTextHeight / 2) + (fontSize * 0.75);
+
+        // Top decorative quotation emblem
+        const emblemSize = isStory ? 92 : 72;
+        ctx.save();
+        ctx.direction = 'ltr';
+        ctx.font = 'normal ' + emblemSize + 'px Georgia, serif';
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.45)';
+        ctx.textAlign = 'center';
+        ctx.fillText('“', width / 2, textStartY - (fontSize * 1.05));
+        ctx.restore();
+
+        // Quote text lines
+        ctx.direction = 'rtl';
+        ctx.textAlign = 'center';
+        ctx.font = '500 ' + fontSize + 'px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillStyle = '#fbf8f2';
+        for (let j = 0; j < lines.length; j++) {
+            ctx.fillText(lines[j], width / 2, textStartY + (j * lineHeight));
+        }
+
+        // 6. Footer Section
+        const footerCenterY = isStory ? (height - 260) : (height - 130);
+
+        // Divider
+        const dividerY = footerCenterY - (isStory ? 76 : 56);
+        const divWidth = isStory ? 200 : 150;
+        const divGrad = ctx.createLinearGradient(width / 2 - divWidth, 0, width / 2 + divWidth, 0);
+        divGrad.addColorStop(0, 'rgba(212, 175, 55, 0)');
+        divGrad.addColorStop(0.5, 'rgba(212, 175, 55, 0.45)');
+        divGrad.addColorStop(1, 'rgba(212, 175, 55, 0)');
+        ctx.strokeStyle = divGrad;
+        ctx.lineWidth = 1.25;
+        ctx.beginPath();
+        ctx.moveTo(width / 2 - divWidth, dividerY);
+        ctx.lineTo(width / 2 + divWidth, dividerY);
+        ctx.stroke();
+
+        // Small diamond
+        const diaSize = isStory ? 6 : 5;
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.85)';
+        ctx.beginPath();
+        ctx.moveTo(width / 2, dividerY - diaSize);
+        ctx.lineTo(width / 2 + diaSize, dividerY);
+        ctx.lineTo(width / 2, dividerY + diaSize);
+        ctx.lineTo(width / 2 - diaSize, dividerY);
+        ctx.closePath();
+        ctx.fill();
+
+        // Story Title
+        ctx.font = isStory ? '700 42px Vazirmatn, Tahoma, sans-serif' : '700 32px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillStyle = '#e8c78a';
+        ctx.fillText('از داستان «' + details.title + '»', width / 2, footerCenterY);
+
+        // Author Name
+        ctx.font = isStory ? '500 30px Vazirmatn, Tahoma, sans-serif' : '500 24px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillStyle = 'rgba(240, 237, 230, 0.75)';
+        ctx.fillText(details.author, width / 2, footerCenterY + (isStory ? 48 : 36));
+
+        // Domain
+        ctx.font = isStory ? '500 22px Vazirmatn, Tahoma, sans-serif' : '500 18px Vazirmatn, Tahoma, sans-serif';
+        ctx.fillStyle = 'rgba(212, 175, 55, 0.55)';
+        ctx.fillText('coffpen.ir', width / 2, footerCenterY + (isStory ? 90 : 68));
+    }
+
+    function renderCardWithFontCheck() {
+        if (document.fonts && document.fonts.ready) {
+            document.fonts.ready.then(drawQuoteCard);
+        } else {
+            drawQuoteCard();
+        }
+    }
+
+    function openModal() {
+        hideSelectionBar();
+        modal.classList.add('is-open');
+        renderCardWithFontCheck();
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+    }
+
+    // Prevent mousedown inside floating bar from clearing the user's text selection
+    selectionBar.addEventListener('mousedown', function (e) {
+        e.preventDefault();
+    });
+
+    let selectionTimeout = null;
+    function scheduleSelectionUpdate() {
+        if (selectionTimeout) clearTimeout(selectionTimeout);
+        selectionTimeout = setTimeout(updateSelectionBar, 100);
+    }
+
+    document.addEventListener('mouseup', scheduleSelectionUpdate);
+    document.addEventListener('touchend', scheduleSelectionUpdate);
+    document.addEventListener('selectionchange', function () {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed) {
+            hideSelectionBar();
+        }
+    });
+
+    document.addEventListener('mousedown', function (e) {
+        if (!selectionBar.contains(e.target)) {
+            hideSelectionBar();
+        }
+    });
+
+    copyQuoteBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!currentSelectedText) return;
+        const textToCopy = formatQuoteText(currentSelectedText);
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(textToCopy).then(function () {
+                showToast('نقل‌قول در حافظه کپی شد');
+            }).catch(function () {
+                showToast('خطا در کپی نقل‌قول');
+            });
+        } else {
+            const ta = document.createElement('textarea');
+            ta.value = textToCopy;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast('نقل‌قول در حافظه کپی شد');
+        }
+        hideSelectionBar();
+    });
+
+    makeCardBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        if (!currentSelectedText) return;
+        openModal();
+    });
+
+    ratioBtns.forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            ratioBtns.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentAspectRatio = btn.dataset.ratio || 'square';
+            renderCardWithFontCheck();
+        });
+    });
+
+    if (fontDownBtn) {
+        fontDownBtn.addEventListener('click', function () {
+            if (fontScaleStep > -2) {
+                fontScaleStep -= 1;
+                renderCardWithFontCheck();
+            }
+        });
+    }
+
+    if (fontUpBtn) {
+        fontUpBtn.addEventListener('click', function () {
+            if (fontScaleStep < 4) {
+                fontScaleStep += 1;
+                renderCardWithFontCheck();
+            }
+        });
+    }
+
+    closeBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', function (e) {
+        if (e.target === modal) closeModal();
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+            closeModal();
+        }
+    });
+
+    downloadBtn.addEventListener('click', function () {
+        try {
+            const dataUrl = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            const safeTitle = getStoryDetails().title.replace(/[^a-zA-Z0-9آ-ی]/g, '-').slice(0, 30);
+            link.download = 'coffpen-quote-' + safeTitle + '-' + Date.now() + '.png';
+            link.href = dataUrl;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            showToast('تصویر با کیفیت ذخیره شد');
+        } catch (err) {
+            console.error('Download error:', err);
+            showToast('خطا در دانلود تصویر');
+        }
+    });
+
+    copyImgBtn.addEventListener('click', function () {
+        function fallbackCopyText() {
+            const formatted = formatQuoteText(currentSelectedText);
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(formatted).then(function () {
+                    showToast('متن نقل‌قول در حافظه کپی شد');
+                });
+            } else {
+                showToast('مرورگر از کپی تصویر پشتیبانی نمی‌کند');
+            }
+        }
+
+        if (canvas.toBlob && navigator.clipboard && window.ClipboardItem) {
+            canvas.toBlob(function (blob) {
+                if (!blob) {
+                    fallbackCopyText();
+                    return;
+                }
+                navigator.clipboard.write([
+                    new ClipboardItem({ 'image/png': blob })
+                ]).then(function () {
+                    showToast('تصویر در حافظه کپی شد');
+                }).catch(function (err) {
+                    console.warn('Clipboard image copy not permitted:', err);
+                    fallbackCopyText();
+                });
+            }, 'image/png');
+        } else {
+            fallbackCopyText();
+        }
+    });
+}
+
+function initHomeNavigation() {
+    document.addEventListener('click', function (e) {
+        const homeLink = e.target.closest('a[href="index.html"], a[href="./index.html"], a[href="/"], .site-title a, .blackthemeInfo h1 a');
+        if (!homeLink) return;
+
+        const isCurrentlyHome = Boolean(document.getElementById('postList')) ||
+                                window.location.pathname.endsWith('index.html') ||
+                                window.location.pathname.endsWith('/') ||
+                                !window.location.pathname.includes('.html');
+
+        const href = homeLink.getAttribute('href');
+        const isTargetHome = href === 'index.html' || href === './index.html' || href === '/' || href === './';
+
+        if (isCurrentlyHome && isTargetHome) {
+            e.preventDefault();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            if (window.location.search || window.location.hash) {
+                try {
+                    history.pushState(null, '', window.location.pathname);
+                } catch (err) {}
+
+                const searchInput = document.getElementById('postSearch');
+                if (searchInput && searchInput.value) {
+                    searchInput.value = '';
+                    searchInput.dispatchEvent(new Event('input', { bubbles: true }));
+                }
+
+                const seriesFilterBack = document.querySelector('.series-filter-back');
+                if (seriesFilterBack) {
+                    seriesFilterBack.click();
+                } else if (typeof renderFilteredPosts === 'function') {
+                    renderFilteredPosts();
+                }
+            }
+        }
+    });
+}
+
 function initializeCoffpenPage() {
     initTheme();
     initSidebar();
     initContextMenu();
     initAmbientAudio();
+    initHomeNavigation();
     const isHomePage = Boolean(document.getElementById('postList'));
     const initializeContent = function () {
         initPaperboyNotifications();
@@ -2757,6 +3402,7 @@ function initializeCoffpenPage() {
         initStoryHero();
         initStoryPlaylist();
         initLongformReader();
+        initQuoteCardGenerator();
     };
 
     if (isHomePage && typeof window.requestIdleCallback === 'function') {

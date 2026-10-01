@@ -14,6 +14,16 @@ const feedFile = path.join(root, 'feed.xml');
 const brandFile = path.join(root, 'coffpen.html');
 const assetVersion = '20260814-2';
 
+const themeBootstrapScript = '<script>(function(){try{var t=localStorage.getItem("coffpen_theme");if(t&&["dark","light","sepia","forest","midnight","rose"].indexOf(t)!==-1){document.documentElement.setAttribute("data-theme",t);var c={"dark":"#0f1013","light":"#f5f6f8","sepia":"#f7f2ea","forest":"#0b1512","midnight":"#090e1a","rose":"#faf4f5"}[t];if(c){var m=document.querySelector(\'meta[name="theme-color"]\');if(m)m.setAttribute("content",c);}}}catch(e){}}());</script>';
+
+function ensureThemeBootstrap(html) {
+    if (html.includes('coffpen_theme') && html.includes('setAttribute("data-theme"')) return html;
+    const head = html.match(/<head\b[^>]*>/i);
+    if (!head || head.index === undefined) return html;
+    const headEnd = head.index + head[0].length;
+    return html.slice(0, headEnd) + '\n    ' + themeBootstrapScript + html.slice(headEnd);
+}
+
 function faviconLinks(prefix = '') {
     return [
         `    <link rel="icon" href="${prefix}favicon.ico" sizes="any">`,
@@ -428,7 +438,7 @@ function renderPostSeo(post) {
 function syncGeneratedPostSeo(list) {
     list.forEach(post => {
         const file = path.join(postsDirectory, post.filename);
-        const source = ensureAssetVersions(ensureFaviconLinks(sanitizeGeneratedAttributes(fs.readFileSync(file, 'utf8')), '../'));
+        const source = ensureThemeBootstrap(ensureAssetVersions(ensureFaviconLinks(sanitizeGeneratedAttributes(fs.readFileSync(file, 'utf8')), '../')));
         const block = renderPostSeo(post);
         const marker = /<!-- Coffpen:post-seo:start -->[\s\S]*?<!-- Coffpen:post-seo:end -->/;
         const original = fs.readFileSync(file, 'utf8');
@@ -591,6 +601,7 @@ function renderArchivePage(list) {
     return '<!doctype html>\n' +
         '<html lang="fa" dir="rtl" data-theme="sepia">\n' +
         '<head>\n' +
+        '  ' + themeBootstrapScript + '\n' +
         '  <meta charset="utf-8">\n' +
         '  <meta name="viewport" content="width=device-width, initial-scale=1">\n' +
         '  <title>آرشیو داستان‌ها و دل‌نوشته‌ها | کافپن (کاف‌پن / Coffpen)</title>\n' +
@@ -705,6 +716,7 @@ function renderSeriesPage(list) {
     };
     return '<!doctype html>\n' +
         '<html lang="fa" dir="rtl" data-theme="sepia">\n<head>\n' +
+        '  ' + themeBootstrapScript + '\n' +
         '  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
         '  <title>مجموعه‌های داستانی دنباله‌دار | کافپن (کاف‌پن / Coffpen)</title>\n' +
         '  <meta name="description" content="فهرست مجموعه‌های داستانی دنباله‌دار کافپن و قسمت‌های منتشرشدهٔ هر مجموعه.">\n' +
@@ -768,6 +780,7 @@ function renderBrandPage(list) {
     };
     return '<!doctype html>\n' +
         '<html lang="fa" dir="rtl" data-theme="sepia">\n<head>\n' +
+        '  ' + themeBootstrapScript + '\n' +
         '  <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">\n' +
         '  <title>کافپن (کاف‌پن / Coffpen) | سیاه و قلم</title>\n' +
         '  <meta name="description" content="کافپن یا کاف‌پن (Coffpen)، وبلاگ مستقل سهیل آقایانی برای داستان‌های کوتاه فارسی، مجموعه‌های داستانی و دل‌نوشته‌هاست.">\n' +
@@ -841,7 +854,7 @@ if (fs.existsSync(indexFile)) {
         .replace(/\.\.\/fonts\//g, 'assets/fonts/');
     const marker = '<div id="seriesHubList" class="series-hub-list"><!-- Coffpen:series-hub --></div>';
     const staticMarkerPattern = /<div id="seriesHubList" class="series-hub-list"><!-- Coffpen:series-hub:start -->[\s\S]*?<!-- Coffpen:series-hub:end --><\/div>/;
-    let indexHtml = ensureAssetVersions(ensureFaviconLinks(fs.readFileSync(indexFile, 'utf8')));
+    let indexHtml = ensureThemeBootstrap(ensureAssetVersions(ensureFaviconLinks(fs.readFileSync(indexFile, 'utf8'))));
     indexHtml = indexHtml.replace(
         /<!-- Coffpen:inline-style:start -->[\s\S]*?<!-- Coffpen:inline-style:end -->/,
         '<!-- Coffpen:inline-style:start -->\n    <style id="coffpen-inline-style">\n' + minifiedStylesheet +
@@ -868,8 +881,14 @@ if (fs.existsSync(indexFile)) {
 
 const aboutFile = path.join(root, 'about.html');
 if (fs.existsSync(aboutFile)) {
-    const aboutHtml = ensureAssetVersions(ensureFaviconLinks(fs.readFileSync(aboutFile, 'utf8')));
+    const aboutHtml = ensureThemeBootstrap(ensureAssetVersions(ensureFaviconLinks(fs.readFileSync(aboutFile, 'utf8'))));
     fs.writeFileSync(aboutFile, aboutHtml, 'utf8');
+}
+
+const notFoundFile = path.join(root, '404.html');
+if (fs.existsSync(notFoundFile)) {
+    const notFoundHtml = ensureThemeBootstrap(ensureAssetVersions(ensureFaviconLinks(fs.readFileSync(notFoundFile, 'utf8'))));
+    fs.writeFileSync(notFoundFile, notFoundHtml, 'utf8');
 }
 
 const output = [

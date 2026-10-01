@@ -172,12 +172,23 @@ body {
     background-color: var(--bg-body);
     direction: rtl;
     color: var(--text-main);
-    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 html.page-ready body {
     opacity: 1;
-    transition: opacity 0.16s ease, background-color 0.3s ease, color 0.3s ease;
+    transition: opacity 0.16s ease;
+}
+
+html.theme-transitioning body,
+html.theme-transitioning .blackthemeBox,
+html.theme-transitioning header,
+html.theme-transitioning footer,
+html.theme-transitioning .site-hero,
+html.theme-transitioning .series-hub,
+html.theme-transitioning .post-library-controls,
+html.theme-transitioning .about-card-section,
+html.theme-transitioning .note-shelf {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 a {
@@ -215,7 +226,6 @@ img {
     box-shadow: var(--shadow-box);
     border-radius: 12px;
     border: 1px solid var(--border-color);
-    transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Header Section */
@@ -1186,21 +1196,35 @@ nav ul li a:hover, .theme-toggle-btn:hover {
 }
 
 .series-order-control select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
     min-height: 38px;
-    padding: 7px 11px;
+    padding: 7px 14px 7px 36px;
     border: 1px solid var(--border-color);
-    border-radius: 10px;
-    background: var(--bg-box);
+    border-radius: 11px;
+    background-color: var(--bg-box);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238c92a4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 12px center;
+    background-size: 15px 15px;
     color: var(--text-main);
     font-family: inherit;
     font-size: 8pt;
+    font-weight: 500;
     outline: none;
     cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-image 0.2s ease;
 }
 
 .series-order-control select:focus {
     border-color: var(--text-accent);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-accent) 12%, transparent);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e5b869' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+}
+
+.series-order-control select:hover {
+    border-color: color-mix(in srgb, var(--text-accent) 40%, var(--border-color));
 }
 
 .note-shelf {
@@ -1583,12 +1607,11 @@ html.series-view #seriesHub[hidden] {
     font-size: 7.5pt;
 }
 
-.post-library-fields input,
-.post-library-fields select {
+.post-library-fields input {
     min-height: 42px;
-    padding: 9px 12px;
+    padding: 9px 14px;
     border: 1px solid var(--border-color);
-    border-radius: 11px;
+    border-radius: 12px;
     background: var(--bg-box);
     color: var(--text-main);
     font-family: inherit;
@@ -1596,10 +1619,40 @@ html.series-view #seriesHub[hidden] {
     outline: none;
 }
 
+.post-library-fields select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    min-height: 42px;
+    padding: 9px 14px 9px 40px;
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    background-color: var(--bg-box);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238c92a4' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: left 14px center;
+    background-size: 16px 16px;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 8.25pt;
+    font-weight: 500;
+    outline: none;
+    cursor: pointer;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-image 0.2s ease;
+}
+
 .post-library-fields input:focus,
 .post-library-fields select:focus {
     border-color: var(--text-accent);
     box-shadow: 0 0 0 3px color-mix(in srgb, var(--text-accent) 12%, transparent);
+}
+
+.post-library-fields select:focus {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23e5b869' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m7 10 5 5 5-5'/%3E%3C/svg%3E");
+}
+
+.post-library-fields select:hover {
+    border-color: color-mix(in srgb, var(--text-accent) 40%, var(--border-color));
 }
 
 .post-library-fields select:disabled {
@@ -1711,7 +1764,8 @@ html.series-view #seriesHub[hidden] {
 
     .post-library-fields select {
         min-height: 40px;
-        padding: 8px 9px;
+        padding: 8px 11px 8px 34px;
+        background-position: left 11px center;
         font-size: 7.5pt;
     }
 
@@ -1732,7 +1786,8 @@ html.series-view #seriesHub[hidden] {
     .series-order-control select {
         max-width: 145px;
         min-height: 36px;
-        padding: 6px 8px;
+        padding: 6px 10px 6px 30px;
+        background-position: left 10px center;
         font-size: 7.5pt;
     }
 }
@@ -3920,6 +3975,324 @@ html[data-reader-theme="dark"] .reader-book-page {
         right: 16px;
         width: auto;
         max-width: none;
+    }
+}
+
+/* ==========================================================================
+   Quote Image Card Generator & Selection Floating Bar
+   ========================================================================== */
+.quote-selection-bar {
+    position: absolute;
+    z-index: 10050;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    padding: 5px 8px;
+    border-radius: 999px;
+    background: var(--bg-modal);
+    border: 1px solid var(--border-color);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    -webkit-backdrop-filter: blur(14px);
+    backdrop-filter: blur(14px);
+    opacity: 0;
+    transform: translateY(6px) scale(0.96);
+    transition: opacity 0.18s cubic-bezier(0.16, 1, 0.3, 1), transform 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+    direction: rtl;
+    color: var(--text-main);
+}
+
+.quote-selection-bar.is-visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    pointer-events: auto;
+}
+
+.quote-bar-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    color: var(--text-main);
+    font-family: inherit;
+    font-size: 8pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.15s ease, color 0.15s ease, transform 0.15s ease;
+    white-space: nowrap;
+}
+
+.quote-bar-btn:hover {
+    background: var(--bg-tag);
+    color: var(--text-accent);
+}
+
+.quote-bar-btn svg {
+    width: 15px;
+    height: 15px;
+    flex-shrink: 0;
+}
+
+.quote-bar-btn.quote-bar-primary {
+    background: color-mix(in srgb, var(--text-accent) 15%, transparent);
+    color: var(--text-accent);
+}
+
+.quote-bar-btn.quote-bar-primary:hover {
+    background: color-mix(in srgb, var(--text-accent) 26%, transparent);
+    transform: scale(1.02);
+}
+
+.quote-bar-divider {
+    width: 1px;
+    height: 16px;
+    background: var(--border-subtle);
+}
+
+/* Quote Card Modal */
+.quote-card-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10070;
+    background-color: rgba(0, 0, 0, 0.68);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease;
+    direction: rtl;
+}
+
+.quote-card-modal-overlay.is-open {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.quote-card-modal-container {
+    position: relative;
+    width: min(560px, calc(100vw - 20px));
+    max-width: 560px;
+    max-height: 96vh;
+    overflow-y: auto;
+    background: var(--bg-modal);
+    border: 1px solid var(--border-color);
+    border-radius: 22px;
+    box-shadow: var(--shadow-modal);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    padding: 15px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transform: translateY(12px) scale(0.97);
+    transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+    color: var(--text-main);
+}
+
+.quote-card-modal-overlay.is-open .quote-card-modal-container {
+    transform: translateY(0) scale(1);
+}
+
+.quote-card-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border-subtle);
+    padding-bottom: 8px;
+}
+
+.quote-card-modal-title {
+    font-size: 9.5pt;
+    font-weight: 700;
+    color: var(--text-accent);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.quote-card-modal-title svg {
+    width: 18px;
+    height: 18px;
+}
+
+.quote-card-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.18s ease, background-color 0.18s ease;
+}
+
+.quote-card-close-btn:hover {
+    color: var(--text-main);
+    background: var(--bg-tag);
+}
+
+.quote-card-close-btn svg {
+    width: 18px;
+    height: 18px;
+}
+
+.quote-card-controls-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.quote-card-control-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.quote-card-aspect-label {
+    font-size: 8pt;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.quote-ratio-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-card);
+    color: var(--text-muted);
+    font-family: inherit;
+    font-size: 7.5pt;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quote-ratio-btn:hover {
+    border-color: var(--text-accent);
+    color: var(--text-main);
+}
+
+.quote-ratio-btn.active {
+    border-color: var(--text-accent);
+    background: color-mix(in srgb, var(--text-accent) 18%, var(--bg-card));
+    color: var(--text-accent);
+    font-weight: 700;
+}
+
+.quote-ratio-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.quote-font-step-btn {
+    padding: 5px 10px;
+}
+
+.quote-font-step-btn svg {
+    width: 13px;
+    height: 13px;
+}
+
+.quote-card-preview-area {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.35);
+    border-radius: 16px;
+    border: 1px solid var(--border-subtle);
+    min-height: 280px;
+    max-height: 65vh;
+    overflow: hidden;
+}
+
+.quote-card-canvas {
+    display: block;
+    max-width: 100%;
+    max-height: 63vh;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    border-radius: 10px;
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55);
+}
+
+.quote-card-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+}
+
+.quote-action-btn {
+    flex: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 8.5pt;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.quote-action-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.quote-download-btn {
+    background: var(--text-accent);
+    color: #0f1013;
+    box-shadow: 0 4px 14px rgba(229, 184, 105, 0.22);
+}
+
+.quote-download-btn:hover {
+    background: #f0c578;
+    transform: translateY(-1px);
+}
+
+.quote-copy-img-btn {
+    background: var(--bg-card);
+    color: var(--text-main);
+    border: 1px solid var(--border-color);
+}
+
+.quote-copy-img-btn:hover {
+    border-color: var(--text-accent);
+    color: var(--text-accent);
+    background: color-mix(in srgb, var(--text-accent) 8%, var(--bg-card));
+}
+
+@media screen and (max-width: 520px) {
+    .quote-card-modal-container {
+        padding: 14px 16px;
+        max-height: 94vh;
+    }
+    .quote-card-preview-area {
+        max-height: 40vh;
+        padding: 10px;
+    }
+    .quote-action-btn {
+        padding: 9px 10px;
+        font-size: 8pt;
     }
 }
 
