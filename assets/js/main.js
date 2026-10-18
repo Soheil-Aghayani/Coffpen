@@ -2034,9 +2034,15 @@ function initLongformReader() {
         }
 
         let page = createPage();
+        let breakAfterCover = false;
         blocks.forEach(function (block, index) {
             const clone = block.cloneNode(true);
             clone.dataset.readerBlock = index;
+            if (breakAfterCover) {
+                breakAfterCover = false;
+                page = createPage();
+                page.dataset.startBlock = index;
+            }
             if (!page.children.length) page.dataset.startBlock = index;
             page.appendChild(clone);
 
@@ -2089,6 +2095,12 @@ function initLongformReader() {
                     page.appendChild(clone);
                     clone.classList.add('reader-oversized-block');
                 }
+            }
+
+            // A leading image is the book's cover: it gets a page of its own.
+            if (index === 0 && blocks.length > 1 && block.querySelector('img') && !(block.textContent || '').trim()) {
+                page.classList.add('reader-book-cover');
+                breakAfterCover = true;
             }
         });
 

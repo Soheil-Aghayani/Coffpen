@@ -4464,7 +4464,7 @@ html[data-reader-theme="dark"] .reader-book-page {
     position: absolute;
     inset: 0;
     pointer-events: none;
-    background: linear-gradient(to left, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0) 70%);
+    background: linear-gradient(to left, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0) 65%);
 }
 
 .reader-book-page.flip-out::after {
@@ -4476,15 +4476,15 @@ html[data-reader-theme="dark"] .reader-book-page {
 }
 
 @keyframes readerFlipOut {
-    from { transform: rotateY(0deg); opacity: 1; }
-    75% { opacity: 1; }
-    to { transform: rotateY(-105deg); opacity: 0; }
+    from { transform: translateZ(0) rotateY(0deg); }
+    18% { transform: translateZ(70px) rotateY(6deg); }
+    to { transform: translateZ(90px) rotateY(118deg); }
 }
 
 @keyframes readerFlipIn {
-    from { transform: rotateY(-105deg); opacity: 0; }
-    25% { opacity: 1; }
-    to { transform: rotateY(0deg); opacity: 1; }
+    from { transform: translateZ(90px) rotateY(118deg); }
+    82% { transform: translateZ(70px) rotateY(6deg); }
+    to { transform: translateZ(0) rotateY(0deg); }
 }
 
 @keyframes readerFlipShade {
@@ -4537,4 +4537,31 @@ html[data-reader-theme="dark"] .reader-book-page {
     .reader-book-page.flip-in::after {
         animation: none !important;
     }
+}
+
+/* The first page of a story with a leading image is the cover: the image alone, centred. */
+.reader-book-cover.active,
+.reader-book-cover.under,
+.reader-book-cover.flip-out,
+.reader-book-cover.flip-in {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reader-book-cover > div {
+    display: flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+}
+
+.reader-book-cover img {
+    width: auto !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: 100% !important;
+    border-radius: 12px;
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
 }
