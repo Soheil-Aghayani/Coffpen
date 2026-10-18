@@ -1890,6 +1890,7 @@ function initLongformReader() {
     let touchStartX = 0;
     let touchStartY = 0;
     let bookBuildToken = 0;
+    let pageTurnTimer = null;
     let readerLayoutResolved = false;
     const readerLayoutReady = waitForReaderLayout().then(function () {
         readerLayoutResolved = true;
@@ -2098,7 +2099,19 @@ function initLongformReader() {
 
         pages.forEach(function (readerPage) {
             readerPage.classList.remove('measuring');
+            readerPage.dataset.words = String((readerPage.textContent || '').trim().split(/\s+/).filter(Boolean).length);
         });
+
+        const postNav = document.querySelector('.post-nav');
+        const endPage = document.createElement('article');
+        endPage.className = 'reader-book-page reader-book-end';
+        endPage.dataset.startBlock = pages[pages.length - 1].dataset.startBlock;
+        endPage.dataset.words = '0';
+        endPage.innerHTML = '<p class="reader-end-mark" aria-hidden="true">✦</p><h2 class="reader-end-title">پایان</h2>' +
+            '<p class="reader-end-lead">اگر خواندنش خوش گذشت، ادامه‌اش را از اینجا بردارید.</p>' +
+            (postNav ? postNav.outerHTML : '');
+        stage.appendChild(endPage);
+        pages.push(endPage);
 
         const wantedBlock = Number.isFinite(Number(targetBlock)) ? Number(targetBlock) : 0;
         let foundPage = pages.findIndex(function (candidate) {
@@ -2113,22 +2126,52 @@ function initLongformReader() {
         showBookPage(currentPage, false);
     }
 
+    function finishPageTurn() {
+        window.clearTimeout(pageTurnTimer);
+        pages.forEach(function (page) {
+            page.classList.remove('flip-out', 'flip-in', 'under');
+        });
+    }
+
+    function remainingReadingText() {
+        const storyPages = pages.filter(function (page) { return !page.classList.contains('reader-book-end'); });
+        if (!storyPages.length) return '';
+        const upcoming = storyPages.slice(currentPage + 1).reduce(function (sum, page) {
+            return sum + Number(page.dataset.words || 0);
+        }, 0);
+        if (currentPage >= storyPages.length - 1 || upcoming === 0) return 'آخرین صفحه';
+        const minutes = Math.ceil(upcoming / 180);
+        return minutes <= 1 ? 'کمتر از یک دقیقه تا پایان' : minutes.toLocaleString('fa-IR') + ' دقیقه تا پایان';
+    }
+
     function showBookPage(index, animate) {
         if (!pages.length) return;
+        finishPageTurn();
+        const previousPage = pages.findIndex(function (page) { return page.classList.contains('active'); });
         currentPage = Math.max(0, Math.min(index, pages.length - 1));
+        const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const turning = animate && !reduceMotion && previousPage >= 0 && previousPage !== currentPage;
         pages.forEach(function (page, pageIndex) {
             page.classList.toggle('active', pageIndex === currentPage);
-            page.classList.remove('turning');
         });
-        if (animate) {
-            pages[currentPage].classList.add('turning');
-            window.setTimeout(function () {
-                if (pages[currentPage]) pages[currentPage].classList.remove('turning');
-            }, 320);
+        if (turning) {
+            const forward = currentPage > previousPage;
+            if (forward) {
+                pages[previousPage].classList.add('flip-out');
+            } else {
+                pages[previousPage].classList.add('under');
+                pages[currentPage].classList.add('flip-in');
+            }
+            pageTurnTimer = window.setTimeout(finishPageTurn, 620);
         }
 
         const counter = book.querySelector('.reader-page-counter');
-        counter.textContent = 'صفحه ' + (currentPage + 1).toLocaleString('fa-IR') + ' از ' + pages.length.toLocaleString('fa-IR');
+        const onEndPage = pages[currentPage].classList.contains('reader-book-end');
+        const storyPageCount = pages.filter(function (page) { return !page.classList.contains('reader-book-end'); }).length;
+        counter.textContent = onEndPage
+            ? 'پایان'
+            : 'صفحه ' + (currentPage + 1).toLocaleString('fa-IR') + ' از ' + storyPageCount.toLocaleString('fa-IR') +
+                ' · ' + remainingReadingText();
         book.querySelector('[data-page-action="prev"]').disabled = currentPage === 0;
         book.querySelector('[data-page-action="next"]').disabled = currentPage === pages.length - 1;
         updateBookProgress(animate);
@@ -2282,6 +2325,17 @@ function initLongformReader() {
         const pageButton = event.target.closest('[data-page-action]');
         if (!pageButton) return;
         showBookPage(currentPage + (pageButton.dataset.pageAction === 'next' ? 1 : -1), true);
+    });
+
+    // Tapping the outer quarter of a page turns it: left edge forward, right edge back (right-to-left book).
+    book.querySelector('.reader-book-stage').addEventListener('click', function (event) {
+        if (event.target.closest('a, button, input, select, textarea, .post-nav')) return;
+        const selection = window.getSelection();
+        if (selection && !selection.isCollapsed && selection.toString().trim()) return;
+        const rect = event.currentTarget.getBoundingClientRect();
+        const ratio = (event.clientX - rect.left) / rect.width;
+        if (ratio < 0.25) showBookPage(currentPage + 1, true);
+        else if (ratio > 0.75) showBookPage(currentPage - 1, true);
     });
 
     book.addEventListener('pointerdown', function (event) {
