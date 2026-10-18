@@ -13,6 +13,8 @@ const seriesFile = path.join(root, 'series.html');
 const feedFile = path.join(root, 'feed.xml');
 const brandFile = path.join(root, 'coffpen.html');
 const assetVersion = '20260814-2';
+const telegramUrl = 'https://t.me/MeinWELD';
+const analyticsSnippet = '<script data-goatcounter="https://coffpen.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>';
 
 const themeBootstrapScript = '<script>(function(){try{var t=localStorage.getItem("coffpen_theme");if(t&&["dark","light","sepia","forest","midnight","rose"].indexOf(t)!==-1){document.documentElement.setAttribute("data-theme",t);var c={"dark":"#0f1013","light":"#f5f6f8","sepia":"#f7f2ea","forest":"#0b1512","midnight":"#090e1a","rose":"#faf4f5"}[t];if(c){var m=document.querySelector(\'meta[name="theme-color"]\');if(m)m.setAttribute("content",c);}}}catch(e){}}());</script>';
 
@@ -502,6 +504,7 @@ function renderPostNav(post, list) {
     }
     notes.push('<a href="' + (post.series ? seriesHref : '../index.html?kind=all#latest-posts-heading') + '">' +
         (post.series ? 'همهٔ قسمت‌ها' : 'همهٔ نوشته‌ها') + '</a>');
+    notes.push('<a href="' + telegramUrl + '" rel="noopener">دنبال کردن در تلگرام</a>');
     notes.push('<a href="../feed.xml">دنبال کردن با RSS</a>');
     return [
         '<!-- Coffpen:post-nav:start -->',
@@ -1055,4 +1058,15 @@ const sitemap = [
     ''
 ].join('\n');
 fs.writeFileSync(sitemapFile, sitemap, 'utf8');
+// Privacy-friendly pageview counting (GoatCounter) on every public page; admin/ is excluded.
+[
+    ...fs.readdirSync(root).filter(name => name.endsWith('.html')).map(name => path.join(root, name)),
+    ...fs.readdirSync(postsDirectory).filter(name => name.endsWith('.html')).map(name => path.join(postsDirectory, name))
+].forEach(file => {
+    const original = fs.readFileSync(file, 'utf8');
+    const html = original.replace(/[ \t]*<script data-goatcounter[^>]*><\/script>\r?\n?/, '');
+    if (!/<\/body>/i.test(html)) return;
+    const updated = html.replace(/<\/body>/i, () => '    ' + analyticsSnippet + '\n</body>');
+    if (updated !== original) fs.writeFileSync(file, updated, 'utf8');
+});
 console.log(`Synchronized ${posts.length} post(s) into ${path.relative(root, outputFile)}.`);
