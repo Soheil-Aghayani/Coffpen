@@ -39,7 +39,8 @@ jobs:
         if: github.event_name == 'push'
         shell: bash
         run: |
-          file="$(git diff --name-only --diff-filter=A HEAD^ HEAD -- 'posts/*.html' | head -n 1)"
+          # core.quotepath=false keeps Persian filenames as UTF-8 instead of "\330\257..." escapes.
+          file="$(git -c core.quotepath=false diff --name-only --diff-filter=A HEAD^ HEAD -- 'posts/*.html' | head -n 1)"
           echo "file=$file" >> "$GITHUB_OUTPUT"
       - name: Generate shared post registry
         run: node scripts/sync-posts.js
