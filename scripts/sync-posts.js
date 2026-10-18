@@ -435,18 +435,134 @@ function renderPostSeo(post) {
     ].filter(Boolean).join('\n');
 }
 
+// Share cards: a story's own cover (assets/images/social/<cover>.jpg, 1000x1000) replaces the
+// generic preview when that file exists; otherwise the page keeps its current preview image.
+const socialImageSize = 1000;
+
+function postSocialImageUrl(post) {
+    if (!post.image || /^(?:https?:|data:)/i.test(post.image)) return '';
+    let cover = post.image;
+    try { cover = decodeURIComponent(post.image); } catch (error) { /* keep the raw value */ }
+    const social = 'assets/images/social/' + cover.replace(/^assets\/images\//, '').replace(/\.[^.]+$/, '.jpg');
+    return fs.existsSync(path.join(root, social)) ? siteUrl + '/' + encodeURI(social) : '';
+}
+
+function applySocialImage(html, post) {
+    const url = postSocialImageUrl(post);
+    if (!url) return html;
+    const setMeta = (attribute, name, value) => {
+        const pattern = new RegExp('(<meta\\s+' + attribute + '="' + name + '"\\s+content=")[^"]*(")');
+        html = html.replace(pattern, (match, open, close) => open + escapeHtml(value) + close);
+    };
+    setMeta('property', 'og:image', url);
+    setMeta('property', 'og:image:secure_url', url);
+    setMeta('property', 'og:image:type', 'image/jpeg');
+    setMeta('property', 'og:image:width', String(socialImageSize));
+    setMeta('property', 'og:image:height', String(socialImageSize));
+    setMeta('name', 'twitter:image', url);
+    return html;
+}
+
+function postHref(post) {
+    return encodeURIComponent(post.filename);
+}
+
+function renderPostNav(post, list) {
+    const group = list
+        .filter(item => !item.empty && (post.series
+            ? item.series === post.series
+            : !item.series && item.contentType === post.contentType))
+        .sort(post.series
+            ? (a, b) => Number(a.episode || 0) - Number(b.episode || 0) || a.filename.localeCompare(b.filename)
+            : (a, b) => new Date(a.date) - new Date(b.date) || a.filename.localeCompare(b.filename));
+    const index = group.findIndex(item => item.filename === post.filename);
+    const previous = group[index - 1];
+    const next = group[index + 1];
+    const first = group[0];
+    const noun = post.series ? 'قسمت' : (post.contentType === 'note' ? 'دل‌نوشته' : 'داستان');
+    const label = item => escapeHtml(item.title) +
+        (post.series && item.episode ? ' — قسمت ' + Number(item.episode).toLocaleString('fa-IR') : '');
+    const link = (kind, item) =>
+        '<a class="post-nav-link" href="' + postHref(item) + '"><span>' + noun + ' ' + kind + '</span><strong>' + label(item) + '</strong></a>';
+    const seriesHref = '../index.html?series=' + encodeURIComponent(post.series || '') + '#latest-posts-heading';
+    const heading = post.series
+        ? '<p class="post-nav-title">مجموعهٔ «<a href="' + seriesHref + '">' + escapeHtml(post.series) + '</a>»' +
+            (post.episode ? ' — قسمت ' + Number(post.episode).toLocaleString('fa-IR') : '') + '</p>'
+        : '<p class="post-nav-title">ادامهٔ خواندن</p>';
+    const links = [
+        previous ? link('قبلی', previous) : '',
+        next ? link('بعدی', next) : ''
+    ].filter(Boolean).join('');
+    const notes = [];
+    if (post.series && first && first.filename !== post.filename && (!previous || previous.filename !== first.filename)) {
+        notes.push('<a href="' + postHref(first) + '">از ابتدای مجموعه بخوانید</a>');
+    }
+    if (post.series && !next) {
+        notes.push('<span>قسمت بعدی هنوز منتشر نشده است؛ فید را دنبال کنید تا از انتشارش باخبر شوید.</span>');
+    }
+    notes.push('<a href="' + (post.series ? seriesHref : '../index.html?kind=all#latest-posts-heading') + '">' +
+        (post.series ? 'همهٔ قسمت‌ها' : 'همهٔ نوشته‌ها') + '</a>');
+    notes.push('<a href="../feed.xml">دنبال کردن با RSS</a>');
+    return [
+        '<!-- Coffpen:post-nav:start -->',
+        '            <nav class="post-nav" aria-label="ادامهٔ خواندن">',
+        '                ' + heading,
+        links ? '                <div class="post-nav-links">' + links + '</div>' : '',
+        '                <p class="post-nav-notes">' + notes.join('') + '</p>',
+        '            </nav>',
+        '            <!-- Coffpen:post-nav:end -->'
+    ].filter(Boolean).join('\n');
+}
+
 function syncGeneratedPostSeo(list) {
     list.forEach(post => {
         const file = path.join(postsDirectory, post.filename);
         const source = ensureThemeBootstrap(ensureAssetVersions(ensureFaviconLinks(sanitizeGeneratedAttributes(fs.readFileSync(file, 'utf8')), '../')));
         const block = renderPostSeo(post);
         const marker = /<!-- Coffpen:post-seo:start -->[\s\S]*?<!-- Coffpen:post-seo:end -->/;
+        const navMarker = /[ \t]*<!-- Coffpen:post-nav:start -->[\s\S]*?<!-- Coffpen:post-nav:end -->\r?\n?/;
         const original = fs.readFileSync(file, 'utf8');
-        const updated = marker.test(source)
+        let updated = marker.test(source)
             ? source.replace(marker, block)
             : source.replace(/<\/head>/i, block + '\n</head>');
+        updated = applySocialImage(updated, post);
+        updated = updated.replace(navMarker, '');
+        if (!post.empty) {
+            updated = updated.replace(/<\/article>(\r?\n)/, (match, newline) =>
+                '</article>' + newline + '            ' + renderPostNav(post, list) + newline);
+        }
         if (updated !== original) fs.writeFileSync(file, updated, 'utf8');
     });
+}
+
+function renderStartHere(list) {
+    const stories = list.filter(post => !post.empty);
+    const series = new Map();
+    stories.filter(post => post.series).forEach(post => {
+        if (!series.has(post.series)) series.set(post.series, []);
+        series.get(post.series).push(post);
+    });
+    const [largest] = [...series.values()].sort((a, b) => b.length - a.length);
+    const firstEpisode = largest && largest.slice().sort((a, b) => Number(a.episode || 0) - Number(b.episode || 0))[0];
+    const picks = [
+        firstEpisode && { label: 'از اول شروع کنید', post: firstEpisode, note: 'مجموعهٔ «' + firstEpisode.series + '»' },
+        { label: 'یک داستان کوتاه', post: stories.find(post => !post.series && post.contentType === 'story'), note: 'تازه‌ترین داستان مستقل' },
+        { label: 'یک دل‌نوشته', post: stories.find(post => post.contentType === 'note'), note: 'تازه‌ترین دل‌نوشته' }
+    ].filter(pick => pick && pick.post);
+    const excerpt = value => {
+        const text = String(value || '').replace(/^[-+–—]s*/, '');
+        return text.length > 110 ? text.slice(0, 107).replace(/\s+\S*$/, '') + '…' : text;
+    };
+    return '<section class="start-here" aria-labelledby="start-here-title">' +
+        '<div class="start-here-heading"><p class="eyebrow">اگر تازه آمده‌اید</p><h2 id="start-here-title">از کجا شروع کنم؟</h2></div>' +
+        '<div class="start-here-grid">' +
+        picks.map(pick =>
+            '<a href="' + escapeHtml(pick.post.url) + '"><span class="start-here-label">' + escapeHtml(pick.label) + '</span>' +
+            '<strong>' + escapeHtml(pick.post.title) + '</strong>' +
+            '<span class="start-here-note">' + escapeHtml(pick.note) + '</span>' +
+            '<span class="start-here-excerpt">' + escapeHtml(excerpt(pick.post.description)) + '</span></a>'
+        ).join('') +
+        '</div></section>';
 }
 
 function renderIndexStructuredData(list) {
@@ -865,6 +981,11 @@ if (fs.existsSync(indexFile)) {
         '<!-- Coffpen:series-hub:end --></div>';
     if (staticMarkerPattern.test(indexHtml)) indexHtml = indexHtml.replace(staticMarkerPattern, staticHub);
     else if (indexHtml.includes(marker)) indexHtml = indexHtml.replace(marker, staticHub);
+    const startHerePattern = /<!-- Coffpen:start-here:start -->[\s\S]*?<!-- Coffpen:start-here:end -->/;
+    if (startHerePattern.test(indexHtml)) {
+        indexHtml = indexHtml.replace(startHerePattern,
+            () => '<!-- Coffpen:start-here:start -->' + renderStartHere(posts) + '<!-- Coffpen:start-here:end -->');
+    }
     const structuredDataPattern = /<!-- Coffpen:structured-data:start -->[\s\S]*?<!-- Coffpen:structured-data:end -->/;
     if (structuredDataPattern.test(indexHtml)) indexHtml = indexHtml.replace(structuredDataPattern, renderIndexStructuredData(posts));
     const discoveryPattern = /<section class="seo-discovery"[\s\S]*?<!-- Coffpen:featured-posts:end -->[\s\S]*?<\/section>/;
