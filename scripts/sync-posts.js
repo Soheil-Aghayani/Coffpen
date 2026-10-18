@@ -504,6 +504,10 @@ function renderPostNav(post, list) {
     }
     notes.push('<a href="' + (post.series ? seriesHref : '../index.html?kind=all#latest-posts-heading') + '">' +
         (post.series ? 'همهٔ قسمت‌ها' : 'همهٔ نوشته‌ها') + '</a>');
+    const shareUrl = encodeURIComponent(absolutePostUrl(post));
+    const shareText = encodeURIComponent(post.title + ' | سیاه و قلم');
+    notes.push('<a href="https://t.me/share/url?url=' + shareUrl + '&amp;text=' + shareText + '" rel="noopener" target="_blank">ارسال در تلگرام</a>');
+    notes.push('<a href="https://wa.me/?text=' + shareText + '%20' + shareUrl + '" rel="noopener" target="_blank">ارسال در واتساپ</a>');
     notes.push('<a href="' + telegramUrl + '" rel="noopener">دنبال کردن در تلگرام</a>');
     notes.push('<a href="../feed.xml">دنبال کردن با RSS</a>');
     return [

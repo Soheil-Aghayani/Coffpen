@@ -42,6 +42,13 @@ jobs:
           # core.quotepath=false keeps Persian filenames as UTF-8 instead of "\330\257..." escapes.
           file="$(git -c core.quotepath=false diff --name-only --diff-filter=A HEAD^ HEAD -- 'posts/*.html' | head -n 1)"
           echo "file=$file" >> "$GITHUB_OUTPUT"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Create thumbnails and share images for new covers
+        run: |
+          pip install --quiet pillow
+          python scripts/make-image-variants.py
       - name: Generate shared post registry
         run: node scripts/sync-posts.js
       - name: Validate generated site
@@ -59,8 +66,10 @@ jobs:
             posts/*.html
             posts/posts-data.js
             posts/posts-data.min.js
+            assets/images/thumbs
+            assets/images/social
           )
-          if git diff --quiet -- "${generated_files[@]}"; then
+          if [ -z "$(git status --porcelain -- "${generated_files[@]}")" ]; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
