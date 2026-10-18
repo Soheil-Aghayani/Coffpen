@@ -550,7 +550,7 @@ function renderStartHere(list) {
         { label: 'یک دل‌نوشته', post: stories.find(post => post.contentType === 'note'), note: 'تازه‌ترین دل‌نوشته' }
     ].filter(pick => pick && pick.post);
     const excerpt = value => {
-        const text = String(value || '').replace(/^[-+–—]s*/, '');
+        const text = String(value || '').replace(/^[-+–—]\s*/, '');
         return text.length > 110 ? text.slice(0, 107).replace(/\s+\S*$/, '') + '…' : text;
     };
     return '<section class="start-here" aria-labelledby="start-here-title">' +
